@@ -1,0 +1,126 @@
+@import url("https://fonts.googleapis.com/css?family=Muli&display=swap");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+@import url("https://fonts.googleapis.com/css?family=Lexend+Deca&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Blinker:400,600&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Turret+Road:wght@700&display=swap');
+
+
+
+html, body {
+	position: fixed;
+}
+body, body * {
+	margin: 0;
+	border: none;
+	padding: 0;
+	outline: none;
+}
+body {
+	width: 100%;
+	height: 100%;
+}
+
+
+
+.bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #020202;
+	background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #070707 10px, #070707 12px), repeating-linear-gradient(45deg, transparent, transparent 10px, #070707 10px, #070707 12px);
+}
+.bg .wr {
+	position: absolute;
+	top: 20px;
+	left: 50%;
+	width: 1000px;
+	bottom: 20px;
+	transform: translate(-50%,0);
+	background: #0c0c0c;
+	border-radius: 30px;
+	overflow: hidden;
+	border: solid 10px #0f0f0f;
+}
+
+
+
+.bg .wr .top {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100px;
+	background: #242424;
+	border-bottom: solid 10px #0f0f0f;
+}
+.bg .wr .top .icon {
+	position: absolute;
+	top: 0;
+	left: 15px;
+	width: 100px;
+	height: 100px;
+	user-select: none;
+	color: #ed3f17;
+}
+.bg .wr .top .icon .i {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	text-align: center;
+	display: inline-block;
+	line-height: 100px;
+	vertical-align: middle;
+	font-size: 100px;
+}
+.bg .wr .top .title {
+	color: #ed3f17;
+	position: absolute;
+	top: 0;
+	left: 50%;
+	height: 100%;
+	transform: translate(-50%,0);
+	font-family: Turret Road, sans-serif;
+	font-weight: 700;
+	font-size: 70px;
+	text-align: left;
+	line-height: 100px;
+	user-select: none;
+	color: #f6afa1;
+	animation: glow 1s ease-in-out infinite alternate;
+}
+.bg .wr .top .icon .i:hover{
+	cursor: pointer;
+}
+
+
+
+.bg .wr .side {
+	position: absolute;
+	top: 110px;
+	left: 0;
+	width: 200px;
+	bottom: 0;
+	background: #242424;
+	border-right: solid 10px #0f0f0f;
+}
+
+
+
+.bg .wr .side .elem {
+
+}
+
+
+
+@keyframes glow {
+	from {
+		text-shadow: 0 0 7px #ed3f17, 0 0 7px #ed3f17, 0 0 7px #ed3f17;
+	}
+	to {
+		text-shadow: 0 0 13px #ed3f17, 0 0 13px #ed3f17, 0 0 13px #ed3f17;
+	}
+}
