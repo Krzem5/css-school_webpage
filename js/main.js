@@ -13,13 +13,13 @@ const SIDEBAR_DATA=[
 
 document.addEventListener("DOMContentLoaded",()=>{
 	if (!/^https?:\/\/[a-zA-Z0-9]+\.github\.io\//.test(window.location.href)){
-		window.location.href="https://krzem5.github.io/Css-School_Webpage/";
+		// window.location.href="https://krzem5.github.io/Css-School_Webpage/";
 	}
 	document.querySelectorAll(".bg .wr .top .icon")[0].onclick=()=>{
 		window.location.href="/Css-School_Webpage";
 	};
 	let se=document.querySelectorAll(".bg .wr .side")[0];
 	for (let k of SIDEBAR_DATA){
-		se.innerHTML+=`<div class="elem" onclick="document.location.href='/Css-School_Webpage/${k.url}'">${k.nm}</div>`;
+		se.innerHTML+=`<div class="elem" onclick="document.location.href='/Css-School_Webpage${(!/^\\\//.test(k.url[0])?"/":"")+k.url}'">${k.nm}</div>`;
 	}
 },false);
