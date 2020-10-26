@@ -62,7 +62,6 @@ body {
 	width: 100px;
 	height: 100px;
 	user-select: none;
-	color: #ed3f17;
 }
 .bg .wr .top .icon .i {
 	position: absolute;
@@ -75,9 +74,10 @@ body {
 	line-height: 100px;
 	vertical-align: middle;
 	font-size: 100px;
+	color: #9cdcf5;
+	animation: glow_i 6s ease-in-out 2.3s infinite alternate;
 }
 .bg .wr .top .title {
-	color: #ed3f17;
 	position: absolute;
 	top: 0;
 	left: 50%;
@@ -89,8 +89,8 @@ body {
 	text-align: left;
 	line-height: 100px;
 	user-select: none;
-	color: #f6afa1;
-	animation: glow 1s ease-in-out infinite alternate;
+	color: #BBF49E;
+	animation: glow 5s ease-in-out infinite alternate;
 }
 .bg .wr .top .icon .i:hover{
 	cursor: pointer;
@@ -117,10 +117,18 @@ body {
 
 
 @keyframes glow {
-	from {
-		text-shadow: 0 0 7px #ed3f17, 0 0 7px #ed3f17, 0 0 7px #ed3f17;
+	0%, 20%, 60%, 100% {
+		text-shadow: 0 0 8px #5be113, 0 0 8px #5be113, 0 0 8px #5be113;
 	}
-	to {
-		text-shadow: 0 0 13px #ed3f17, 0 0 13px #ed3f17, 0 0 13px #ed3f17;
+	45% {
+		text-shadow: 0 0 10px #5be113, 0 0 10px #5be113, 0 0 10px #5be113;
+	}
+}
+@keyframes glow_i {
+	0%, 40%, 65%, 100% {
+		text-shadow: 0 0 9px #1889e6, 0 0 9px #1889e6, 0 0 9px #1889e6;
+	}
+	50% {
+		text-shadow: 0 0 11px #1889e6, 0 0 11px #1889e6, 0 0 11px #1889e6;
 	}
 }
