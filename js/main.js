@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 				clearInterval(window._li);
 			}
 		},10);
-	},750);
+	},550);
 	let r=document.querySelectorAll(".bg-r .bg .wr .main")[0];
 	dt=JSON.parse(r.innerHTML);
 	r.innerHTML=`<div class="title">${dt.title}</div><div class="desc">${dt.desc}</div>`;
