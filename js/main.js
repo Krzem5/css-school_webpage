@@ -4,6 +4,10 @@ const SIDEBAR_DATA=[
 		"url": null
 	},
 	{
+		"nm": "Test Page",
+		"url": "test.html"
+	},
+	{
 		"nm": "How to Code, Part I",
 		"url": "how-to-code.html"
 	},
@@ -17,7 +21,7 @@ const SIDEBAR_DATA=[
 
 document.addEventListener("DOMContentLoaded",()=>{
 	if (!/^https?:\/\/[a-zA-Z0-9]+\.github\.io\//.test(window.location.href)){
-		window.location.href="https://krzem5.github.io/Css-School_Webpage/";
+		// window.location.href="https://krzem5.github.io/Css-School_Webpage/";
 	}
 	document.querySelectorAll(".bg-r .bg .wr .top .icon")[0].onclick=()=>{
 		window.location.href="/Css-School_Webpage";
