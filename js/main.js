@@ -1,5 +1,9 @@
 const SIDEBAR_DATA=[
 	{
+		"nm": "Main Page",
+		"url": null
+	},
+	{
 		"nm": "How to Code, Part I",
 		"url": "how-to-code.html"
 	},
@@ -15,19 +19,23 @@ document.addEventListener("DOMContentLoaded",()=>{
 	if (!/^https?:\/\/[a-zA-Z0-9]+\.github\.io\//.test(window.location.href)){
 		// window.location.href="https://krzem5.github.io/Css-School_Webpage/";
 	}
-	document.querySelectorAll(".bg .wr .top .icon")[0].onclick=()=>{
+	document.querySelectorAll(".bg-r .bg .wr .top .icon")[0].onclick=()=>{
 		window.location.href="/Css-School_Webpage";
 	};
-	let te=document.querySelectorAll(".bg .wr .top .title")[0];
+	let te=document.querySelectorAll(".bg-r .bg .wr .top .title")[0];
 	te.innerHTML=te.innerText.split("").map((e)=>{
 		return `<span class="c">${e}</span>`;
 	}).join("");
-	let se=document.querySelectorAll(".bg .wr .side")[0];
+	let se=document.querySelectorAll(".bg-r .bg .wr .side")[0];
 	for (let k of SIDEBAR_DATA){
 		se.innerHTML+=`<div class="elem" onclick="window._load('${k.url}')">${k.nm}</div>`;
 	}
-	window._load=(u)=>{
-		fetch(`/Css-School_Webpage${(!/^[\\\/]/.test(u[0])?"/":"")+u}`).catch((e)=>{
+	window._load=(url)=>{
+		if (url=="null"){
+			window.location.href="/Css-School_Webpage/";
+			return;
+		}
+		fetch(`/Css-School_Webpage${(!/^[\\\/]/.test(url[0])?"/":"")+url}`).catch((e)=>{
 			return null;
 		}).then((e)=>{
 			if (e==null||e.ok==false){
@@ -44,15 +52,17 @@ document.addEventListener("DOMContentLoaded",()=>{
 	setTimeout(()=>{
 		window._li=setInterval(()=>{
 			if (window._el===true){
-				document.querySelectorAll(".bg .wr")[0].classList.add("l");
+				document.querySelectorAll(".bg-r .bg")[0].style.height=`${Number.parseInt(r.getBoundingClientRect().height)+170}px`;
+				document.querySelectorAll(".bg-r .bg .wr")[0].style.height=`${Number.parseInt(r.getBoundingClientRect().height)+120}px`;
+				document.querySelectorAll(".bg-r .bg .wr")[0].classList.add("l");
 				setTimeout(()=>{
-					document.querySelectorAll(".bg .wr .loading")[0].style.display="none";
+					document.querySelectorAll(".bg-r .bg .wr .loading")[0].style.display="none";
 				},1000);
 				clearInterval(window._li);
 			}
 		},10);
 	},750);
-	let r=document.querySelectorAll(".bg .wr .main")[0];
+	let r=document.querySelectorAll(".bg-r .bg .wr .main")[0];
 	dt=JSON.parse(r.innerHTML);
 	r.innerHTML=`<div class="title">${dt.title}</div><div class="desc">${dt.desc}</div>`;
 	for (let k of dt.data){
