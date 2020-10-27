@@ -27,7 +27,13 @@ document.addEventListener("DOMContentLoaded",()=>{
 		se.innerHTML+=`<div class="elem" onclick="window._load('${k.url}'">${k.nm}</div>`;
 	}
 	window._load=(u)=>{
-		fetch(`/Css-School_Webpage${(!/^[\\\/]/.test(u[0])?"/":"")+u}`).catch((e)=>console.log(e)).then((e)=>e.text()).then((txt)=>{
+		fetch(`/Css-School_Webpage${(!/^[\\\/]/.test(u[0])?"/":"")+u}`).then((e)=>{
+			if (e.ok==false){
+				console.log(e);
+				return null;
+			}
+			return e.text();
+		}).then((txt)=>{
 			console.log(txt);
 		});
 	}
