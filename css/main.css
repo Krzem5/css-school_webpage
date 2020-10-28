@@ -21,7 +21,7 @@ body {
 	width: 100%;
 	height: 100%;
 	background-color: #020202;
-	background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #070707 10px, #070707 12px), repeating-linear-gradient(45deg, transparent, transparent 10px, #070707 10px, #070707 12px);
+	background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #0a0a0a 10px, #0a0a0a 12px), repeating-linear-gradient(45deg, transparent, transparent 10px, #0a0a0a 10px, #0a0a0a 12px);
 	overflow-y: scroll;
 }
 .bg-r::-webkit-scrollbar {
