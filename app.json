@@ -1,0 +1,28 @@
+{
+	"name": "Krzem App",
+	"description": "Idk",
+	"repository": "https://github.com/Krzem5/Css-School_Website",
+	"success_url": "/",
+	"env": {
+		"SECRET_TOKEN": {
+			"description": "A secret key for verifying the integrity of signed cookies.",
+			"generator": "secret"
+		},
+		"WEB_CONCURRENCY": {
+			"description": "The number of processes to run.",
+			"value": "5"
+		}
+	},
+	"formation": {
+		"web": {
+			"quantity": 1,
+			"size": "standard-1x"
+		}
+	},
+	"image": "heroku/python",
+	"buildpacks": [
+		{
+			"url": "heroku/python"
+		}
+	]
+}
