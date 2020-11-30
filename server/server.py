@@ -33,21 +33,20 @@ def _handle(cs,a):
 	threading.current_thread()._rc=200
 	c=None
 	try:
-		m=False
-		for k in _epl[t]:
-			if (re.fullmatch(k[0],url)!=None):
-				m=True
-				c=k[1](url)
-				if (type(c)==list or type(c)==dict):
-					c=json.dumps(c)
-				if (type(c)!=bytes):
-					c=bytes(str(c),"utf-8")
-				break
-		if (m==False):
-			raise KeyError
-	except KeyError:
-		c=bytes(f"Unimplemented Method '{t}' for URL '{url}'","utf-8")
-		threading.current_thread()._rc=501
+		e=True
+		if (t in _epl):
+			for k in _epl[t]:
+				if (re.fullmatch(k[0],url)!=None):
+					e=False
+					c=k[1](url)
+					if (type(c)==list or type(c)==dict):
+						c=json.dumps(c)
+					if (type(c)!=bytes):
+						c=bytes(str(c),"utf-8")
+					break
+		if (e==True):
+			c=bytes(f"Unimplemented Method '{t}' for URL '{url}'","utf-8")
+			threading.current_thread()._rc=501
 	except Exception as e:
 		traceback.print_exception(None,e,e.__traceback__)
 		c=bytes("Internal Server Error","utf-8")

@@ -2,6 +2,7 @@ import server
 import os
 import json
 import re
+from functools import cmp_to_key
 
 
 
@@ -26,6 +27,13 @@ def _cache(fp):
 	with open(fp,"rb") as f:
 		CACHE[fp]=f.read()
 	return CACHE[fp]
+
+
+
+def _pg_cmp(a,b):
+	if (a[1]["views"]!=b[1]["views"]):
+		return b[1]["views"]-a[1]["views"]
+	return (1 if a[1]["nm"]>b[1]["nm"] else -1)
 
 
 
@@ -112,7 +120,7 @@ def css_file(url):
 def popular_api(url):
 	server.set_code(200)
 	server.header("Content-Type","text/css")
-	return [{"name":e[1]["nm"],"url":f"/page/{e[0]}"} for e in sorted(PAGE_LIST.items(),key=lambda e:e[1]["views"])[:10]]
+	return [{"name":e[1]["nm"],"url":f"/page/{e[0]}"} for e in sorted(PAGE_LIST.items(),key=cmp_to_key(_pg_cmp))[:10]]
 
 
 
