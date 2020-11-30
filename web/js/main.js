@@ -1,24 +1,12 @@
-const SIDEBAR_DATA=[
-	{
-		"nm": "Main Page",
-		"url": null
-	},
-	{
-		"nm": "Test Page",
-		"url": "test.html"
-	},
-	{
-		"nm": "How to Code, Part I",
-		"url": "how-to-code.html"
-	},
-	{
-		"nm": "How to Code, Part II",
-		"url": "how-to-code-2.html"
-	}
-];
-
-
-
+window._l=1;
+fetch.loop=(n,...a)=>{
+	return fetch(...a).catch((e)=>{
+		if (n==1){
+			throw e;
+		}
+		return fetch.loop(n-1,...a);
+	});
+}
 document.addEventListener("DOMContentLoaded",()=>{
 	document.querySelectorAll(".bg-r .bg .wr .top .icon")[0].onclick=()=>{
 		window.location.href="/";
@@ -28,25 +16,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		return `<span class="c">${e}</span>`;
 	}).join("");
 	let se=document.querySelectorAll(".bg-r .bg .wr .side")[0];
-	for (let k of SIDEBAR_DATA){
-		se.innerHTML+=`<div class="elem" onclick="window._load('${k.url}')">${k.nm}</div>`;
-	}
-	window._load=(url)=>{
-		if (url=="null"){
-			window.location.href="/Css-School_Webpage/";
-			return;
-		}
-		fetch(`/Css-School_Webpage${(!/^[\\\/]/.test(url[0])?"/":"")+url}`).catch((e)=>{
-			return null;
-		}).then((e)=>{
-			if (e==null||e.ok==false){
-				window.location.href="/Css-School_Webpage/not-found.html";
-				console.log(e);
-				return null;
-			}
-			else{
-				window.location.href=e.url;
-			}
-		});
-	}
+	fetch.loop(5,"/api/v1/popular",{}).then((e)=>e.json()).then((e)=>e.forEach((k)=>{
+		se.innerHTML+=`<div class="elem" onclick="window.location.href='${k.url}'">${k.name}</div>`;
+	}));
 },false);
