@@ -1,4 +1,3 @@
-window._l=1;
 fetch.loop=(n,...a)=>{
 	return fetch(...a).catch((e)=>{
 		if (n==1){
