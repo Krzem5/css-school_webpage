@@ -1,9 +1,15 @@
 fetch.loop=(n,...a)=>{
-	return fetch(...a).catch((e)=>{
-		if (n==1){
-			throw e;
+	return fetch(...a).catch((r)=>{
+		r.ok=false;
+		return r;
+	}).then((r)=>{
+		if (!r.ok){
+			if (n==1){
+				throw new Error("API Request Error");
+			}
+			return fetch.loop(n-1,...a);
 		}
-		return fetch.loop(n-1,...a);
+		return r
 	});
 }
 document.addEventListener("DOMContentLoaded",()=>{
@@ -15,7 +21,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		return `<span class="c">${e}</span>`;
 	}).join("");
 	let se=document.querySelectorAll(".bg-r .bg .wr .side")[0];
-	fetch.loop(5,"/api/v1/popular",{}).then((e)=>e.json()).then((e)=>e.forEach((k)=>{
+	fetch.loop(3,"/api/v1/popular",{}).then((e)=>e.json()).then((e)=>e.forEach((k)=>{
 		se.innerHTML+=`<div class="elem" onclick="window.location.href='${k.url}'">${k.name}</div>`;
 	}));
 },false);

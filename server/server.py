@@ -23,19 +23,24 @@ def _handle(cs,a):
 			if (not dtc):
 				break
 			_dt+=dtc
-		except BlockingIOError:
+		except socket.timeout:
 			break
+		except ConnectionResetError:
+			return
 	if (len(_dt)==0):
 		return
 	(t,url,threading.current_thread()._rv),threading.current_thread()._rh,threading.current_thread()._rdt=str(_dt.split(b"\r\n")[0],"utf-8").split(" "),{str(e.split(b":")[0],"utf-8"):e[len(e.split(b":")[0])+2:] for e in _dt.split(b"\r\n\r\n")[0].split(b"\r\n")[1:] if len(e)!=0},_dt[len(_dt.split(b"\r\n\r\n")[0])+4:]
 	url=re.sub(r"/\.+/","/./",re.sub(r"\\\.+\\",r"\\.\\",url))
+	url,q=url.split("?")[0],url[len(url.split("?")[0])+1:]
+	threading.current_thread()._a=a
+	threading.current_thread()._q={e.split("=")[0]:e[len(e.split("=")[0])+1:] for e in q.split("&")}
 	threading.current_thread()._h={"Content-Type":"text/plain","Content-Length":None}
 	threading.current_thread()._rc=200
 	c=None
 	try:
 		e=True
 		if (t in _epl):
-			for k in _epl[t]:
+			for k in _epl[t]["l"]:
 				if (re.fullmatch(k[0],url)!=None):
 					e=False
 					c=k[1](url)
@@ -44,6 +49,13 @@ def _handle(cs,a):
 					if (type(c)!=bytes):
 						c=bytes(str(c),"utf-8")
 					break
+			if (e==True and _epl[t]["f"]!=None):
+				e=False
+				c=_epl[t]["f"](url)
+				if (type(c)==list or type(c)==dict):
+					c=json.dumps(c)
+				if (type(c)!=bytes):
+					c=bytes(str(c),"utf-8")
 		if (e==True):
 			c=bytes(f"Unimplemented Method '{t}' for URL '{url}'","utf-8")
 			threading.current_thread()._rc=501
@@ -63,10 +75,45 @@ def route(m,url):
 		if (f.__code__.co_argcount!=1):
 			raise RuntimeError("Route Funcions Must Have Exactly 1 Argument: URL")
 		if (m not in list(_epl.keys())):
-			_epl[m]=[]
-		_epl[m]+=[(url,f)]
+			_epl[m]={"l":[],"f":None}
+		if (url!=None):
+			_epl[m]["l"]+=[(url,f)]
+		else:
+			if (_epl[m]["f"]!=None):
+				print(f"Override Fallback for Method '{m}'!")
+			_epl[m]["f"]=f
 		return f
 	return _wr
+
+
+
+def address():
+	return threading.current_thread()._a
+
+
+
+def queries():
+	return {**threading.current_thread()._q}
+
+
+
+def query(k):
+	return threading.current_thread()._q[k]
+
+
+
+def headers(k):
+	return {**threading.current_thread()._rh}
+
+
+
+def header(k):
+	return threading.current_thread()._rh[k]
+
+
+
+def body():
+	return threading.current_thread()._rdt
 
 
 
@@ -77,8 +124,13 @@ def set_code(c):
 
 
 
-def header(k,v):
+def set_header(k,v):
 	threading.current_thread()._h[k]=v
+
+
+
+def set_headers(d):
+	threading.current_thread()._h.update(d)
 
 
 
@@ -91,5 +143,5 @@ def run(p):
 	while (True):
 		cs,a=ss.accept()
 		cs.sendall(b"HTTP/1.1 ")
-		cs.settimeout(0)
+		cs.settimeout(0.1)
 		threading.Thread(target=_handle,args=(cs,a),kwargs={}).start()
