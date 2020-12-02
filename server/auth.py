@@ -34,9 +34,9 @@ _tk_db={}
 
 def _check_token(tk):
 	t=time.time()
-	for k,v in _db:
-		r=(0 if v[DB_KEY_TOKEN_END]<t and len(tk)==len(v[DB_KEY_TOKEN]) else 1)
-		for i in range(0,min(len(tk),v[DB_KEY_TOKEN])):
+	for k,v in _db.items():
+		r=(0 if v[DB_KEY_TOKEN_END]>=t and len(tk)==len(v[DB_KEY_TOKEN]) else 1)
+		for i in range(0,min(len(tk),len(v[DB_KEY_TOKEN]))):
 			if (tk[i]!=v[DB_KEY_TOKEN]):
 				r|=1
 		if (r==0):
@@ -92,31 +92,32 @@ def signup(nm,em,pw,ip):
 	id_=secrets.token_hex(DB_ID_LEN)
 	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),time.time(),f"{ip[0]}:{ip[1]}",None,0]
 	_db_em[em]=id_
+	print("SET",bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw)
 	print(_db,_db_em)
 	return {"status":RETURN_CODE["ok"]}
 
 
 
 def login(em,pw,ip):
-	print(ip)
 	r=check_email(em,db=False)
 	if (r!=RETURN_CODE["ok"]):
 		return {"status":r}
 	if (em not in _db_em):
-		return {"status":RETURN_CODE["login_fail"]}
+		return {"status":RETURN_CODE["login_fail"],"e":1}
 	pw=bytes(pw,"utf-8")
 	if (len(pw)<MIN_PASSWORD_LEN):
-		return {"status":RETURN_CODE["login_fail"]}
+		return {"status":RETURN_CODE["login_fail"],"e":2}
 	if (len(pw)>MAX_PASSWORD_LEN):
-		return {"status":RETURN_CODE["login_fail"]}
+		return {"status":RETURN_CODE["login_fail"],"e":3}
 	id_=_db_em[em]
 	pw_h=hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest()
 	r=0
+	print("CHECK",bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw,_db[id_],pw_h,_db[id_][DB_KEY_PASSWORD])
 	for i,k in enumerate(pw_h):
 		if (k!=_db[id_][DB_KEY_PASSWORD][i]):
 			r|=1
 	if (r!=0):
-		return {"status":RETURN_CODE["login_fail"]}
+		return {"status":RETURN_CODE["login_fail"],"e":4}
 	_db[id_][DB_KEY_TOKEN]=str(base64.urlsafe_b64encode(secrets.token_bytes(TOKEN_LEN)),"utf-8")
 	_db[id_][DB_KEY_TOKEN_END]=time.time()+TOKEN_EXP_DATE
 	return {"status":RETURN_CODE["ok"],"token":_db[id_][DB_KEY_TOKEN]}
@@ -125,6 +126,16 @@ def login(em,pw,ip):
 
 def check_token(tk,ip):
 	return {"status":RETURN_CODE[("invalid_token" if _check_token(tk)==None else "ok")]}
+
+
+
+def refresh_token(tk,ip):
+	id_=_check_token(tk)
+	if (id_==None):
+		return {"status":RETURN_CODE["invalid_token"]}
+	_db[id_][DB_KEY_TOKEN]=str(base64.urlsafe_b64encode(secrets.token_bytes(TOKEN_LEN)),"utf-8")
+	_db[id_][DB_KEY_TOKEN_END]=time.time()+TOKEN_EXP_DATE
+	return {"status":RETURN_CODE["ok"],"token":_db[id_][DB_KEY_TOKEN]}
 
 
 

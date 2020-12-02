@@ -117,6 +117,17 @@ def check_token(url):
 
 
 
+@server.route("POST",r"/api/v1/auth/refresh_token")
+def refresh_token(url):
+	dt,ok=_validate("tokenrefresh","/docs/api/refresh-token",{"token":{"t":str,"p":"body"}},body=True)
+	if (ok==False):
+		return dt
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	return auth.refresh_token(dt["token"],server.address())
+
+
+
 @server.route("GET",r"/api/v1(?:/.*)?")
 @server.route("POST",r"/api/v1(?:/.*)?")
 @server.route("PUT",r"/api/v1(?:/.*)?")
