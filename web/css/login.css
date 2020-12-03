@@ -108,6 +108,7 @@ body {
 	white-space: nowrap;
 	user-select: none;
 	transition: text-shadow 0.3s, color 0.3s, font-size 0.3s;
+	cursor: pointer;
 }
 .bg-r .bg .wr .main .login.r {
 	color: #edc94a;

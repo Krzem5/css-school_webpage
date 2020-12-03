@@ -29,11 +29,11 @@ def _read_token():
 	else:
 		server.set_code(401)
 		return ({"error":{"code":"E_UNAUTHORIZED","message":"This Request Requires Authorization","link":"/docs/api/request-authorization"}},False)
-	tk=tk.split(" ")
-	if (len(tk)!=2 or tk[0].lower()!="bearer"):
+	tk=tk.split(b" ")
+	if (len(tk)!=2 or tk[0].lower()!=b"bearer"):
 		server.set_code(401)
 		return ({"error":{"code":"E_UNAUTHORIZED","message":"This Request Requires Authorization","link":"/docs/api/request-authorization"}},False)
-	return (tk[1],True)
+	return (str(tk[1],"utf-8"),True)
 
 
 

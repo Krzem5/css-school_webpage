@@ -139,6 +139,9 @@ body {
 	font-family: Bungee;
 	white-space: nowrap;
 }
+.bg-r .bg .wr .top .account.l .txt {
+	display: none;
+}
 .bg-r .bg .wr .top .account .i {
 	position: absolute;
 	top: 0;
@@ -153,6 +156,9 @@ body {
 	color: #edc94a;
 	text-shadow: 0 0 9px #e8bc16, 0 0 9px #e8bc16, 0 0 9px #e8bc16;
 	display: none;
+}
+.bg-r .bg .wr .top .account.l .i {
+	display: initial;
 }
 .bg-r .bg .wr .top .account *:hover{
 	cursor: pointer;

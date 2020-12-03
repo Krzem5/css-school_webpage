@@ -281,7 +281,7 @@ def _minify_js(js,fp):
 				bl-=1
 				s_ee=False
 			elif (tl[i][1]==b";"):
-				if ((i>0 and tl[i-1][0]=="operator" and tl[i-1][1]==b"{") or (i+1<len(tl) and tl[i+1][0]=="operator" and tl[i+1][1] in [b";",b"}",b")"]) or i==len(tl)-1):
+				if ((i>0 and tl[i-1][0]=="operator" and tl[i-1][1]==b"{") or (i+1<len(tl) and ((tl[i+1][0]=="operator" and tl[i+1][1] in [b";",b"}",b")"]) or (tl[i+1][0]=="keyword" and tl[i+1][1]==b"else"))) or i==len(tl)-1):
 					tl=tl[:i]+tl[i+1:]
 					i-=1
 				else:

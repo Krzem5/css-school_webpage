@@ -38,5 +38,12 @@ document.addEventListener("DOMContentLoaded",()=>{
 	}));
 	fetch.loop(3,"/api/v1/user_data",{headers:{"authorization":`bearer ${localStorage._tk}`}}).then((e)=>e.json()).then((e)=>{
 		console.log(e);
+		if (e.status!=0){
+			localStorage._tk=null;
+		}
+		else{
+			document.querySelectorAll(".bg-r .bg .wr .top .account")[0].classList.add("l");
+			window._dt=e;
+		}
 	});
 },false);

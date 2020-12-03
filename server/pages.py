@@ -7,7 +7,7 @@ import re
 
 
 PAGE_LIST={}
-with open("web/_template.html","rb") as f:
+with open("web/page_template.html","rb") as f:
 	PAGE_TEMPLATE=f.read().split(b"$$$__DATA__$$$")[:2]
 
 

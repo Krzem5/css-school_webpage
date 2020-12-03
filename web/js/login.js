@@ -28,6 +28,16 @@ document.addEventListener("DOMContentLoaded",()=>{
 				}
 				else{
 					localStorage._tk=e.token;
+					let rd=false;
+					window.location.search.split("?")[1].split("&").forEach((e)=>{
+						if (e.split("=")[0]=="r"){
+							window.location.href=decodeURIComponent(e.split("=")[1]);
+							rd=true;
+						}
+					});
+					if (rd==false){
+						window.location.href="/";
+					}
 				}
 			});
 		}

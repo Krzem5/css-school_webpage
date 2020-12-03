@@ -88,6 +88,9 @@ body {
 	color: #9cdcf5;
 	text-shadow: 0 0 9px #1889e6, 0 0 9px #1889e6, 0 0 9px #1889e6;
 }
+.bg-r .bg .wr .top .icon .i:hover{
+	cursor: pointer;
+}
 .bg-r .bg .wr .top .title {
 	position: absolute;
 	top: 0;
@@ -111,7 +114,53 @@ body {
 	text-shadow: 0 0 2px #283620, 0 0 2px #283620, 0 0 2px #283620;
 	transition: color 0.1s, text-shadow 0.1s;
 }
-.bg-r .bg .wr .top .icon .i:hover{
+.bg-r .bg .wr .top .account {
+	position: absolute;
+	top: 0;
+	right: 15px;
+	width: 100px;
+	height: 100px;
+	user-select: none;
+}
+.bg-r .bg .wr .top .account .txt {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	text-align: center;
+	transform: translate(-15px,0);
+	display: inline-block;
+	line-height: 100px;
+	vertical-align: middle;
+	font-size: 30px;
+	color: #edc94a;
+	text-shadow: 0 0 9px #e8bc16, 0 0 9px #e8bc16, 0 0 9px #e8bc16;
+	font-family: Bungee;
+	white-space: nowrap;
+}
+.bg-r .bg .wr .top .account.l .txt {
+	display: none;
+}
+.bg-r .bg .wr .top .account .i {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	text-align: center;
+	display: inline-block;
+	line-height: 100px;
+	vertical-align: middle;
+	font-size: 90px;
+	color: #edc94a;
+	text-shadow: 0 0 9px #e8bc16, 0 0 9px #e8bc16, 0 0 9px #e8bc16;
+	display: none;
+}
+.bg-r .bg .wr .top .account.l .i {
+	display: initial;
+}
+.bg-r .bg .wr .top .account *:hover{
 	cursor: pointer;
 }
 
