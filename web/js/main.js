@@ -9,10 +9,19 @@ fetch.loop=(n,...a)=>{
 			}
 			return fetch.loop(n-1,...a);
 		}
-		return r
+		return r;
 	});
 }
 document.addEventListener("DOMContentLoaded",()=>{
+	window.onresize=()=>{
+		document.querySelectorAll(".bg-r .bg")[0].style.height="initial";
+		document.querySelectorAll(".bg-r .bg .wr")[0].style.height="initial";
+		let h=document.querySelectorAll(".bg-r .bg .wr .main")[0].getBoundingClientRect().height+140;
+		document.querySelectorAll(".bg-r .bg")[0].style.height=`${h+70}px`;
+		document.querySelectorAll(".bg-r .bg .wr")[0].style.height=`${h}px`;
+	};
+	window.onresize();
+	setTimeout(window.onresize,10);
 	document.querySelectorAll(".bg-r .bg .wr .top .icon")[0].onclick=()=>{
 		window.location.href="/";
 	};

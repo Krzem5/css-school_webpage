@@ -22,25 +22,25 @@ DB_KEY_IP=4
 DB_KEY_TOKEN=5
 DB_KEY_TOKEN_END=6
 TOKEN_LEN=18
-TOKEN_EXP_DATE=30
+TOKEN_EXP_DATE=300000
 
 
 
 _db={}
 _db_em={}
-_tk_db={}
 
 
 
 def _check_token(tk):
 	t=time.time()
 	for k,v in _db.items():
-		r=(0 if v[DB_KEY_TOKEN_END]>=t and len(tk)==len(v[DB_KEY_TOKEN]) else 1)
-		for i in range(0,min(len(tk),len(v[DB_KEY_TOKEN]))):
-			if (tk[i]!=v[DB_KEY_TOKEN]):
-				r|=1
-		if (r==0):
-			return k
+		if (v[DB_KEY_TOKEN_END]>=t and v[DB_KEY_TOKEN]!=None):
+			r=(0 if len(tk)==len(v[DB_KEY_TOKEN]) else 1)
+			for i in range(0,min(len(tk),len(v[DB_KEY_TOKEN]))):
+				if (tk[i]!=v[DB_KEY_TOKEN][i]):
+					r|=1
+			if (r==0):
+				return k
 	return None
 
 
@@ -92,7 +92,6 @@ def signup(nm,em,pw,ip):
 	id_=secrets.token_hex(DB_ID_LEN)
 	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),time.time(),f"{ip[0]}:{ip[1]}",None,0]
 	_db_em[em]=id_
-	print("SET",bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw)
 	print(_db,_db_em)
 	return {"status":RETURN_CODE["ok"]}
 
@@ -112,7 +111,6 @@ def login(em,pw,ip):
 	id_=_db_em[em]
 	pw_h=hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest()
 	r=0
-	print("CHECK",bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw,_db[id_],pw_h,_db[id_][DB_KEY_PASSWORD])
 	for i,k in enumerate(pw_h):
 		if (k!=_db[id_][DB_KEY_PASSWORD][i]):
 			r|=1
@@ -138,9 +136,15 @@ def refresh_token(tk,ip):
 	return {"status":RETURN_CODE["ok"],"token":_db[id_][DB_KEY_TOKEN]}
 
 
+def user_data(tk,ip):
+	id_=_check_token(tk)
+	if (id_==None):
+		return {"status":RETURN_CODE["invalid_token"]}
+	return {"status":RETURN_CODE["ok"],"username":_db[id_][DB_KEY_USERNAME],"email":_db[id_][DB_KEY_EMAIL]}
+
+
 
 def logout(tk,ip):
-	print(ip)
 	id_=_check_token(tk)
 	if (id_==None):
 		return {"status":RETURN_CODE["invalid_token"]}

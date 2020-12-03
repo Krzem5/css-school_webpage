@@ -128,10 +128,29 @@ def refresh_token(url):
 
 
 
-@server.route("GET",r"/api/v1(?:/.*)?")
-@server.route("POST",r"/api/v1(?:/.*)?")
-@server.route("PUT",r"/api/v1(?:/.*)?")
-@server.route("DELETE",r"/api/v1(?:/.*)?")
+@server.route("GET",r"/api/v1/auth/user_data")
+def refresh_token(url):
+	dt,ok=_validate("userdata","/docs/api/user-data",{"token":{"t":str,"p":"body"}},body=True)
+	if (ok==False):
+		return dt
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	return auth.user_data(dt["token"],server.address())
+
+
+
+@server.route("PUT",r"/api/v1/auth/logout")
+def logout(url):
+	dt,ok=_validate("logout","/docs/api/logout",{"token":{"t":str,"p":"body"}},body=True)
+	if (ok==False):
+		return dt
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	return auth.logout(dt["token"],server.address())
+
+
+
+@server.route("*",r"/api/v1(?:/.*)?")
 def route_error(url):
 	server.set_code(400)
 	server.set_header("Content-Type","application/json")
@@ -139,10 +158,7 @@ def route_error(url):
 
 
 
-@server.route("GET",r"/api/.*")
-@server.route("POST",r"/api/.*")
-@server.route("PUT",r"/api/.*")
-@server.route("DELETE",r"/api/.*")
+@server.route("*",r"/api/.*")
 def version_error(url):
 	server.set_code(400)
 	server.set_header("Content-Type","application/json")

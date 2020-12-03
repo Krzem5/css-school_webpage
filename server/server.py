@@ -49,13 +49,23 @@ def _handle(cs,a):
 					if (type(c)!=bytes):
 						c=bytes(str(c),"utf-8")
 					break
-			if (e==True and _epl[t]["f"]!=None):
-				e=False
-				c=_epl[t]["f"](url)
-				if (type(c)==list or type(c)==dict):
-					c=json.dumps(c)
-				if (type(c)!=bytes):
-					c=bytes(str(c),"utf-8")
+		if ("*" in _epl and e==True):
+			for k in _epl["*"]["l"]:
+				if (re.fullmatch(k[0],url)!=None):
+					e=False
+					c=k[1](url)
+					if (type(c)==list or type(c)==dict):
+						c=json.dumps(c)
+					if (type(c)!=bytes):
+						c=bytes(str(c),"utf-8")
+					break
+		if (t in _epl and e==True and _epl[t]["f"]!=None):
+			e=False
+			c=_epl[t]["f"](url)
+			if (type(c)==list or type(c)==dict):
+				c=json.dumps(c)
+			if (type(c)!=bytes):
+				c=bytes(str(c),"utf-8")
 		if (e==True):
 			c=bytes(f"Unimplemented Method '{t}' for URL '{url}'","utf-8")
 			threading.current_thread()._rc=501
