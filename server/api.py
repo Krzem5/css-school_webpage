@@ -21,7 +21,6 @@ def _pg_cmp(a,b):
 def _read_token():
 	h=server.headers()
 	tk=None
-	print(h)
 	if ("Authorization" in h):
 		tk=h["Authorization"]
 	elif ("authorization" in h):

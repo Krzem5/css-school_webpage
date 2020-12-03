@@ -1,17 +1,3 @@
-fetch.loop=(n,url,p)=>{
-	return fetch(url,p).catch((r)=>{
-		r.ok=false;
-		return r;
-	}).then((r)=>{
-		if (!r.ok){
-			if (n==1){
-				throw new Error("API Request Error");
-			}
-			return fetch.loop(n-1,url,p);
-		}
-		return r;
-	});
-}
 document.addEventListener("DOMContentLoaded",()=>{
 	let te=document.querySelectorAll(".bg-r .bg .wr .top")[0];
 	te.innerHTML=te.innerText.split("").map((e)=>{
@@ -22,19 +8,22 @@ document.addEventListener("DOMContentLoaded",()=>{
 	let le=document.querySelectorAll(".bg-r .bg .wr .main .login")[0];
 	le.onclick=()=>{
 		if (le.classList.contains("r")){
-			fetch.loop(3,"/api/v1/auth/login",{method:"POST",body:JSON.stringify({email:em.value,password:pw.value})}).then((e)=>e.json()).then((e)=>{
+			fetch("/api/v1/auth/login",{method:"POST",body:JSON.stringify({email:em.value,password:pw.value})}).then((e)=>e.json()).then((e)=>{
 				if (e.status!=0){
 					console.error(`Login Failed (status=${e.status})`);
 				}
 				else{
 					localStorage._tk=e.token;
 					let rd=false;
-					window.location.search.split("?")[1].split("&").forEach((e)=>{
-						if (e.split("=")[0]=="r"){
-							window.location.href=decodeURIComponent(e.split("=")[1]);
-							rd=true;
-						}
-					});
+					if (window.location.search.split("?").length>1&&window.location.search.split("?")[1].length!=0){
+						for (let e of window.location.search.split("?")[1].split("&")){
+							if (e.split("=")[0]=="r"){
+								window.location.href=decodeURIComponent(e.split("=")[1]);
+								rd=true;
+								break;
+							}
+						};
+					}
 					if (rd==false){
 						window.location.href="/";
 					}

@@ -14,14 +14,28 @@ BASE=f"{tempfile.gettempdir()}/heroku-build-{hashlib.sha1(bytes(os.getcwd(),'utf
 with open("./secret.dt","r") as f:
 	APP_NAME,EMAIL,USER_NAME=f.read().replace("\r","").split("\n")[:3]
 JS_OPERATORS=["()=>","_=>","=>","...",">>>=",">>=","<<=","|=","^=","&=","+=","-=","*=","/=","%=",";",",","?",":","||","&&","|","^","&","===","==","=","!==","!=","<<","<=","<",">>>",">>",">=",">","++","--","+","-","*","/","%","!","~",".","[","]","{","}","(",")"]
-JS_KEYWORDS=["break","case","catch","const","continue","debugger","default","delete","do","else","enum","false","finally","for","function","if","in","instanceof","new","null","return","switch","this","throw","true","try","typeof","var","void","while","with","let","var","const"]
-JS_RESERVED_IDENTIFIERS=JS_KEYWORDS+["window","console","self","document","location","customElements","history","locationbar","menubar","personalbar","scrollbars","statusbar","toolbar","status","closed","frames","length","top","opener","parent","frameElement","navigator","origin","external","screen","innerWidth","innerHeight","scrollX","pageXOffset","scrollY","pageYOffset","visualViewport","screenX","screenY","outerWidth","outerHeight","devicePixelRatio","clientInformation","screenLeft","screenTop","defaultStatus","defaultstatus","styleMedia","isSecureContext","performance","crypto","indexedDB","sessionStorage","localStorage","alert","atob","blur","btoa","cancelAnimationFrame","cancelIdleCallback","captureEvents","clearInterval","clearTimeout","close","confirm","createImageBitmap","fetch","find","focus","getComputedStyle","getSelection","matchMedia","moveBy","moveTo","open","postMessage","print","prompt","queueMicrotask","releaseEvents","requestAnimationFrame","requestIdleCallback","resizeBy","resizeTo","scroll","scrollBy","scrollTo","setInterval","setTimeout","stop","webkitCancelAnimationFrame","webkitRequestAnimationFrame","chrome","caches","originIsolated","cookieStore","showDirectoryPicker","showOpenFilePicker","showSaveFilePicker","speechSynthesis","trustedTypes","crossOriginIsolated","openDatabase","webkitRequestFileSystem","webkitResolveLocalFileSystemURL","Error","encodeURIComponent","decodeURIComponent","JSON"]
+JS_KEYWORDS=["break","case","catch","const","continue","debugger","default","delete","do","else","enum","false","finally","for","function","if","in","instanceof","new","null","return","switch","this","throw","true","try","typeof","var","void","while","with","let","var","const","of"]
+JS_RESERVED_IDENTIFIERS=JS_KEYWORDS+["window","console","self","document","location","customElements","history","locationbar","menubar","personalbar","scrollbars","statusbar","toolbar","status","closed","frames","length","top","opener","parent","frameElement","navigator","origin","external","screen","innerWidth","innerHeight","scrollX","pageXOffset","scrollY","pageYOffset","visualViewport","screenX","screenY","outerWidth","outerHeight","devicePixelRatio","clientInformation","screenLeft","screenTop","defaultStatus","defaultstatus","styleMedia","isSecureContext","performance","crypto","indexedDB","sessionStorage","localStorage","alert","atob","blur","btoa","cancelAnimationFrame","cancelIdleCallback","captureEvents","clearInterval","clearTimeout","close","confirm","createImageBitmap","fetch","find","focus","getComputedStyle","getSelection","matchMedia","moveBy","moveTo","open","postMessage","print","prompt","queueMicrotask","releaseEvents","requestAnimationFrame","requestIdleCallback","resizeBy","resizeTo","scroll","scrollBy","scrollTo","setInterval","setTimeout","stop","webkitCancelAnimationFrame","webkitRequestAnimationFrame","chrome","caches","originIsolated","cookieStore","showDirectoryPicker","showOpenFilePicker","showSaveFilePicker","speechSynthesis","trustedTypes","crossOriginIsolated","openDatabase","webkitRequestFileSystem","webkitResolveLocalFileSystemURL","Error","encodeURIComponent","decodeURIComponent","JSON","Math"]
 JS_VAR_LETTERS="abcdefghijklmnopqrstuvwxyz"
 JS_CONST_LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-JS_REGEX_LIST={"regex":br"\/(?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+\/[gimy]*","float":br"\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?","int":br"0[xX][\da-fA-F]+|^0[0-7]*|^\d+","identifier":br"[$_\w]+","string":br"""'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`""","operator":bytes("|".join([re.sub(r"([\?\|\^\&\(\)\{\}\[\]\+\-\*\/\.])",r"\\\1",e) for e in JS_OPERATORS]),"utf-8"),"line_break":br"[\n\r]+|/\*(?:.|[\r\n])*?\*/","whitespace":br"[\ \t]+|//.*?(?:[\r\n]|$)"}
+JS_REGEX_LIST={"float":br"\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?","int":br"0[xX][\da-fA-F]+|^0[0-7]*|^\d+","identifier":br"\.?[$_\w]+(?:\.[$_\w]+)*","string":br"""'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`""","regex":br"\/(?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+\/[gimy]*","line_break":br"[\n\r]+|/\*(?:.|[\r\n])*?\*/","whitespace":br"[\ \t]+|//.*?(?:[\r\n]|$)","operator":bytes("|".join([re.sub(r"([\?\|\^\&\(\)\{\}\[\]\+\-\*\/\.])",r"\\\1",e) for e in JS_OPERATORS]),"utf-8")}
 
 
 
+def _minify_html(html,fp):
+	def _r(m):
+		if (len(m[2])==0):
+			return b"<"+m.group(1)+m.group(3)+b">"
+		o=b"<"+m.group(1)
+		for k in re.findall(br'''([a-z0-9\-_]+)\s*=\s*"((?:[^\"\\]|\\.)*)"''',m.group(2)):
+			if (o[-1:]!=b"\""):
+				o+=b" "
+			q=(b"\"" if re.fullmatch(br"[a-z0-9\-_]+",k[1])==None else b"")
+			o+=k[0]+b"="+q+k[1]+q
+		return o+b">"
+	o=re.sub(br"<(/?[a-z0-9\-_]+)\s*(.*?)\s*(/?)>",_r,re.sub(br"(?=(?P<tmp>[^\S ]\s*|\s{2,}))(?P=tmp)(?=(?P<txt>(?=(?P<tmp3>(?:(?=(?P<tmp2>[^<]+))(?P=tmp2)|<(?!\/?(?:textarea|pre)\b))*))(?P=tmp3))(?:<(?=(?P<tmp4>textarea|pre))(?P=tmp4)\b|$))",br"",html,re.I|re.M|re.X),re.I|re.M|re.X)
+	print(f"Minified HTML File '{fp}': {len(html)} -> {len(o)} (-{round(10000-10000*len(o)/len(html))/100}%)")
+	return o
 def _minify_css(css,fp):
 	sl=len(css)
 	css=re.sub(br":\s*0(\.\d+(?:[cm]m|e[mx]|in|p[ctx]))\s*;",br":\1;",re.sub(br"#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3(\s|;)",br"#\1\2\3\4",re.sub(br"""url\(([\"'])([^)]*)\1\)""",br"url(\2)",re.sub(br"/\*[\s\S]*?\*/",b"",css))))
@@ -175,8 +189,10 @@ def _minify_js(js,fp):
 				o+=b"}"+tl[i][1]
 				break
 			else:
+				if (tl[i][0]=="keyword" and tl[i][1] in [b"of",b"in"]):
+					o+=b" "
 				o+=tl[i][1]
-				if (tl[i][0]=="keyword" and tl[i][1] in [b"let",b"const",b"var",b"return",b"throw",b"new"]):
+				if (tl[i][0]=="keyword" and tl[i][1] in [b"let",b"const",b"var",b"return",b"throw",b"new",b"of",b"in"]):
 					o+=b" "
 			i+=1
 		return (o,i)
@@ -184,7 +200,6 @@ def _minify_js(js,fp):
 	tl,_=_tokenize(js)
 	i=0
 	vm=[{}]
-	cl=0
 	ef=[]
 	efbl={}
 	ee={}
@@ -193,41 +208,36 @@ def _minify_js(js,fp):
 	vfma={}
 	while (i<len(tl)):
 		if (tl[i][0]=="identifier"):
-			si=i+0
-			idl=[tl[i][1]]
-			if (str(tl[i][1],"utf-8") in JS_RESERVED_IDENTIFIERS):
-				if (tl[i][1] not in vfm):
-					vfm[tl[i][1]]=1
-				else:
-					vfm[tl[i][1]]+=1
-			else:
-				if (si>0 and tl[si-1][0]=="keyword" and tl[si-1][1] in [b"let",b"const",b"var"]):
-					vm[cl][tl[si][1]]=_gen_i(vm)
-					idl[0]=vm[cl][tl[si][1]]
-				elif (str(tl[si][1],"utf-8") not in JS_RESERVED_IDENTIFIERS and (si==0 or (tl[si-1][0]!="operator" or tl[si-1][1]!=b"."))):
-					mv=_map_value(tl[si][1],vm)
-					if (mv==None):
-						print(f"Variable {tl[si][1]} is not mapped! (Dict?)")
+			idl=tl[i][1].split(b".")
+			if (len(idl[0])>0):
+				if (str(idl[0],"utf-8") in JS_RESERVED_IDENTIFIERS):
+					if (idl[0] not in vfm):
+						vfm[idl[0]]=1
 					else:
-						idl[0]=mv
-			while (i+2<len(tl) and tl[i+1][0]=="operator" and tl[i+1][1]==b"." and tl[i+2][0]=="identifier"):
-				idl+=[tl[i+2][1]]
-				i+=2
+						vfm[idl[0]]+=1
+				else:
+					if (i>0 and tl[i-1][0]=="keyword" and tl[i-1][1] in [b"let",b"const",b"var"]):
+						vm[-1][idl[0]]=_gen_i(vm)
+						idl[0]=vm[-1][idl[0]]
+					elif (str(idl[0],"utf-8") not in JS_RESERVED_IDENTIFIERS and (i==0 or (tl[i-1][0]!="operator" or tl[i-1][1]!=b"."))):
+						mv=_map_value(idl[0],vm)
+						if (mv==None):
+							print(f"Variable {idl[0]} is not mapped! (Dict?)")
+						else:
+							idl[0]=mv
 			for k in idl[1:]:
 				if (k not in vfma):
 					vfma[k]=1
 				else:
 					vfma[k]+=1
-			tl=tl[:si]+[("identifier",b".".join(idl))]+tl[i+1:]
-			i=si
+			tl[i]=("identifier",b".".join(idl))
 		elif (tl[i][0]=="keyword"):
 			if (tl[i][1]==b"function"):
 				si=i
 				assert(i+5<len(tl))
 				assert(tl[i+1][0]=="identifier")
 				assert(str(tl[i+1][1],"utf-8") not in JS_RESERVED_IDENTIFIERS)
-				nm=vm[cl][tl[i+1][1]]=_gen_i(vm[:cl+1])
-				cl+=1
+				nm=vm[-1][tl[i+1][1]]=_gen_i(vm[:-1+1])
 				vm+=[{}]
 				assert(tl[i+2][0]=="operator")
 				assert(tl[i+2][1]==b"(")
@@ -244,8 +254,8 @@ def _minify_js(js,fp):
 						va=True
 						i+=1
 					assert(tl[i][0]=="identifier")
-					vm[cl][tl[i][1]]=_gen_i(vm)
-					al+=[(vm[cl][tl[i][1]],va)]
+					vm[-1][tl[i][1]]=_gen_i(vm)
+					al+=[(vm[-1][tl[i][1]],va)]
 					i+=1
 				assert(tl[i][0]=="operator")
 				assert(tl[i][1]==b"{")
@@ -257,12 +267,10 @@ def _minify_js(js,fp):
 			s_ee=True
 			ot=tl[i][1]
 			if (tl[i][1]==b"{"):
-				cl+=1
 				vm+=[{}]
 				ef+=[None]
 				bl+=1
 			elif (tl[i][1]==b"}"):
-				cl-=1
 				if (ef[-1]!=None):
 					cbl,ocbl,si,fl,nm,al=ef[-1]
 					efbl[ocbl].remove(len(ef)-1)
@@ -294,7 +302,6 @@ def _minify_js(js,fp):
 					si=i+0
 					al=[]
 					i+=1
-					cl+=1
 					vm+=[{}]
 					while (True):
 						if (len(al)>0 and tl[i][0]=="operator" and tl[i][1]==b","):
@@ -309,12 +316,11 @@ def _minify_js(js,fp):
 						if (tl[i][0]!="identifier"):
 							al=None
 							break
-						vm[cl][tl[i][1]]=_gen_i(vm)
-						al+=[(vm[cl][tl[i][1]],va)]
+						vm[-1][tl[i][1]]=_gen_i(vm)
+						al+=[(vm[-1][tl[i][1]],va)]
 						i+=1
 					if (al==None or tl[i][0]!="operator" or tl[i][1]!=b"=>"):
 						i=si
-						cl-=1
 						vm=vm[:-1]
 					else:
 						i+=1
@@ -343,7 +349,6 @@ def _minify_js(js,fp):
 						ftl=([("operator",b"_=>")] if len(al)==0 else ([("identifier",al[0][0]),("operator",b"=>")] if len(al)==1 and al[0][1]==False else [("operator",b"(")]+_args(al)+[("operator",b")"),("operator",b"=>")]))
 						tl=tl[:si]+ftl+tl[si+fl+1:]
 						i+=-fl+len(ftl)-1
-						cl-=1
 						vm=vm[:-1]
 					del ee[bl]
 				if (bl in efbl):
@@ -365,7 +370,7 @@ def _minify_js(js,fp):
 	cvma={}
 	for k,v in vfma.items():
 		mv=_gen_i([cvm,cvma],b=JS_CONST_LETTERS)
-		if (len(mv)+len(k)+(len(mv)+2)*v+4<=(len(k)+1)*v):
+		if (len(mv)+len(k)+(len(mv)+1)*v+4<=(len(k)+1)*v):
 			cvma[k]=mv
 			if (len(sl)==0):
 				sl=[("keyword",b"let")]
@@ -417,7 +422,7 @@ os.mkdir(f"{BASE}/pages")
 os.mkdir(f"{BASE}/server")
 for fn in os.listdir("web"):
 	if (fn[-5:]==".html"):
-		_copy(f"web/{fn}")
+		_copy(f"web/{fn}",f=_minify_html)
 for fn in os.listdir("web/css"):
 	_copy(f"web/css/{fn}",f=_minify_css)
 for fn in os.listdir("web/js"):
