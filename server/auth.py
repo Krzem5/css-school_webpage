@@ -102,12 +102,12 @@ def login(em,pw,ip):
 	if (r!=RETURN_CODE["ok"]):
 		return {"status":r}
 	if (em not in _db_em):
-		return {"status":RETURN_CODE["login_fail"],"e":1}
+		return {"status":RETURN_CODE["login_fail"]}
 	pw=bytes(pw,"utf-8")
 	if (len(pw)<MIN_PASSWORD_LEN):
-		return {"status":RETURN_CODE["login_fail"],"e":2}
+		return {"status":RETURN_CODE["login_fail"]}
 	if (len(pw)>MAX_PASSWORD_LEN):
-		return {"status":RETURN_CODE["login_fail"],"e":3}
+		return {"status":RETURN_CODE["login_fail"]}
 	id_=_db_em[em]
 	pw_h=hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest()
 	r=0
@@ -115,7 +115,7 @@ def login(em,pw,ip):
 		if (k!=_db[id_][DB_KEY_PASSWORD][i]):
 			r|=1
 	if (r!=0):
-		return {"status":RETURN_CODE["login_fail"],"e":4}
+		return {"status":RETURN_CODE["login_fail"]}
 	_db[id_][DB_KEY_TOKEN]=str(base64.urlsafe_b64encode(secrets.token_bytes(TOKEN_LEN)),"utf-8")
 	_db[id_][DB_KEY_TOKEN_END]=time.time()+TOKEN_EXP_DATE
 	return {"status":RETURN_CODE["ok"],"token":_db[id_][DB_KEY_TOKEN]}

@@ -1,0 +1,117 @@
+html, body {
+	position: fixed;
+}
+body, body * {
+	margin: 0;
+	border: none;
+	padding: 0;
+	outline: none;
+}
+body {
+	width: 100%;
+	height: 100%;
+}
+
+
+
+.bg-r {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow-y: scroll;
+}
+.bg-r::-webkit-scrollbar {
+	width: 15px;
+	background: #020202;
+}
+.bg-r::-webkit-scrollbar-track {
+	background: #212121;
+	border-radius: 8px;
+}
+.bg-r::-webkit-scrollbar-thumb {
+  background: #2d2d2d;
+  border-radius: 8px;
+}
+.bg-r .bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	min-height: 100%;
+	background-color: #020202;
+	background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #0a0a0a 10px, #0a0a0a 12px), repeating-linear-gradient(45deg, transparent, transparent 10px, #0a0a0a 10px, #0a0a0a 12px);
+}
+.bg-r .bg .wr {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 600px;
+	transform: translate(-50%,-50%);
+	height: 800px;
+	background: #0c0c0c;
+	border-radius: 30px;
+	border: solid 10px #0f0f0f;
+	overflow: hidden;
+}
+
+
+
+.bg-r .bg .wr .top {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100px;
+	background: #1e1e1e;
+	border-bottom: solid 10px #0f0f0f;
+	text-align: center;
+	font-family: Turret Road, sans-serif;
+	line-height: 100px;
+	font-weight: 700;
+	font-size: 70px;
+	user-select: none;
+}
+.bg-r .bg .wr .top .c {
+	color: #bbf49e;
+	text-shadow: 0 0 8px #5be113, 0 0 8px #5be113, 0 0 8px #5be113;
+	transition: color 0.1s, text-shadow 0.1s;
+}
+.bg-r .bg .wr .top .c:hover {
+	color: #869380;
+	text-shadow: 0 0 2px #283620, 0 0 2px #283620, 0 0 2px #283620;
+	transition: color 0.1s, text-shadow 0.1s;
+}
+
+
+
+.bg-r .bg .wr .main {
+	position: absolute;
+	top: 120px;
+	left: 10px;
+	width: calc(100% - 20px);
+	min-height: calc(100% - 130px);
+	font-family: Montserrat;
+	color: #f6f6f6;
+}
+.bg-r .bg .wr .main .login {
+	position: absolute;
+	bottom: 30px;
+	left: 50%;
+	line-height: 40px;
+	transform: translate(-50%,50%);
+	color: #9E9E9E;
+	font-size: 30px;
+	text-shadow: 0 0 9px #7A7A7A, 0 0 9px #7A7A7A, 0 0 9px #7A7A7A;
+	font-family: Bungee;
+	white-space: nowrap;
+	user-select: none;
+	transition: text-shadow 0.3s, color 0.3s, font-size 0.3s;
+}
+.bg-r .bg .wr .main .login.r {
+	color: #edc94a;
+	font-size: 40px;
+	text-shadow: 0 0 9px #e8bc16, 0 0 9px #e8bc16, 0 0 9px #e8bc16;
+	transition: text-shadow 0.5s, color 0.5s, font-size 0.5s;
+}

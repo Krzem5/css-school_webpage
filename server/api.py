@@ -18,6 +18,27 @@ def _pg_cmp(a,b):
 
 
 
+def _read_token():
+	h=server.headers()
+	tk=None
+	print(h)
+	if ("Authorization" in h):
+		tk=h["Authorization"]
+	elif ("authorization" in h):
+		tk=h["authorization"]
+	else:
+		server.set_code(401)
+		return ({"error":{"code":"E_UNAUTHORIZED","message":"This Request Requires Authorization","link":"/docs/api/request-authorization"}},False)
+	tk=tk.split(" ")
+	if (len(tk)!=2 or tk[0].lower()!="bearer"):
+		server.set_code(401)
+		return ({"error":{"code":"E_UNAUTHORIZED","message":"This Request Requires Authorization","link":"/docs/api/request-authorization"}},False)
+	return (tk[1],True)
+
+
+
+
+
 def _validate(eb,d_url,t,body=False):
 	b_dt=None
 	if (body==True):
@@ -58,6 +79,17 @@ def popular(url):
 	server.set_header("Content-Type","application/json")
 	print({k:{**v,"cache":None,"dt":None} for k,v in pages.PAGE_LIST.items()})
 	return [{"name":e[1]["nm"],"url":f"/page/{e[0]}"} for e in sorted(pages.PAGE_LIST.items(),key=cmp_to_key(_pg_cmp))[:10]]
+
+
+
+@server.route("GET",r"/api/v1/user_data")
+def user_data(url):
+	tk,ok=_read_token()
+	if (ok==False):
+		return tk
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	return auth.user_data(tk,server.address())
 
 
 
@@ -108,45 +140,34 @@ def login(url):
 
 @server.route("PUT",r"/api/v1/auth/check_token")
 def check_token(url):
-	dt,ok=_validate("tokencheck","/docs/api/check-token",{"token":{"t":str,"p":"body"}},body=True)
+	tk,ok=_read_token()
 	if (ok==False):
-		return dt
+		return tk
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
-	return auth.check_token(dt["token"],server.address())
+	return auth.check_token(tk,server.address())
 
 
 
 @server.route("POST",r"/api/v1/auth/refresh_token")
 def refresh_token(url):
-	dt,ok=_validate("tokenrefresh","/docs/api/refresh-token",{"token":{"t":str,"p":"body"}},body=True)
+	tk,ok=_read_token()
 	if (ok==False):
-		return dt
+		return tk
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
-	return auth.refresh_token(dt["token"],server.address())
-
-
-
-@server.route("GET",r"/api/v1/auth/user_data")
-def refresh_token(url):
-	dt,ok=_validate("userdata","/docs/api/user-data",{"token":{"t":str,"p":"body"}},body=True)
-	if (ok==False):
-		return dt
-	server.set_code(200)
-	server.set_header("Content-Type","application/json")
-	return auth.user_data(dt["token"],server.address())
+	return auth.refresh_token(tk,server.address())
 
 
 
 @server.route("PUT",r"/api/v1/auth/logout")
 def logout(url):
-	dt,ok=_validate("logout","/docs/api/logout",{"token":{"t":str,"p":"body"}},body=True)
+	tk,ok=_read_token()
 	if (ok==False):
-		return dt
+		return tk
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
-	return auth.logout(dt["token"],server.address())
+	return auth.logout(tk,server.address())
 
 
 

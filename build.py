@@ -15,7 +15,7 @@ with open("./secret.dt","r") as f:
 	APP_NAME,EMAIL,USER_NAME=f.read().replace("\r","").split("\n")[:3]
 JS_OPERATORS=["()=>","_=>","=>","...",">>>=",">>=","<<=","|=","^=","&=","+=","-=","*=","/=","%=",";",",","?",":","||","&&","|","^","&","===","==","=","!==","!=","<<","<=","<",">>>",">>",">=",">","++","--","+","-","*","/","%","!","~",".","[","]","{","}","(",")"]
 JS_KEYWORDS=["break","case","catch","const","continue","debugger","default","delete","do","else","enum","false","finally","for","function","if","in","instanceof","new","null","return","switch","this","throw","true","try","typeof","var","void","while","with","let","var","const"]
-JS_RESERVED_IDENTIFIERS=JS_KEYWORDS+["window","console","self","document","location","customElements","history","locationbar","menubar","personalbar","scrollbars","statusbar","toolbar","status","closed","frames","length","top","opener","parent","frameElement","navigator","origin","external","screen","innerWidth","innerHeight","scrollX","pageXOffset","scrollY","pageYOffset","visualViewport","screenX","screenY","outerWidth","outerHeight","devicePixelRatio","clientInformation","screenLeft","screenTop","defaultStatus","defaultstatus","styleMedia","isSecureContext","performance","crypto","indexedDB","sessionStorage","localStorage","alert","atob","blur","btoa","cancelAnimationFrame","cancelIdleCallback","captureEvents","clearInterval","clearTimeout","close","confirm","createImageBitmap","fetch","find","focus","getComputedStyle","getSelection","matchMedia","moveBy","moveTo","open","postMessage","print","prompt","queueMicrotask","releaseEvents","requestAnimationFrame","requestIdleCallback","resizeBy","resizeTo","scroll","scrollBy","scrollTo","setInterval","setTimeout","stop","webkitCancelAnimationFrame","webkitRequestAnimationFrame","chrome","caches","originIsolated","cookieStore","showDirectoryPicker","showOpenFilePicker","showSaveFilePicker","speechSynthesis","trustedTypes","crossOriginIsolated","openDatabase","webkitRequestFileSystem","webkitResolveLocalFileSystemURL","Error"]
+JS_RESERVED_IDENTIFIERS=JS_KEYWORDS+["window","console","self","document","location","customElements","history","locationbar","menubar","personalbar","scrollbars","statusbar","toolbar","status","closed","frames","length","top","opener","parent","frameElement","navigator","origin","external","screen","innerWidth","innerHeight","scrollX","pageXOffset","scrollY","pageYOffset","visualViewport","screenX","screenY","outerWidth","outerHeight","devicePixelRatio","clientInformation","screenLeft","screenTop","defaultStatus","defaultstatus","styleMedia","isSecureContext","performance","crypto","indexedDB","sessionStorage","localStorage","alert","atob","blur","btoa","cancelAnimationFrame","cancelIdleCallback","captureEvents","clearInterval","clearTimeout","close","confirm","createImageBitmap","fetch","find","focus","getComputedStyle","getSelection","matchMedia","moveBy","moveTo","open","postMessage","print","prompt","queueMicrotask","releaseEvents","requestAnimationFrame","requestIdleCallback","resizeBy","resizeTo","scroll","scrollBy","scrollTo","setInterval","setTimeout","stop","webkitCancelAnimationFrame","webkitRequestAnimationFrame","chrome","caches","originIsolated","cookieStore","showDirectoryPicker","showOpenFilePicker","showSaveFilePicker","speechSynthesis","trustedTypes","crossOriginIsolated","openDatabase","webkitRequestFileSystem","webkitResolveLocalFileSystemURL","Error","encodeURIComponent","decodeURIComponent","JSON"]
 JS_VAR_LETTERS="abcdefghijklmnopqrstuvwxyz"
 JS_CONST_LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 JS_REGEX_LIST={"regex":br"\/(?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+\/[gimy]*","float":br"\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?","int":br"0[xX][\da-fA-F]+|^0[0-7]*|^\d+","identifier":br"[$_\w]+","string":br"""'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`""","operator":bytes("|".join([re.sub(r"([\?\|\^\&\(\)\{\}\[\]\+\-\*\/\.])",r"\\\1",e) for e in JS_OPERATORS]),"utf-8"),"line_break":br"[\n\r]+|/\*(?:.|[\r\n])*?\*/","whitespace":br"[\ \t]+|//.*?(?:[\r\n]|$)"}
@@ -207,7 +207,7 @@ def _minify_js(js,fp):
 				elif (str(tl[si][1],"utf-8") not in JS_RESERVED_IDENTIFIERS and (si==0 or (tl[si-1][0]!="operator" or tl[si-1][1]!=b"."))):
 					mv=_map_value(tl[si][1],vm)
 					if (mv==None):
-						print(f"Variable {tl[si][1]} is not mapped!")
+						print(f"Variable {tl[si][1]} is not mapped! (Dict?)")
 					else:
 						idl[0]=mv
 			while (i+2<len(tl) and tl[i+1][0]=="operator" and tl[i+1][1]==b"." and tl[i+2][0]=="identifier"):
@@ -415,9 +415,9 @@ os.mkdir(f"{BASE}/web/js")
 os.mkdir(f"{BASE}/web/css")
 os.mkdir(f"{BASE}/pages")
 os.mkdir(f"{BASE}/server")
-_copy("web/index.html")
-_copy("web/not-found.html")
-_copy("web/_template.html")
+for fn in os.listdir("web"):
+	if (fn[-5:]==".html"):
+		_copy(f"web/{fn}")
 for fn in os.listdir("web/css"):
 	_copy(f"web/css/{fn}",f=_minify_css)
 for fn in os.listdir("web/js"):

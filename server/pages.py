@@ -63,6 +63,14 @@ def main_index(url):
 
 
 
+@server.route("GET",r"/login")
+def main_login(url):
+	server.set_code(200)
+	server.set_header("Content-Type","text/html")
+	return utils.cache("web/login.html")
+
+
+
 @server.route("GET",r"/page/[a-zA-Z0-9-]+(?:\.html)?")
 def page(url):
 	url=url[6:].lower()

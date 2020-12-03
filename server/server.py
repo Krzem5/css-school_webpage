@@ -112,7 +112,7 @@ def query(k):
 
 
 
-def headers(k):
+def headers():
 	return {**threading.current_thread()._rh}
 
 
