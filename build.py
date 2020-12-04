@@ -3,14 +3,12 @@ import os
 import json
 import shutil
 import re
-import tempfile
 import time
 import hashlib
 import subprocess
 
 
 
-BASE=f"{tempfile.gettempdir()}/heroku-build-{hashlib.sha1(bytes(os.getcwd(),'utf-8')).hexdigest()}".replace("/","\\")
 with open("./secret.dt","r") as f:
 	APP_NAME,EMAIL,USER_NAME=f.read().replace("\r","").split("\n")[:3]
 JS_OPERATORS=["()=>","_=>","=>","...",">>>=",">>=","<<=","|=","^=","&=","+=","-=","*=","/=","%=",";",",","?",":","||","&&","|","^","&","===","==","=","!==","!=","<<","<=","<",">>>",">>",">=",">","++","--","+","-","*","/","%","!","~",".","[","]","{","}","(",")"]
@@ -18,7 +16,7 @@ JS_KEYWORDS=["break","case","catch","const","continue","debugger","default","del
 JS_RESERVED_IDENTIFIERS=JS_KEYWORDS+["window","console","self","document","location","customElements","history","locationbar","menubar","personalbar","scrollbars","statusbar","toolbar","status","closed","frames","length","top","opener","parent","frameElement","navigator","origin","external","screen","innerWidth","innerHeight","scrollX","pageXOffset","scrollY","pageYOffset","visualViewport","screenX","screenY","outerWidth","outerHeight","devicePixelRatio","clientInformation","screenLeft","screenTop","defaultStatus","defaultstatus","styleMedia","isSecureContext","performance","crypto","indexedDB","sessionStorage","localStorage","alert","atob","blur","btoa","cancelAnimationFrame","cancelIdleCallback","captureEvents","clearInterval","clearTimeout","close","confirm","createImageBitmap","fetch","find","focus","getComputedStyle","getSelection","matchMedia","moveBy","moveTo","open","postMessage","print","prompt","queueMicrotask","releaseEvents","requestAnimationFrame","requestIdleCallback","resizeBy","resizeTo","scroll","scrollBy","scrollTo","setInterval","setTimeout","stop","webkitCancelAnimationFrame","webkitRequestAnimationFrame","chrome","caches","originIsolated","cookieStore","showDirectoryPicker","showOpenFilePicker","showSaveFilePicker","speechSynthesis","trustedTypes","crossOriginIsolated","openDatabase","webkitRequestFileSystem","webkitResolveLocalFileSystemURL","Error","encodeURIComponent","decodeURIComponent","JSON","Math"]
 JS_VAR_LETTERS="abcdefghijklmnopqrstuvwxyz"
 JS_CONST_LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-JS_REGEX_LIST={"dict":br"""{\s*(?:[$_\w]+|'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`)\s*:\s*""","dict_elem":br"""\s*,\s*(?:[$_\w]+|'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`)\s*:\s*""","float":br"\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?","int":br"0[xX][\da-fA-F]+|^0[0-7]*|^\d+","identifier":br"\.?[$_\w]+(?:\.[$_\w]+)*","string":br"""'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`""","regex":br"\/(?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+\/[gimy]*","line_break":br"[\n\r]+|/\*(?:.|[\r\n])*?\*/","whitespace":br"[\ \t]+|//.*?(?:[\r\n]|$)","operator":bytes("|".join([re.sub(r"([\?\|\^\&\(\)\{\}\[\]\+\-\*\/\.])",r"\\\1",e) for e in JS_OPERATORS]),"utf-8")}
+JS_REGEX_LIST={"dict":br"""{\s*(?:[$_\w]+|'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`)\s*:\s*""","dict_elem":br""",\s*(?:[$_\w]+|'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`)\s*:\s*""","float":br"\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?","int":br"0[xX][\da-fA-F]+|^0[0-7]*|^\d+","identifier":br"\.?[$_\w]+(?:\.[$_\w]+)*","string":br"""'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`""","regex":br"\/(?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+\/[gimy]*","line_break":br"[\n\r]+|/\*(?:.|[\r\n])*?\*/","whitespace":br"[\ \t]+|//.*?(?:[\r\n]|$)","operator":bytes("|".join([re.sub(r"([\?\|\^\&\(\)\{\}\[\]\+\-\*\/\.])",r"\\\1",e) for e in JS_OPERATORS]),"utf-8")}
 
 
 
@@ -147,8 +145,8 @@ def _minify_js(js,fp):
 					elif (k!="whitespace"):
 						if (k=="identifier" and str(m,"utf-8") in JS_KEYWORDS):
 							k="keyword"
-						if (k=="operator"):
-							if (m==b"{"):
+						if (k in ["operator","dict"]):
+							if (m[:1]==b"{"):
 								b+=1
 							elif (m==b"}"):
 								b-=1
@@ -176,8 +174,8 @@ def _minify_js(js,fp):
 					else:
 						idl[j+1]=b"."+e
 				o+=b"".join(idl)
-			elif (tl[i][0]=="keyword" and tl[i][1] in [b"false",b"true"]):
-				o+={b"false":b"!1",b"true":b"!0"}[tl[i][1]]
+			elif (tl[i][0]=="keyword" and tl[i][1] in [b"false",b"true",b"undefined"]):
+				o+={b"false":b"!1",b"true":b"!0",b"undefined":b"null"}[tl[i][1]]
 			elif (tl[i][0]=="stringS"):
 				o+=tl[i][1]+b"${"
 				to,ti=_write(tl[i+1:],cvm,cvm)
@@ -242,7 +240,6 @@ def _minify_js(js,fp):
 				assert(str(tl[i+1][1],"utf-8") not in JS_RESERVED_IDENTIFIERS)
 				nm=vm[-1][tl[i+1][1]]=_gen_i(vm[:-1+1])
 				vm+=[{}]
-				dl+=[False]
 				assert(tl[i+2][0]=="operator")
 				assert(tl[i+2][1]==b"(")
 				i+=3
@@ -263,6 +260,7 @@ def _minify_js(js,fp):
 					i+=1
 				assert(tl[i][0]=="operator")
 				assert(tl[i][1]==b"{")
+				dl+=[False]
 				ef+=[(bl,bl,si,i-si,nm,al)]
 				if (bl not in efbl):
 					efbl[bl]=[]
@@ -332,12 +330,12 @@ def _minify_js(js,fp):
 					else:
 						i+=1
 						af=True
-						dl+=[False]
 						if (tl[i][0]=="operator" and tl[i][1]==b"{"):
 							ef+=[(bl,bl,si,i-si,None,al)]
 							if (bl not in efbl):
 								efbl[bl]=[]
 							efbl[bl]+=[len(ef)-1]
+							dl+=[False]
 						else:
 							i-=1
 							if (bl not in ee):
@@ -358,7 +356,6 @@ def _minify_js(js,fp):
 						tl=tl[:si]+ftl+tl[si+fl+1:]
 						i+=-fl+len(ftl)-1
 						vm=vm[:-1]
-						dl=dl[:-1]
 					del ee[bl]
 				if (bl in efbl):
 					for j in efbl[bl]:
@@ -395,15 +392,15 @@ def _minify_js(js,fp):
 
 
 def _copy(fp,f=lambda e,fp:e):
-	with open(fp,"rb") as rf,open(f"{BASE}/{fp}","wb") as wf:
+	with open(fp,"rb") as rf,open(f"build\\{fp}","wb") as wf:
 		wf.write(f(rf.read(),fp))
 
 
 
-if (os.path.exists(BASE)==False):
-	os.mkdir(BASE)
+if (os.path.exists("build")==False):
+	os.mkdir("build")
 	cwd=os.getcwd()
-	os.chdir(BASE)
+	os.chdir("build")
 	if (subprocess.run(["git","init"]).returncode!=0):
 		os.chdir(cwd)
 		quit()
@@ -417,38 +414,38 @@ if (os.path.exists(BASE)==False):
 		os.chdir(cwd)
 		quit()
 	os.chdir(cwd)
-for k in os.listdir(BASE):
+for k in os.listdir("build"):
 	if (k==".git"):
 		continue
-	if (os.path.isdir(f"{BASE}\\{k}")==True):
-		shutil.rmtree(f"{BASE}\\{k}")
+	if (os.path.isdir(f"build\\{k}")==True):
+		shutil.rmtree(f"build\\{k}")
 	else:
-		os.remove(f"{BASE}\\{k}")
-os.mkdir(f"{BASE}/web")
-os.mkdir(f"{BASE}/web/js")
-os.mkdir(f"{BASE}/web/css")
-os.mkdir(f"{BASE}/pages")
-os.mkdir(f"{BASE}/server")
+		os.remove(f"build\\{k}")
+os.mkdir(f"build\\web")
+os.mkdir(f"build\\web/js")
+os.mkdir(f"build\\web/css")
+os.mkdir(f"build\\pages")
+os.mkdir(f"build\\server")
 for fn in os.listdir("web"):
 	if (fn[-5:]==".html"):
-		_copy(f"web/{fn}",f=_minify_html)
-for fn in os.listdir("web/css"):
-	_copy(f"web/css/{fn}",f=_minify_css)
-for fn in os.listdir("web/js"):
-	_copy(f"web/js/{fn}",f=_minify_js)
+		_copy(f"web\\{fn}",f=_minify_html)
+for fn in os.listdir("web\\css"):
+	_copy(f"web\\css\\{fn}",f=_minify_css)
+for fn in os.listdir("web\\js"):
+	_copy(f"web\\js\\{fn}",f=_minify_js)
 for fn in os.listdir("pages"):
-	_copy(f"pages/{fn}")
+	_copy(f"pages\\{fn}")
 for fn in os.listdir("server"):
-	if (os.path.isfile(f"server/{fn}")==True):
-		_copy(f"server/{fn}")
-with open(f"{BASE}/runtime.txt","w") as f:
+	if (os.path.isfile(f"server\\{fn}")==True):
+		_copy(f"server\\{fn}")
+with open(f"build\\runtime.txt","w") as f:
 	f.write("python-3.9.0")
-with open(f"{BASE}/requirements.txt","w") as f:
+with open(f"build\\requirements.txt","w") as f:
 	f.write("\n")
-with open(f"{BASE}/Procfile","w") as f:
+with open(f"build\\Procfile","w") as f:
 	f.write("web: python server/main.py\n")
 cwd=os.getcwd()
-os.chdir(BASE)
+os.chdir("build")
 if (subprocess.run(["git","add","."]).returncode!=0):
 	os.chdir(cwd)
 	quit()

@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 	fetch("/api/v1/user_data",{headers:{"authorization":`bearer ${localStorage._tk}`}}).then((e)=>e.json()).then((e)=>{
 		console.log(e);
 		if (e.status!=0){
+			console.warn(e.status)
 			localStorage._tk=null;
 		}
 		else{
