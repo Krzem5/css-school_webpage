@@ -18,7 +18,7 @@ JS_KEYWORDS=["break","case","catch","const","continue","debugger","default","del
 JS_RESERVED_IDENTIFIERS=JS_KEYWORDS+["window","console","self","document","location","customElements","history","locationbar","menubar","personalbar","scrollbars","statusbar","toolbar","status","closed","frames","length","top","opener","parent","frameElement","navigator","origin","external","screen","innerWidth","innerHeight","scrollX","pageXOffset","scrollY","pageYOffset","visualViewport","screenX","screenY","outerWidth","outerHeight","devicePixelRatio","clientInformation","screenLeft","screenTop","defaultStatus","defaultstatus","styleMedia","isSecureContext","performance","crypto","indexedDB","sessionStorage","localStorage","alert","atob","blur","btoa","cancelAnimationFrame","cancelIdleCallback","captureEvents","clearInterval","clearTimeout","close","confirm","createImageBitmap","fetch","find","focus","getComputedStyle","getSelection","matchMedia","moveBy","moveTo","open","postMessage","print","prompt","queueMicrotask","releaseEvents","requestAnimationFrame","requestIdleCallback","resizeBy","resizeTo","scroll","scrollBy","scrollTo","setInterval","setTimeout","stop","webkitCancelAnimationFrame","webkitRequestAnimationFrame","chrome","caches","originIsolated","cookieStore","showDirectoryPicker","showOpenFilePicker","showSaveFilePicker","speechSynthesis","trustedTypes","crossOriginIsolated","openDatabase","webkitRequestFileSystem","webkitResolveLocalFileSystemURL","Error","encodeURIComponent","decodeURIComponent","JSON","Math"]
 JS_VAR_LETTERS="abcdefghijklmnopqrstuvwxyz"
 JS_CONST_LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-JS_REGEX_LIST={"float":br"\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?","int":br"0[xX][\da-fA-F]+|^0[0-7]*|^\d+","identifier":br"\.?[$_\w]+(?:\.[$_\w]+)*","string":br"""'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`""","regex":br"\/(?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+\/[gimy]*","line_break":br"[\n\r]+|/\*(?:.|[\r\n])*?\*/","whitespace":br"[\ \t]+|//.*?(?:[\r\n]|$)","operator":bytes("|".join([re.sub(r"([\?\|\^\&\(\)\{\}\[\]\+\-\*\/\.])",r"\\\1",e) for e in JS_OPERATORS]),"utf-8")}
+JS_REGEX_LIST={"dict":br"""{\s*(?:[$_\w]+|'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`)\s*:\s*""","dict_elem":br"""\s*,\s*(?:[$_\w]+|'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`)\s*:\s*""","float":br"\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?","int":br"0[xX][\da-fA-F]+|^0[0-7]*|^\d+","identifier":br"\.?[$_\w]+(?:\.[$_\w]+)*","string":br"""'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`""","regex":br"\/(?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+\/[gimy]*","line_break":br"[\n\r]+|/\*(?:.|[\r\n])*?\*/","whitespace":br"[\ \t]+|//.*?(?:[\r\n]|$)","operator":bytes("|".join([re.sub(r"([\?\|\^\&\(\)\{\}\[\]\+\-\*\/\.])",r"\\\1",e) for e in JS_OPERATORS]),"utf-8")}
 
 
 
@@ -201,6 +201,7 @@ def _minify_js(js,fp):
 	i=0
 	vm=[{}]
 	ef=[]
+	dl=[]
 	efbl={}
 	ee={}
 	bl=0
@@ -231,6 +232,8 @@ def _minify_js(js,fp):
 				else:
 					vfma[k]+=1
 			tl[i]=("identifier",b".".join(idl))
+		elif (tl[i][0]=="dict"):
+			dl+=[True]
 		elif (tl[i][0]=="keyword"):
 			if (tl[i][1]==b"function"):
 				si=i
@@ -239,6 +242,7 @@ def _minify_js(js,fp):
 				assert(str(tl[i+1][1],"utf-8") not in JS_RESERVED_IDENTIFIERS)
 				nm=vm[-1][tl[i+1][1]]=_gen_i(vm[:-1+1])
 				vm+=[{}]
+				dl+=[False]
 				assert(tl[i+2][0]=="operator")
 				assert(tl[i+2][1]==b"(")
 				i+=3
@@ -268,22 +272,25 @@ def _minify_js(js,fp):
 			ot=tl[i][1]
 			if (tl[i][1]==b"{"):
 				vm+=[{}]
+				dl+=[False]
 				ef+=[None]
 				bl+=1
 			elif (tl[i][1]==b"}"):
-				if (ef[-1]!=None):
-					cbl,ocbl,si,fl,nm,al=ef[-1]
-					efbl[ocbl].remove(len(ef)-1)
-					j=1
-					if (tl[si+fl+1][0]=="keyword" and tl[si+fl+1][1]==b"return"):
-						j+=1
-						cbl=ocbl
-					ftl=([("keyword",b"let"),("identifier",nm),("operator",b"=")] if nm!=None else [])+([("operator",b"_=>")] if len(al)==0 else ([("identifier",al[0][0]),("operator",b"=>")] if len(al)==1 and al[0][1]==False else [("operator",b"(")]+_args(al)+[("operator",b")"),("operator",b"=>")]))
-					tl=tl[:si]+ftl+([("operator",b"{")] if cbl==None else [])+tl[si+fl+j:i]+([("operator",b"}")] if cbl==None else [])+[("operator",b";")]+tl[i+1:]
-					i+=-fl+len(ftl)-2+(2 if cbl==None else 0)-j+1
-				vm=vm[:-1]
-				ef=ef[:-1]
-				bl-=1
+				if (dl[-1]==False):
+					if (ef[-1]!=None):
+						cbl,ocbl,si,fl,nm,al=ef[-1]
+						efbl[ocbl].remove(len(ef)-1)
+						j=1
+						if (tl[si+fl+1][0]=="keyword" and tl[si+fl+1][1]==b"return"):
+							j+=1
+							cbl=ocbl
+						ftl=([("keyword",b"let"),("identifier",nm),("operator",b"=")] if nm!=None else [])+([("operator",b"_=>")] if len(al)==0 else ([("identifier",al[0][0]),("operator",b"=>")] if len(al)==1 and al[0][1]==False else [("operator",b"(")]+_args(al)+[("operator",b")"),("operator",b"=>")]))
+						tl=tl[:si]+ftl+([("operator",b"{")] if cbl==None else [])+tl[si+fl+j:i]+([("operator",b"}")] if cbl==None else [])+[("operator",b";")]+tl[i+1:]
+						i+=-fl+len(ftl)-2+(2 if cbl==None else 0)-j+1
+					vm=vm[:-1]
+					ef=ef[:-1]
+					bl-=1
+				dl=dl[:-1]
 				s_ee=False
 			elif (tl[i][1]==b")"):
 				bl-=1
@@ -325,6 +332,7 @@ def _minify_js(js,fp):
 					else:
 						i+=1
 						af=True
+						dl+=[False]
 						if (tl[i][0]=="operator" and tl[i][1]==b"{"):
 							ef+=[(bl,bl,si,i-si,None,al)]
 							if (bl not in efbl):
@@ -350,6 +358,7 @@ def _minify_js(js,fp):
 						tl=tl[:si]+ftl+tl[si+fl+1:]
 						i+=-fl+len(ftl)-1
 						vm=vm[:-1]
+						dl=dl[:-1]
 					del ee[bl]
 				if (bl in efbl):
 					for j in efbl[bl]:
