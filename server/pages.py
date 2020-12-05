@@ -15,12 +15,12 @@ with open("web/page_template.html","rb") as f:
 for k in os.listdir("pages"):
 	with open(f"pages/{k}","r") as f:
 		dt=json.loads(f.read())
-		PAGE_LIST[re.sub(r"[^a-zA-Z0-9-]","",k[:-5].lower())]={"nm":dt["title"],"views":0,"dt":dt,"cache":None}
+		PAGE_LIST[re.sub(r"[^a-zA-Z0-9-]","",k[:-5].lower())]={"nm":dt["title"],"views":0,"author":dt["author"],"dt":dt,"cache":None}
 
 
 
 def _render_page(pg):
-	o=PAGE_TEMPLATE[0]+bytes(f"<div class=\"title\">{pg['dt']['title']}</div><div class=\"desc\">{pg['dt']['desc']}</div>","utf-8")
+	o=PAGE_TEMPLATE[0].replace(b"$$$__TITLE__$$$",bytes(pg["dt"]["title"],"utf-8"))+bytes(f"<div class=\"title\">{pg['dt']['title']}</div><div class=\"desc\">{pg['dt']['desc']}</div>","utf-8")
 	for k in pg["dt"]["data"]:
 		k=re.sub(r"&lt;(br|span)&gt;",r"<\1>",k.replace("<","&lt;").replace(">","&gt;"))
 		i=0
@@ -56,7 +56,7 @@ def _render_page(pg):
 
 
 @server.route("GET",r"/")
-def main_index(url):
+def index(url):
 	server.set_code(200)
 	server.set_header("Content-Type","text/html")
 	return utils.cache("web/index.html")
@@ -64,10 +64,18 @@ def main_index(url):
 
 
 @server.route("GET",r"/login")
-def main_login(url):
+def login(url):
 	server.set_code(200)
 	server.set_header("Content-Type","text/html")
 	return utils.cache("web/login.html")
+
+
+
+@server.route("GET",r"/signup")
+def signup(url):
+	server.set_code(200)
+	server.set_header("Content-Type","text/html")
+	return utils.cache("web/signup.html")
 
 
 

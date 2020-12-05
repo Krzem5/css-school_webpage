@@ -166,38 +166,82 @@ body {
 
 
 
-.bg-r .bg .wr .side {
-	position: absolute;
-	top: 110px;
-	left: 0;
-	width: 200px;
-	bottom: 0;
-	background: #1e1e1e;
-	border-right: solid 10px #0f0f0f;
-	padding: 20px;
-}
-.bg-r .bg .wr .side .elem {
-	font-family: Nova Mono, sans-serif;
-	font-size: 18px;
-	color: #ffbf0f;
-	padding-top: 15px;
-	user-select: none;
-}
-.bg-r .bg .wr .side .elem:hover {
-	cursor: pointer;
-}
-.bg-r .bg .wr .side .elem:first-child {
-	padding-top: 0;
-}
-
-
-
 .bg-r .bg .wr .main {
 	position: absolute;
 	top: 120px;
-	left: 270px;
-	width: calc(100% - 280px);
+	left: 0;
+	width: 100%;
 	min-height: calc(100% - 120px);
-	font-family: Montserrat;
-	color: #f6f6f6;
+	padding: 10px;
+}
+.bg-r .bg .wr .main .h {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translate(-50%,0);
+	height: 175px;
+	font-family: Turret Road;
+	font-weight: 400;
+	text-align: center;
+	line-height: 150px;
+	font-size: 115px;
+	color: #4837db;
+	user-select: none;
+	white-space: nowrap;
+}
+.bg-r .bg .wr .main .list {
+	position: absolute;
+	top: 175px;
+	left: 10px;
+	width: calc(100% - 40px);
+	min-height: calc(100% - 205px);
+	grid-template-columns: repeat(3, 1fr);
+	display: grid;
+	gap: 20px;
+}
+.bg-r .bg .wr .main .list .e {
+	position: relative;
+	width: auto;
+	height: 300px;
+}
+.bg-r .bg .wr .main .list .e .e-wr {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: calc(100% - 20px);
+	height: calc(100% - 20px);
+	background: #151515;
+	border-radius: 30px;
+	border: solid 10px #0f0f0f;
+	cursor: pointer;
+}
+.bg-r .bg .wr .main .list .e .e-wr .t {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	right: 10px;
+	bottom: 40px;
+	font-family: Nova Mono, sans-serif;
+	font-size: 32px;
+	color: #ffbf0f;
+}
+.bg-r .bg .wr .main .list .e .e-wr .t::selection {
+	background: #303030;
+	color: #FFE960;
+}
+.bg-r .bg .wr .main .list .e .e-wr .a {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+	right: 10px;
+	height: 30px;
+	font-family: Ubuntu Mono, sans-serif;
+	font-size: 20px;
+	line-height: 30px;
+	text-align: right;
+	color: #d82b34;
+	user-select: none;
+}
+.bg-r .bg .wr .main .list .e .e-wr .a span {
+	text-decoration: underline;
 }

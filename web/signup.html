@@ -2,9 +2,9 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>Code &ndash; Login</title>
-		<script type="text/javascript" src="/js/login.js"></script>
-		<link href="/css/login.css" rel="stylesheet" type="text/css">
+		<title>Code &ndash; Signup</title>
+		<script type="text/javascript" src="js/signup.js"></script>
+		<link href="css/signup.css" rel="stylesheet" type="text/css">
 		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 		<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Montserrat+Alternates&family=Nova+Mono&family=Turret+Road:wght@700&family=Ubuntu+Mono&display=swap" rel="stylesheet">
 		<link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
@@ -14,9 +14,13 @@
 			<div class="bg">
 				<div class="wr">
 					<div class="top">
-						Log In
+						Sign Up
 					</div>
 					<div class="main">
+						<div class="username">
+							<label type="username" for="un-inp">Username:</label>
+							<input id="un-inp" type="text">
+						</div>
 						<div class="email">
 							<label type="email" for="em-inp">Email:</label>
 							<input id="em-inp" type="email">
@@ -25,13 +29,16 @@
 							<label type="password" for="pw-inp">Password:</label>
 							<input id="pw-inp" type="password">
 						</div>
-						<div class="login">
-							Log In
+						<div class="pwd-r">
+							<label type="password" for="pwr-inp">Repeat Password:</label>
+							<input id="pwr-inp" type="password">
+						</div>
+						<div class="signup r">
+							Sign Up
 						</div>
 					</div>
 				</div>
 				<div class="err">
-					An Error Occured While Trying to Log You In
 				</div>
 			</div>
 		</div>

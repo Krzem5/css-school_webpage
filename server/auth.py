@@ -21,6 +21,7 @@ DB_KEY_TIME=3
 DB_KEY_IP=4
 DB_KEY_TOKEN=5
 DB_KEY_TOKEN_END=6
+DB_KEY_EMAIL_VERIFICATION=7
 TOKEN_LEN=18
 TOKEN_EXP_DATE=300000
 
@@ -90,7 +91,7 @@ def signup(nm,em,pw,ip):
 	if (r!=0):
 		return {"status":RETURN_CODE["password_invalid"]}
 	id_=secrets.token_hex(DB_ID_LEN)
-	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),time.time(),f"{ip[0]}:{ip[1]}",None,0]
+	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),time.time(),f"{ip[0]}:{ip[1]}",None,0,False]
 	_db_em[em]=id_
 	print(_db,_db_em)
 	return {"status":RETURN_CODE["ok"]}
@@ -140,7 +141,7 @@ def user_data(tk,ip):
 	id_=_check_token(tk)
 	if (id_==None):
 		return {"status":RETURN_CODE["invalid_token"]}
-	return {"status":RETURN_CODE["ok"],"username":_db[id_][DB_KEY_USERNAME],"email":_db[id_][DB_KEY_EMAIL]}
+	return {"status":RETURN_CODE["ok"],"username":_db[id_][DB_KEY_USERNAME],"email":_db[id_][DB_KEY_EMAIL],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFICATION]}
 
 
 

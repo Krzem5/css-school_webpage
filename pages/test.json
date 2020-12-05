@@ -4,5 +4,6 @@
 	"data": [
 		"This is some *italic* text, some **bold** text and ***both***,<br> a line break and also some ```y=f(x)=a*x^2+b*x+c``` code.",
 		"This text should be in a new paragraph."
-	]
+	],
+	"author": "AsdefUUXX78"
 }

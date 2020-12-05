@@ -66,6 +66,23 @@ def _validate(eb,d_url,t,body=False):
 					server.set_code(400)
 					server.set_header("Content-Type","application/json")
 					return ({"error":{"code":f"E_{eb.upper()}_FIELD_RANGE","message":f"Field '{k}' should be between '{v['range'][0]}' and '{v['range'][1]}', but has a value of '{o[k]}'","link":f"{d_url}#usage"}},False)
+		elif (v["p"]=="query"):
+			if (k not in q and "d" not in v):
+				server.set_code(400)
+				server.set_header("Content-Type","application/json")
+				return ({"error":{"code":f"E_{eb.upper()}_FIELD","message":f"Required Field '{k}' is Missing from Request Query","link":f"{d_url}#usage"}},False)
+			o[k]=(q[k] if k in q else v["d"])
+			try:
+				o[k]=v["t"](o[k])
+			except:
+				server.set_code(400)
+				server.set_header("Content-Type","application/json")
+				return ({"error":{"code":f"E_{eb.upper()}_FIELD_TYPE","message":f"Field '{k}' should have '{JSON_TYPE_MAP.get(v['t'],'object')}' type, but has '{JSON_TYPE_MAP.get(type(o[k]),'object')}' type","link":f"{d_url}#usage"}},False)
+			if ("range" in v):
+				if (o[k]<v["range"][0] or o[k]>v["range"][1]):
+					server.set_code(400)
+					server.set_header("Content-Type","application/json")
+					return ({"error":{"code":f"E_{eb.upper()}_FIELD_RANGE","message":f"Field '{k}' should be between '{v['range'][0]}' and '{v['range'][1]}', but has a value of '{o[k]}'","link":f"{d_url}#usage"}},False)
 		else:
 			raise RuntimeError(v["p"])
 	return (o,True)
@@ -74,10 +91,13 @@ def _validate(eb,d_url,t,body=False):
 
 @server.route("GET",r"/api/v1/popular")
 def popular(url):
+	dt,ok=_validate("popular","/docs/api/popular",{"count":{"t":int,"p":"query","d":10,"range":[1,100]}})
+	if (ok==False):
+		return dt
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
 	print({k:{**v,"cache":None,"dt":None} for k,v in pages.PAGE_LIST.items()})
-	return [{"name":e[1]["nm"],"url":f"/page/{e[0]}"} for e in sorted(pages.PAGE_LIST.items(),key=cmp_to_key(_pg_cmp))[:10]]
+	return [{"name":e[1]["nm"],"url":f"/page/{e[0]}","author":e[1]["author"]} for e in sorted(pages.PAGE_LIST.items(),key=cmp_to_key(_pg_cmp))[:dt["count"]]]
 
 
 
@@ -94,10 +114,9 @@ def user_data(url):
 
 @server.route("POST",r"/api/v1/auth/check_user")
 def check_user(url):
-	dt,ok=_validate("usercheck","/docs/api/check-username",{"username":{"t":str,"p":"body"},"similar":{"t":int,"p":"body","d":0,"range":[0,10]}},body=True)
+	dt,ok=_validate("usercheck","/docs/api/check-username",{"username":{"t":str,"p":"body"}},body=True)
 	if (ok==False):
 		return dt
-	print(dt)
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
 	return {"status":auth.check_username(dt["username"])}

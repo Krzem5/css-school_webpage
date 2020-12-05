@@ -198,13 +198,11 @@ body {
 	left: 270px;
 	width: calc(100% - 280px);
 	min-height: calc(100% - 120px);
-	font-family: Montserrat;
-	color: #f6f6f6;
 }
 .bg-r .bg .wr .main .title {
 	position: relative;
 	width: 100%;
-	font-family: Turret Road;
+	font-family: Turret Road, sans-serif;
 	font-weight: 400;
 	text-align: center;
 	line-height: 90px;
@@ -215,16 +213,19 @@ body {
 .bg-r .bg .wr .main .desc {
 	position: relative;
 	width: 100%;
-	font-family: Montserrat Alternates;
+	font-family: Montserrat Alternates, sans-serif;
 	font-style: italic;
 	text-align: left;
 	line-height: 22px;
 	font-size: 17px;
 	padding-bottom: 15px;
 	text-align: center;
+	color: #efefef;
 }
 .bg-r .bg .wr .main .p {
 	padding-top: 14px;
+	font-family: Montserrat, sans-serif;
+	color: #f6f6f6;
 }
 .bg-r .bg .wr .main .p:first-child {
 	padding-top: 0;
@@ -241,7 +242,7 @@ body {
 	padding-top: 1px;
 	background: #383838;
 	color: #bababa;
-	font-family: Ubuntu Mono;
+	font-family: Ubuntu Mono, sans-serif;
 }
 .bg-r .bg .wr .main .desc::selection, .bg-r .bg .wr .main .p::selection, .bg-r .bg .wr .main .p *::selection {
 	background: #303030;

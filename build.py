@@ -238,7 +238,7 @@ def _minify_js(js,fp):
 				assert(i+5<len(tl))
 				assert(tl[i+1][0]=="identifier")
 				assert(str(tl[i+1][1],"utf-8") not in JS_RESERVED_IDENTIFIERS)
-				nm=vm[-1][tl[i+1][1]]=_gen_i(vm[:-1+1])
+				nm=vm[-1][tl[i+1][1]]=_gen_i(vm)
 				vm+=[{}]
 				assert(tl[i+2][0]=="operator")
 				assert(tl[i+2][1]==b"(")

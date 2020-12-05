@@ -19,10 +19,9 @@ body {
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: 100%;
+	min-height: 100%;
 	background-color: #020202;
-	background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #070707 10px, #070707 12px), repeating-linear-gradient(45deg, transparent, transparent 10px, #070707 10px, #070707 12px);
-	overflow-y: scroll;
+	background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #0a0a0a 10px, #0a0a0a 12px), repeating-linear-gradient(45deg, transparent, transparent 10px, #0a0a0a 10px, #0a0a0a 12px);
 }
 .bg .wr {
 	position: absolute;
@@ -45,28 +44,27 @@ body {
 	left: 20px;
 	width: calc(100% - 40px);
 	height: 100px;
-	font-family: Nova Mono;
+	font-family: Nova Mono, sans-serif;
 	font-size: 67px;
 	color: #8cd13c;
 	user-select: none;
 }
 .bg .wr .title .n {
-	font-family: Turret Road;
+	font-family: Turret Road, sans-serif;
 	font-size: 90px;
 	color: #503ac4;
-	font-weight: 600;
 }
 .bg .wr .desc {
 	position: absolute;
 	top: 140px;
 	left: 20px;
 	width: 450px;
-	font-family: Nova Mono;
+	font-family: Nova Mono, sans-serif;
 	color: #b7b7b7;
 	font-size: 30px;
 }
 .bg .wr .desc::selection {
-	background: #939393;
+	background: #303030;
 	color: #2fcf8e;
 }
 .bg .wr .img {
@@ -84,8 +82,8 @@ body {
 	position: absolute;
 	top: 400px;
 	left: 100px;
-	font-family: Nova Mono;
-	color: #17B6E7;
+	font-family: Nova Mono, sans-serif;
+	color: #17b6e7;
 	font-size: 35px;
 	text-decoration: none;
 	cursor: pointer;
@@ -101,9 +99,9 @@ body {
 
 @keyframes err {
 	0% {
-		text-shadow: 0 0 2px #D72E4A, 0 0 2px #D72E4A, 0 0 2px #D72E4A;
+		text-shadow: 0 0 2px #d72e4a, 0 0 2px #d72e4a, 0 0 2px #d72e4a;
 	}
 	100% {
-		text-shadow: 0 0 13px #D72E4A, 0 0 13px #D72E4A, 0 0 13px #D72E4A;
+		text-shadow: 0 0 13px #d72e4a, 0 0 13px #d72e4a, 0 0 13px #d72e4a;
 	}
 }
