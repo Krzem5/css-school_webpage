@@ -1,2 +1,2 @@
-# Css - School Webpage
+# Python - School Website
 (This is an auto - generated file.)
