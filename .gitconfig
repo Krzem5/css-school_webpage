@@ -5,7 +5,6 @@ desc=css-school_webpage
 public=true
 homepage=
 license=mit
-remote=https://git.heroku.com/krzem.git
 
 file.readme=.\README.md
 file.gitignore=.\.gitignore

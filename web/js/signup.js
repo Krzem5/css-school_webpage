@@ -36,7 +36,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 		_check_btn();
 	};
 	pw.onkeydown=pw.onkeyup=()=>{
-		pwr.onkeyup();
+		pwr.value="";
+		le.r&=~8;
 		if (6<=pw.value.length&&pw.value.length<=64){
 			le.r|=4;
 		}

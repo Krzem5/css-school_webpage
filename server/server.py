@@ -43,6 +43,7 @@ def _handle(cs,a):
 			for k in _epl[t]["l"]:
 				if (re.fullmatch(k[0],url)!=None):
 					e=False
+					print(f"Method={t}, URL='{url}', Handler='{k[1].__code__.co_filename.replace('.py','')}.{k[1].__code__.co_name}'")
 					c=k[1](url)
 					if (type(c)==list or type(c)==dict):
 						c=json.dumps(c)
@@ -53,6 +54,7 @@ def _handle(cs,a):
 			for k in _epl["*"]["l"]:
 				if (re.fullmatch(k[0],url)!=None):
 					e=False
+					print(f"Method={t}, URL='{url}', Handler='{k[1].__code__.co_filename.replace('.py','')}.{k[1].__code__.co_name}'")
 					c=k[1](url)
 					if (type(c)==list or type(c)==dict):
 						c=json.dumps(c)
@@ -61,6 +63,7 @@ def _handle(cs,a):
 					break
 		if (t in _epl and e==True and _epl[t]["f"]!=None):
 			e=False
+			print(f"Method={t}, URL='{url}', Handler='{_epl[t]['f'].__code__.co_filename.replace('.py','')}.{_epl[t]['f'].__code__.co_name}'")
 			c=_epl[t]["f"](url)
 			if (type(c)==list or type(c)==dict):
 				c=json.dumps(c)

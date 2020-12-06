@@ -3,12 +3,17 @@ import utils
 import os
 import json
 import re
+import auth
 
 
 
+global PAGE_LIST,USER_CACHE
 PAGE_LIST={}
+USER_CACHE={}
 with open("web/page_template.html","rb") as f:
 	PAGE_TEMPLATE=f.read().split(b"$$$__DATA__$$$")[:2]
+with open("web/user_template.html","rb") as f:
+	USER_TEMPLATE=f.read()
 
 
 
@@ -55,6 +60,11 @@ def _render_page(pg):
 
 
 
+def _render_user(dt):
+	return USER_TEMPLATE.replace(b"$$$__NAME__$$$",bytes(dt["username"],"utf-8")).replace(b"$$$__URL__$$$",bytes(dt["img_url"],"utf-8"))
+
+
+
 @server.route("GET",r"/")
 def index(url):
 	server.set_code(200)
@@ -81,6 +91,7 @@ def signup(url):
 
 @server.route("GET",r"/page/[a-zA-Z0-9-]+(?:\.html)?")
 def page(url):
+	global PAGE_LIST
 	url=url[6:].lower()
 	if (url.endswith(".html")):
 		url=url[:-5]
@@ -92,6 +103,25 @@ def page(url):
 		if (pg["cache"]==None):
 			pg["cache"]=_render_page(pg)
 		return pg["cache"]
+	else:
+		server.set_code(404)
+		return utils.cache("web/not-found.html")
+
+
+
+@server.route("GET",r"/user/[a-zA-Z0-9-]+(?:\.html)?")
+def user(url):
+	global USER_CACHE
+	url=url[6:].lower()
+	if (url.endswith(".html")):
+		url=url[:-5]
+	server.set_code(200)
+	server.set_header("Content-Type","text/html")
+	dt=auth.get_user(url)
+	if (dt!=None):
+		if (url not in USER_CACHE):
+			USER_CACHE[url]=_render_user(dt)
+		return USER_CACHE[url]
 	else:
 		server.set_code(404)
 		return utils.cache("web/not-found.html")

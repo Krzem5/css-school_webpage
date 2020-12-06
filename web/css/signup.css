@@ -36,7 +36,7 @@ body {
 	left: 50%;
 	width: 600px;
 	transform: translate(-50%,-50%);
-	height: 710px;
+	height: 760px;
 	background: #0c0c0c;
 	border-radius: 30px;
 	border: solid 10px #0f0f0f;
@@ -137,7 +137,7 @@ body {
 }
 .bg-r .bg .wr .main .signup {
 	position: absolute;
-	bottom: 30px;
+	bottom: 80px;
 	left: 50%;
 	line-height: 40px;
 	transform: translate(-50%,50%);
@@ -156,6 +156,25 @@ body {
 	font-size: 40px;
 	text-shadow: 0 0 9px #e8bc16, 0 0 9px #e8bc16, 0 0 9px #e8bc16;
 	transition: text-shadow 0.5s, color 0.5s, font-size 0.5s;
+}
+.bg-r .bg .wr .main .txt {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 30px;
+	text-align: center;
+	line-height: 30px;
+	font-family: Montserrat Alternates;
+	font-size: 15px;
+	user-select: none;
+	color: #99d9ef;
+}
+.bg-r .bg .wr .main .txt .lnk {
+	cursor: pointer;
+	font-size: 18px;
+	font-weight: 700;
+	color: #5cc2e4;
 }
 
 

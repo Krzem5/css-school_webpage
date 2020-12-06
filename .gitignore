@@ -1,4 +1,4 @@
 ### Github File Push Ignore
 
 build
-secret.dt
+*.dt

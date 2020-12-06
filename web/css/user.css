@@ -1,0 +1,231 @@
+html, body {
+	position: fixed;
+}
+body, body * {
+	margin: 0;
+	border: none;
+	padding: 0;
+	outline: none;
+}
+body {
+	width: 100%;
+	height: 100%;
+}
+
+
+
+.bg-r {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow-y: scroll;
+}
+.bg-r::-webkit-scrollbar {
+	width: 15px;
+	background: #020202;
+}
+.bg-r::-webkit-scrollbar-track {
+	background: #212121;
+	border-radius: 8px;
+}
+.bg-r::-webkit-scrollbar-thumb {
+  background: #2d2d2d;
+  border-radius: 8px;
+}
+.bg-r .bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	min-height: 100%;
+	background-color: #020202;
+	background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #0a0a0a 10px, #0a0a0a 12px), repeating-linear-gradient(45deg, transparent, transparent 10px, #0a0a0a 10px, #0a0a0a 12px);
+}
+.bg-r .bg .wr {
+	position: absolute;
+	top: 20px;
+	left: 50px;
+	right: 50px;
+	height: calc(100% - 40px);
+	background: #0c0c0c;
+	border-radius: 30px;
+	border: solid 10px #0f0f0f;
+	overflow: hidden;
+}
+
+
+
+.bg-r .bg .wr .top {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100px;
+	background: #1e1e1e;
+	border-bottom: solid 10px #0f0f0f;
+}
+.bg-r .bg .wr .top .icon {
+	position: absolute;
+	top: 0;
+	left: 15px;
+	width: 100px;
+	height: 100px;
+	user-select: none;
+}
+.bg-r .bg .wr .top .icon .i {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	text-align: center;
+	display: inline-block;
+	line-height: 100px;
+	vertical-align: middle;
+	font-size: 100px;
+	color: #9cdcf5;
+	text-shadow: 0 0 9px #1889e6, 0 0 9px #1889e6, 0 0 9px #1889e6;
+}
+.bg-r .bg .wr .top .icon .i:hover{
+	cursor: pointer;
+}
+.bg-r .bg .wr .top .title {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	height: 100%;
+	transform: translate(-50%,0);
+	font-family: Turret Road, sans-serif;
+	font-weight: 700;
+	font-size: 70px;
+	text-align: left;
+	line-height: 100px;
+	user-select: none;
+}
+.bg-r .bg .wr .top .title .c {
+	color: #bbf49e;
+	text-shadow: 0 0 8px #5be113, 0 0 8px #5be113, 0 0 8px #5be113;
+	transition: color 0.1s, text-shadow 0.1s;
+}
+.bg-r .bg .wr .top .title .c:hover {
+	color: #869380;
+	text-shadow: 0 0 2px #283620, 0 0 2px #283620, 0 0 2px #283620;
+	transition: color 0.1s, text-shadow 0.1s;
+}
+.bg-r .bg .wr .top .account {
+	position: absolute;
+	top: 0;
+	right: 15px;
+	width: 100px;
+	height: 100px;
+	user-select: none;
+}
+.bg-r .bg .wr .top .account .txt {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	text-align: center;
+	transform: translate(-15px,0);
+	display: inline-block;
+	line-height: 100px;
+	vertical-align: middle;
+	font-size: 30px;
+	color: #edc94a;
+	text-shadow: 0 0 9px #e8bc16, 0 0 9px #e8bc16, 0 0 9px #e8bc16;
+	font-family: Bungee;
+	white-space: nowrap;
+}
+.bg-r .bg .wr .top .account.l .txt {
+	display: none;
+}
+.bg-r .bg .wr .top .account .i {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	text-align: center;
+	display: inline-block;
+	line-height: 100px;
+	vertical-align: middle;
+	font-size: 90px;
+	color: #edc94a;
+	text-shadow: 0 0 9px #e8bc16, 0 0 9px #e8bc16, 0 0 9px #e8bc16;
+	display: none;
+}
+.bg-r .bg .wr .top .account.l .i {
+	display: initial;
+}
+.bg-r .bg .wr .top .account *:hover{
+	cursor: pointer;
+}
+
+
+
+.bg-r .bg .wr .side {
+	position: absolute;
+	top: 110px;
+	left: 0;
+	width: 200px;
+	bottom: 0;
+	background: #1e1e1e;
+	border-right: solid 10px #0f0f0f;
+	padding: 20px;
+}
+.bg-r .bg .wr .side .elem {
+	font-family: Nova Mono, sans-serif;
+	font-size: 18px;
+	color: #ffbf0f;
+	padding-top: 15px;
+	user-select: none;
+}
+.bg-r .bg .wr .side .elem:hover {
+	cursor: pointer;
+}
+.bg-r .bg .wr .side .elem:first-child {
+	padding-top: 0;
+}
+
+
+
+.bg-r .bg .wr .main {
+	position: absolute;
+	top: 120px;
+	left: 270px;
+	width: calc(100% - 280px);
+	min-height: calc(100% - 120px);
+}
+.bg-r .bg .wr .main .img {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	width: 128px;
+	height: 128px;
+	background: red;
+	border-radius: 50%;
+	user-select: none;
+}
+.bg-r .bg .wr .main .nm {
+	position: absolute;
+	top: 74px;
+	left: 150px;
+	right: 10px;
+	transform: translate(0,-50%);
+	font-size: 50px;
+	font-family: Ubuntu Mono;
+	user-select: none;
+	color: #5c5c5c;
+}
+.bg-r .bg .wr .main .nm .t {
+	font-size: 75px;
+	user-select: text;
+	color: #f5f5f5;
+}
+.bg-r .bg .wr .main .nm .t::selection {
+	background: #303030;
+	color: #2fcf8e;
+}

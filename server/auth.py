@@ -1,9 +1,12 @@
+import storage
 import re
 import hashlib
 import secrets
 import time
 import hmac
 import base64
+import threading
+import json
 
 
 
@@ -22,13 +25,24 @@ DB_KEY_IP=4
 DB_KEY_TOKEN=5
 DB_KEY_TOKEN_END=6
 DB_KEY_EMAIL_VERIFICATION=7
+DB_KEY_IMAGE=8
 TOKEN_LEN=18
 TOKEN_EXP_DATE=300000
 
 
 
+global _db,_db_em,_db_u_nm
 _db={}
 _db_em={}
+_db_u_nm={}
+
+
+
+def _write_db():
+	while (True):
+		print("Saving Auth Database...")
+		storage.write("database.db",bytes(json.dumps(_db,separators=(",",":")),"utf-8"))
+		time.sleep(60*5)
 
 
 
@@ -55,7 +69,7 @@ def check_username(nm):
 		if (k not in USERNAME_VALID_LETTERS):
 			return RETURN_CODE["username_invalid"]
 	for e in _db.values():
-		if (e[DB_KEY_USERNAME]==nm):
+		if (e[DB_KEY_USERNAME].lower()==nm.lower()):
 			return RETURN_CODE["username_used"]
 	return RETURN_CODE["ok"]
 
@@ -66,13 +80,14 @@ def check_email(em,db=True):
 		return RETURN_CODE["email_invalid"]
 	if (db==True):
 		for e in _db.values():
-			if (e[DB_KEY_EMAIL]==em):
+			if (e[DB_KEY_EMAIL].lower()==em.lower()):
 				return RETURN_CODE["email_used"]
 	return RETURN_CODE["ok"]
 
 
 
 def signup(nm,em,pw,ip):
+	global _db,_db_em,_db_u_nm
 	r=check_username(nm)
 	if (r!=RETURN_CODE["ok"]):
 		return {"status":r}
@@ -91,9 +106,10 @@ def signup(nm,em,pw,ip):
 	if (r!=0):
 		return {"status":RETURN_CODE["password_invalid"]}
 	id_=secrets.token_hex(DB_ID_LEN)
-	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),time.time(),f"{ip[0]}:{ip[1]}",None,0,False]
+	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),time.time(),f"{ip[0]}:{ip[1]}",None,0,False,"https://via.placeholder.com/128"]
 	_db_em[em]=id_
-	print(_db,_db_em)
+	_db_u_nm[nm.lower()]=id_
+	print(_db,_db_em,_db_u_nm)
 	return {"status":RETURN_CODE["ok"]}
 
 
@@ -137,11 +153,12 @@ def refresh_token(tk,ip):
 	return {"status":RETURN_CODE["ok"],"token":_db[id_][DB_KEY_TOKEN]}
 
 
+
 def user_data(tk,ip):
 	id_=_check_token(tk)
 	if (id_==None):
 		return {"status":RETURN_CODE["invalid_token"]}
-	return {"status":RETURN_CODE["ok"],"username":_db[id_][DB_KEY_USERNAME],"email":_db[id_][DB_KEY_EMAIL],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFICATION]}
+	return {"status":RETURN_CODE["ok"],"username":_db[id_][DB_KEY_USERNAME],"email":_db[id_][DB_KEY_EMAIL],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFICATION],"image":_db[id_][DB_KEY_IMAGE]}
 
 
 
@@ -152,3 +169,21 @@ def logout(tk,ip):
 	_db[id_][DB_KEY_TOKEN]=None
 	_db[id_][DB_KEY_TOKEN_END]=0
 	return {"status":RETURN_CODE["ok"]}
+
+
+
+def get_user(u_nm):
+	if (u_nm not in _db_u_nm):
+		return None
+	id_=_db_u_nm[u_nm]
+	return {"username":_db[id_][DB_KEY_USERNAME],"time":_db[id_][DB_KEY_TIME],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFICATION],"img_url":_db[id_][DB_KEY_IMAGE]}
+
+
+
+if (storage.exists("database.db")):
+	_db=json.loads(str(storage.read("database.db"),"utf-8"))
+	for k,v in _db.items():
+		_db_em[v[DB_KEY_EMAIL]]=k
+		_db_u_nm[v[DB_KEY_USERNAME]]=k
+	print(_db,_db_em,_db_u_nm)
+threading.Thread(target=_write_db).start()

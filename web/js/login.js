@@ -34,6 +34,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 					ee.t=setTimeout(()=>{
 						ee.classList.remove("e");
 					},5e3);
+					pw.value="";
+					le.classList.remove("rp");
 				}
 				else{
 					localStorage._tk=e.token;

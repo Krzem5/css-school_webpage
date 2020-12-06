@@ -10,9 +10,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 		bge.style.height=`${h+70}px`;
 		wre.style.height=`${h}px`;
 	};
-	window.onresize();
-	setTimeout(window.onresize,10);
-	setTimeout(window.onresize,100);
 	document.querySelector(".icon").onclick=()=>{
 		window.location.href="/";
 	};
@@ -22,16 +19,21 @@ document.addEventListener("DOMContentLoaded",()=>{
 	te.innerHTML=te.innerText.split("").map((e)=>{
 		return `<span class="c">${e}</span>`;
 	}).join("");
-	fetch("/api/v1/popular?count=50").then((e)=>e.json()).then((e)=>e.forEach((k)=>{
-		le.innerHTML+=`<div class="e"><div class="e-wr"><div class="t" onclick="window.location.href='${k.url}'">${k.name}</div><div class="a" onclick="window.location.href='/user/${k.author}'">By <span>@${k.author}</span></div></div></div>`;
-	}));
+	fetch("/api/v1/popular?count=50").then((e)=>e.json()).then((e)=>{
+		e.forEach((k)=>{
+			le.innerHTML+=`<div class="e"><div class="e-wr"><div class="t" onclick="window.location.href='${k.url}'">${k.name}</div><div class="a" onclick="window.location.href='/user/${k.author}'">By <span>@${k.author}</span></div></div></div>`;
+		});
+		window.onresize();
+	});
 	fetch("/api/v1/user_data",{headers:{"authorization":`bearer ${localStorage._tk}`}}).then((e)=>e.json()).then((e)=>{
 		if (e.status!=0){
 			localStorage._tk=null;
 		}
 		else{
 			document.querySelector(".account").classList.add("l");
-			window._dt=e;
+			document.querySelector(".icn").onclick=()=>{
+				window.location.href=`/user/${e.username}`;
+			};
 		}
 	});
 },false);

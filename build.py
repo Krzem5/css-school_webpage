@@ -174,8 +174,8 @@ def _minify_js(js,fp):
 					else:
 						idl[j+1]=b"."+e
 				o+=b"".join(idl)
-			elif (tl[i][0]=="keyword" and tl[i][1] in [b"false",b"true",b"undefined"]):
-				o+={b"false":b"!1",b"true":b"!0",b"undefined":b"null"}[tl[i][1]]
+			elif (tl[i][0]=="keyword" and tl[i][1] in [b"false",b"true",b"undefined",b"null"]):
+				o+={b"false":b"!1",b"true":b"!0",b"undefined":b"0",b"null":b"0"}[tl[i][1]]
 			elif (tl[i][0]=="stringS"):
 				o+=tl[i][1]+b"${"
 				to,ti=_write(tl[i+1:],cvm,cvm)
@@ -441,7 +441,7 @@ for fn in os.listdir("server"):
 with open(f"build\\runtime.txt","w") as f:
 	f.write("python-3.9.0")
 with open(f"build\\requirements.txt","w") as f:
-	f.write("\n")
+	f.write("requests==2.22.0\nchardet==3.0.4\n")
 with open(f"build\\Procfile","w") as f:
 	f.write("web: python server/main.py\n")
 cwd=os.getcwd()
