@@ -3,10 +3,10 @@ import re
 import hashlib
 import secrets
 import time
-import hmac
 import base64
 import threading
 import json
+import struct
 
 
 
@@ -31,23 +31,33 @@ TOKEN_EXP_DATE=300000
 
 
 
-global _db,_db_em,_db_u_nm
+global _db,_db_em,_db_u_nm,_db_u
 _db={}
 _db_em={}
 _db_u_nm={}
+_db_u=True
 
 
 
 def _write_db():
+	global _db_u
 	while (True):
-		print("Saving Auth Database...")
-		storage.write("database.db",bytes(json.dumps(_db,separators=(",",":")),"utf-8"))
-		time.sleep(60*5)
+		print(f"Saving Auth Database... (save={_db_u})")
+		if (_db_u):
+			_db_u=False
+			o=b""
+			for k,v in list(_db.items()):
+				k=int(k,16)
+				p=int(v[DB_KEY_PASSWORD],16)
+				v[DB_KEY_TIME]=int(v[DB_KEY_TIME])
+				o+=struct.pack(f"<2QB{len(v[DB_KEY_USERNAME])}s{len(v[DB_KEY_EMAIL])}sB4QI4BH{len(v[DB_KEY_IMAGE])}sB",k>>64,k&0xffffffffffffffff,len(v[DB_KEY_USERNAME])|((1 if v[DB_KEY_EMAIL_VERIFICATION] else 0)<<5),bytes(v[DB_KEY_USERNAME],"utf-8"),bytes(v[DB_KEY_EMAIL],"utf-8"),0,p>>192,(p>>128)&0xffffffffffffffff,(p>>64)&0xffffffffffffffff,p&0xffffffffffffffff,v[DB_KEY_TIME],int(v[DB_KEY_IP].split(".")[0]),int(v[DB_KEY_IP].split(".")[1]),int(v[DB_KEY_IP].split(".")[2]),int(v[DB_KEY_IP].split(".")[3].split(":")[0]),int(v[DB_KEY_IP].split(":")[1]),bytes(v[DB_KEY_IMAGE],"utf-8"),0)
+			storage.write("database.db",o)
+		time.sleep(300)
 
 
 
 def _check_token(tk):
-	t=time.time()
+	t=int(time.time())
 	for k,v in _db.items():
 		if (v[DB_KEY_TOKEN_END]>=t and v[DB_KEY_TOKEN]!=None):
 			r=(0 if len(tk)==len(v[DB_KEY_TOKEN]) else 1)
@@ -87,7 +97,7 @@ def check_email(em,db=True):
 
 
 def signup(nm,em,pw,ip):
-	global _db,_db_em,_db_u_nm
+	global _db,_db_em,_db_u_nm,_db_u
 	r=check_username(nm)
 	if (r!=RETURN_CODE["ok"]):
 		return {"status":r}
@@ -106,10 +116,10 @@ def signup(nm,em,pw,ip):
 	if (r!=0):
 		return {"status":RETURN_CODE["password_invalid"]}
 	id_=secrets.token_hex(DB_ID_LEN)
-	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),time.time(),f"{ip[0]}:{ip[1]}",None,0,False,"https://via.placeholder.com/128"]
+	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),int(time.time()),f"{ip[0]}:{ip[1]}",None,0,False,"https://via.placeholder.com/128"]
 	_db_em[em]=id_
 	_db_u_nm[nm.lower()]=id_
-	print(_db,_db_em,_db_u_nm)
+	_db_u=True
 	return {"status":RETURN_CODE["ok"]}
 
 
@@ -134,7 +144,7 @@ def login(em,pw,ip):
 	if (r!=0):
 		return {"status":RETURN_CODE["login_fail"]}
 	_db[id_][DB_KEY_TOKEN]=str(base64.urlsafe_b64encode(secrets.token_bytes(TOKEN_LEN)),"utf-8")
-	_db[id_][DB_KEY_TOKEN_END]=time.time()+TOKEN_EXP_DATE
+	_db[id_][DB_KEY_TOKEN_END]=int(time.time())+TOKEN_EXP_DATE
 	return {"status":RETURN_CODE["ok"],"token":_db[id_][DB_KEY_TOKEN]}
 
 
@@ -149,7 +159,7 @@ def refresh_token(tk,ip):
 	if (id_==None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	_db[id_][DB_KEY_TOKEN]=str(base64.urlsafe_b64encode(secrets.token_bytes(TOKEN_LEN)),"utf-8")
-	_db[id_][DB_KEY_TOKEN_END]=time.time()+TOKEN_EXP_DATE
+	_db[id_][DB_KEY_TOKEN_END]=int(time.time())+TOKEN_EXP_DATE
 	return {"status":RETURN_CODE["ok"],"token":_db[id_][DB_KEY_TOKEN]}
 
 
@@ -173,6 +183,7 @@ def logout(tk,ip):
 
 
 def get_user(u_nm):
+	u_nm=u_nm.lower()
 	if (u_nm not in _db_u_nm):
 		return None
 	id_=_db_u_nm[u_nm]
@@ -181,9 +192,22 @@ def get_user(u_nm):
 
 
 if (storage.exists("database.db")):
-	_db=json.loads(str(storage.read("database.db"),"utf-8"))
-	for k,v in _db.items():
-		_db_em[v[DB_KEY_EMAIL]]=k
-		_db_u_nm[v[DB_KEY_USERNAME]]=k
-	print(_db,_db_em,_db_u_nm)
+	o=storage.read("database.db")
+	i=0
+	while (i<len(o)):
+		k1,k2,f=struct.unpack("<2QB",o[i:i+17])
+		k=hex(k1<<64|k2)[2:]
+		l,ve=f&0x1f,f>>5
+		i+=17
+		el=0
+		while (o[i+l+el]!=0):
+			el+=1
+		p1,p2,p3,p4=struct.unpack("<4Q",o[i+l+el+1:i+l+el+33])
+		il=0
+		while (o[i+l+el+il+43]!=0):
+			il+=1
+		_db[k]=[str(o[i:i+l],"utf-8"),str(o[i+l:i+l+el],"utf-8"),hex((p1<<192)|(p2<<128)|(p3<<64)|p4)[2:],struct.unpack("<I",o[i+l+el+33:i+l+el+37])[0],".".join([str(e) for e in struct.unpack("<4B",o[i+l+el+37:i+l+el+41])])+":"+str(struct.unpack("<H",o[i+l+el+41:i+l+el+43])[0]),None,0,(True if ve else False),str(o[i+l+el+43:i+l+el+il+43],"utf-8")]
+		_db_em[_db[k][DB_KEY_EMAIL]]=k
+		_db_u_nm[_db[k][DB_KEY_USERNAME].lower()]=k
+		i+=l+el+il+44
 threading.Thread(target=_write_db).start()

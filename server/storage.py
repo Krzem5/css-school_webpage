@@ -85,7 +85,6 @@ def _write_loop():
 		if (len(l)>0):
 			bl=[]
 			for k in l:
-				print(k)
 				dt=f"File too Large (size = {len(_fs[k][1])} b)"
 				b_sha=False
 				if (len(_fs[k][1])<=50*1024*1024):
@@ -112,7 +111,7 @@ def _write_loop():
 								dt=b["sha"]
 				bl+=[({"path":k[1:],"mode":"100644","type":"blob","content":dt} if b_sha==False else {"path":k[1:],"mode":"100644","type":"blob","sha":dt})]
 			_request("patch",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/refs/heads/main",data=json.dumps({"sha":_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/commits",data=json.dumps({"message":f"Commit {time.time()}","tree":_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/trees",data=json.dumps({"base_tree":_bc["sha"],"tree":bl}))["sha"],"parents":[_bc["sha"]]}))["sha"],"force":True}))
-		time.sleep(60*5)
+		time.sleep(300)
 
 
 

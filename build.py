@@ -439,7 +439,7 @@ for fn in os.listdir("server"):
 	if (os.path.isfile(f"server\\{fn}")==True):
 		_copy(f"server\\{fn}")
 with open(f"build\\runtime.txt","w") as f:
-	f.write("python-3.9.0")
+	f.write("python-3.9.1")
 with open(f"build\\requirements.txt","w") as f:
 	f.write("requests==2.22.0\nchardet==3.0.4\n")
 with open(f"build\\Procfile","w") as f:
