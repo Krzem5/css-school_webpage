@@ -1,9 +1,9 @@
 import server
+import storage
+import auth
 import utils
-import os
 import json
 import re
-import auth
 
 
 
@@ -17,10 +17,9 @@ with open("web/user_template.html","rb") as f:
 
 
 
-for k in os.listdir("pages"):
-	with open(f"pages/{k}","r") as f:
-		dt=json.loads(f.read())
-		PAGE_LIST[re.sub(r"[^a-zA-Z0-9-]","",k[:-5].lower())]={"nm":dt["title"],"views":0,"author":dt["author"],"dt":dt,"cache":None}
+for k in storage.listdir("pages"):
+	dt=json.loads(storage.read(k))
+	PAGE_LIST[re.sub(r"[^a-zA-Z0-9-]","",k[7:-5].lower())]={"nm":dt["title"],"views":0,"author":dt["author"],"dt":dt,"cache":None}
 
 
 
@@ -89,6 +88,14 @@ def signup(url):
 
 
 
+@server.route("GET",r"/admin")
+def admin(url):
+	server.set_code(200)
+	server.set_header("Content-Type","text/html")
+	return utils.cache("web/admin.html")
+
+
+
 @server.route("GET",r"/page/[a-zA-Z0-9-]+(?:\.html)?")
 def page(url):
 	global PAGE_LIST
@@ -109,7 +116,7 @@ def page(url):
 
 
 
-@server.route("GET",r"/user/[a-zA-Z0-9-]+(?:\.html)?")
+@server.route("GET",r"/user/[a-zA-Z0-9\-_]+(?:\.html)?")
 def user(url):
 	global USER_CACHE
 	url=url[6:].lower()

@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		bge.style.height=`${h+70}px`;
 		wre.style.height=`${h}px`;
 	};
+	window.onresize();
 	document.querySelector(".icon").onclick=()=>{
 		window.location.href="/";
 	};
@@ -24,6 +25,12 @@ document.addEventListener("DOMContentLoaded",()=>{
 			le.innerHTML+=`<div class="e"><div class="e-wr"><div class="t" onclick="window.location.href='${k.url}'">${k.name}</div><div class="a" onclick="window.location.href='/user/${k.author}'">By <span>@${k.author}</span></div></div></div>`;
 		});
 		window.onresize();
+		setTimeout(window.onresize,10);
+		setTimeout(window.onresize,100);
+		setTimeout(window.onresize,200);
+		setTimeout(window.onresize,300);
+		setTimeout(window.onresize,400);
+		setTimeout(window.onresize,500);
 	});
 	fetch("/api/v1/user_data",{headers:{"authorization":`bearer ${localStorage._tk}`}}).then((e)=>e.json()).then((e)=>{
 		if (e.status!=0){

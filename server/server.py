@@ -1,3 +1,4 @@
+import utils
 import os
 import json
 import socket
@@ -43,7 +44,7 @@ def _handle(cs,a):
 			for k in _epl[t]["l"]:
 				if (re.fullmatch(k[0],url)!=None):
 					e=False
-					print(f"Method={t}, URL='{url}', Handler='{k[1].__code__.co_filename.replace('.py','')}.{k[1].__code__.co_name}'")
+					utils.print(f"Method={t}, URL='{url}', Handler='{k[1].__code__.co_filename.replace('.py','')}.{k[1].__code__.co_name}'")
 					c=k[1](url)
 					if (type(c)==list or type(c)==dict):
 						c=json.dumps(c)
@@ -54,7 +55,7 @@ def _handle(cs,a):
 			for k in _epl["*"]["l"]:
 				if (re.fullmatch(k[0],url)!=None):
 					e=False
-					print(f"Method={t}, URL='{url}', Handler='{k[1].__code__.co_filename.replace('.py','')}.{k[1].__code__.co_name}'")
+					utils.print(f"Method={t}, URL='{url}', Handler='{k[1].__code__.co_filename.replace('.py','')}.{k[1].__code__.co_name}'")
 					c=k[1](url)
 					if (type(c)==list or type(c)==dict):
 						c=json.dumps(c)
@@ -63,7 +64,7 @@ def _handle(cs,a):
 					break
 		if (t in _epl and e==True and _epl[t]["f"]!=None):
 			e=False
-			print(f"Method={t}, URL='{url}', Handler='{_epl[t]['f'].__code__.co_filename.replace('.py','')}.{_epl[t]['f'].__code__.co_name}'")
+			utils.print(f"Method={t}, URL='{url}', Handler='{_epl[t]['f'].__code__.co_filename.replace('.py','')}.{_epl[t]['f'].__code__.co_name}'")
 			c=_epl[t]["f"](url)
 			if (type(c)==list or type(c)==dict):
 				c=json.dumps(c)
@@ -93,7 +94,7 @@ def route(m,url):
 			_epl[m]["l"]+=[(url,f)]
 		else:
 			if (_epl[m]["f"]!=None):
-				print(f"Override Fallback for Method '{m}'!")
+				utils.print(f"Override Fallback for Method '{m}'!")
 			_epl[m]["f"]=f
 		return f
 	return _wr
@@ -152,7 +153,7 @@ def run(p):
 	ss.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
 	ss.bind(("0.0.0.0",p))
 	ss.listen(5)
-	print(f"Server started on port {p}...")
+	utils.print(f"Server started on port {p}...")
 	while (True):
 		cs,a=ss.accept()
 		cs.sendall(b"HTTP/1.1 ")

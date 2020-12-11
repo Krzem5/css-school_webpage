@@ -1,4 +1,5 @@
 import storage
+import utils
 import re
 import hashlib
 import secrets
@@ -13,8 +14,9 @@ MIN_USERNAME_LEN=3
 MAX_USERNAME_LEN=24
 MIN_PASSWORD_LEN=6
 MAX_PASSWORD_LEN=64
+EMAIL_REGEX=re.compile(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 USERNAME_VALID_LETTERS="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
-RETURN_CODE={"ok":0,"username_to_short":1,"username_to_long":2,"username_invalid":3,"username_used":4,"email_invalid":5,"email_used":6,"password_to_short":7,"password_to_long":8,"password_invalid":9,"login_fail":10,"invalid_token":11}
+RETURN_CODE={"ok":0,"username_to_short":1,"username_to_long":2,"username_invalid":3,"username_used":4,"email_invalid":5,"email_used":6,"password_to_short":7,"password_to_long":8,"password_invalid":9,"login_fail":10,"invalid_token":11,"not_admin":12,"regex_error":13}
 DB_ID_LEN=16
 DB_KEY_USERNAME=0
 DB_KEY_EMAIL=1
@@ -23,8 +25,9 @@ DB_KEY_TIME=3
 DB_KEY_IP=4
 DB_KEY_TOKEN=5
 DB_KEY_TOKEN_END=6
-DB_KEY_EMAIL_VERIFICATION=7
+DB_KEY_EMAIL_VERIFIED=7
 DB_KEY_IMAGE=8
+DB_KEY_ADMIN=9
 TOKEN_LEN=18
 TOKEN_EXP_DATE=300000
 
@@ -41,7 +44,7 @@ _db_u=True
 def _write_db():
 	global _db_u
 	while (True):
-		print(f"Saving Auth Database... (save={_db_u})")
+		utils.print(f"Saving Auth Database... (save={_db_u})")
 		if (_db_u):
 			_db_u=False
 			o=b""
@@ -49,7 +52,7 @@ def _write_db():
 				k=int(k,16)
 				p=int(v[DB_KEY_PASSWORD],16)
 				v[DB_KEY_TIME]=int(v[DB_KEY_TIME])
-				o+=struct.pack(f"<2QB{len(v[DB_KEY_USERNAME])}s{len(v[DB_KEY_EMAIL])}sB4QI4BH{len(v[DB_KEY_IMAGE])}sB",k>>64,k&0xffffffffffffffff,len(v[DB_KEY_USERNAME])|((1 if v[DB_KEY_EMAIL_VERIFICATION] else 0)<<5),bytes(v[DB_KEY_USERNAME],"utf-8"),bytes(v[DB_KEY_EMAIL],"utf-8"),0,p>>192,(p>>128)&0xffffffffffffffff,(p>>64)&0xffffffffffffffff,p&0xffffffffffffffff,v[DB_KEY_TIME],int(v[DB_KEY_IP].split(".")[0]),int(v[DB_KEY_IP].split(".")[1]),int(v[DB_KEY_IP].split(".")[2]),int(v[DB_KEY_IP].split(".")[3].split(":")[0]),int(v[DB_KEY_IP].split(":")[1]),bytes(v[DB_KEY_IMAGE],"utf-8"),0)
+				o+=struct.pack(f"<2QB{len(v[DB_KEY_USERNAME])}s{len(v[DB_KEY_EMAIL])}sB4QI4BH{len(v[DB_KEY_IMAGE])}sB",k>>64,k&0xffffffffffffffff,len(v[DB_KEY_USERNAME])|((1 if v[DB_KEY_EMAIL_VERIFIED] else 0)<<5)|((1 if v[DB_KEY_ADMIN] else 0)<<6),bytes(v[DB_KEY_USERNAME],"utf-8"),bytes(v[DB_KEY_EMAIL],"utf-8"),0,p>>192,(p>>128)&0xffffffffffffffff,(p>>64)&0xffffffffffffffff,p&0xffffffffffffffff,v[DB_KEY_TIME],int(v[DB_KEY_IP].split(".")[0]),int(v[DB_KEY_IP].split(".")[1]),int(v[DB_KEY_IP].split(".")[2]),int(v[DB_KEY_IP].split(".")[3].split(":")[0]),int(v[DB_KEY_IP].split(":")[1]),bytes(v[DB_KEY_IMAGE],"utf-8"),0)
 			storage.write("database.db",o)
 		time.sleep(300)
 
@@ -85,7 +88,7 @@ def check_username(nm):
 
 
 def check_email(em,db=True):
-	if (re.fullmatch(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",em)==None):
+	if (EMAIL_REGEX.fullmatch(em)==None):
 		return RETURN_CODE["email_invalid"]
 	if (db==True):
 		for e in _db.values():
@@ -115,7 +118,7 @@ def signup(nm,em,pw,ip):
 	if (r!=0):
 		return {"status":RETURN_CODE["password_invalid"]}
 	id_=secrets.token_hex(DB_ID_LEN)
-	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),int(time.time()),f"{ip[0]}:{ip[1]}",None,0,False,"https://via.placeholder.com/128"]
+	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),int(time.time()),f"{ip[0]}:{ip[1]}",None,0,False,"https://via.placeholder.com/128",False]
 	_db_em[em]=id_
 	_db_u_nm[nm.lower()]=id_
 	_db_u=True
@@ -167,7 +170,7 @@ def user_data(tk,ip):
 	id_=_check_token(tk)
 	if (id_==None):
 		return {"status":RETURN_CODE["invalid_token"]}
-	return {"status":RETURN_CODE["ok"],"username":_db[id_][DB_KEY_USERNAME],"email":_db[id_][DB_KEY_EMAIL],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFICATION],"image":_db[id_][DB_KEY_IMAGE]}
+	return {"status":RETURN_CODE["ok"],"username":_db[id_][DB_KEY_USERNAME],"email":_db[id_][DB_KEY_EMAIL],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFIED],"image":_db[id_][DB_KEY_IMAGE]}
 
 
 
@@ -186,7 +189,35 @@ def get_user(u_nm):
 	if (u_nm not in _db_u_nm):
 		return None
 	id_=_db_u_nm[u_nm]
-	return {"username":_db[id_][DB_KEY_USERNAME],"time":_db[id_][DB_KEY_TIME],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFICATION],"img_url":_db[id_][DB_KEY_IMAGE]}
+	return {"username":_db[id_][DB_KEY_USERNAME],"time":_db[id_][DB_KEY_TIME],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFIED],"img_url":_db[id_][DB_KEY_IMAGE]}
+
+
+
+def admin(tk,ip):
+	id_=_check_token(tk)
+	if (id_==None):
+		return {"status":RETURN_CODE["invalid_token"]}
+	elif (_db[id_][DB_KEY_ADMIN]!=True):
+		return {"status":RETURN_CODE["not_admin"]}
+	return {"status":RETURN_CODE["ok"],"username":_db[id_][DB_KEY_USERNAME]}
+
+
+
+def get_users(tk,q,ip):
+	id_=_check_token(tk)
+	if (id_==None):
+		return {"status":RETURN_CODE["invalid_token"]}
+	elif (_db[id_][DB_KEY_ADMIN]!=True):
+		return {"status":RETURN_CODE["not_admin"]}
+	try:
+		q=re.compile(q)
+	except re.error:
+		return {"status":RETURN_CODE["regex_error"]}
+	o=[]
+	for k,v in _db.items():
+		if (q.search(v[DB_KEY_USERNAME])!=None or q.search(v[DB_KEY_EMAIL])!=None):
+			o+=[{"id":k,"username":v[DB_KEY_USERNAME],"email":v[DB_KEY_EMAIL],"password":v[DB_KEY_PASSWORD],"time":v[DB_KEY_TIME],"ip":v[DB_KEY_IP],"token":v[DB_KEY_TOKEN],"token_end":v[DB_KEY_TOKEN_END],"email_verified":v[DB_KEY_EMAIL_VERIFIED],"image":v[DB_KEY_IMAGE],"admin":v[DB_KEY_ADMIN]}]
+	return {"status":RETURN_CODE["ok"],"users":o}
 
 
 
@@ -196,7 +227,7 @@ if (storage.exists("database.db")):
 	while (i<len(o)):
 		k1,k2,f=struct.unpack("<2QB",o[i:i+17])
 		k=hex(k1<<64|k2)[2:]
-		l,ve=f&0x1f,f>>5
+		a,ve,l=(f>>6)&1,(f>>5)&1,f&0x1f
 		i+=17
 		el=0
 		while (o[i+l+el]!=0):
@@ -205,7 +236,7 @@ if (storage.exists("database.db")):
 		il=0
 		while (o[i+l+el+il+43]!=0):
 			il+=1
-		_db[k]=[str(o[i:i+l],"utf-8"),str(o[i+l:i+l+el],"utf-8"),hex((p1<<192)|(p2<<128)|(p3<<64)|p4)[2:],struct.unpack("<I",o[i+l+el+33:i+l+el+37])[0],".".join([str(e) for e in struct.unpack("<4B",o[i+l+el+37:i+l+el+41])])+":"+str(struct.unpack("<H",o[i+l+el+41:i+l+el+43])[0]),None,0,(True if ve else False),str(o[i+l+el+43:i+l+el+il+43],"utf-8")]
+		_db[k]=[str(o[i:i+l],"utf-8"),str(o[i+l:i+l+el],"utf-8"),hex((p1<<192)|(p2<<128)|(p3<<64)|p4)[2:],struct.unpack("<I",o[i+l+el+33:i+l+el+37])[0],".".join([str(e) for e in struct.unpack("<4B",o[i+l+el+37:i+l+el+41])])+":"+str(struct.unpack("<H",o[i+l+el+41:i+l+el+43])[0]),None,0,(True if ve else False),str(o[i+l+el+43:i+l+el+il+43],"utf-8"),(True if a else False)]
 		_db_em[_db[k][DB_KEY_EMAIL]]=k
 		_db_u_nm[_db[k][DB_KEY_USERNAME].lower()]=k
 		i+=l+el+il+44

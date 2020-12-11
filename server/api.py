@@ -1,6 +1,7 @@
 import server
 import pages
 import auth
+import utils
 import json
 import traceback
 from functools import cmp_to_key
@@ -96,7 +97,6 @@ def popular(url):
 		return dt
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
-	print({k:{**v,"cache":None,"dt":None} for k,v in pages.PAGE_LIST.items()})
 	return [{"name":e[1]["nm"],"url":f"/page/{e[0]}","author":e[1]["author"]} for e in sorted(pages.PAGE_LIST.items(),key=cmp_to_key(_pg_cmp))[:dt["count"]]]
 
 
@@ -109,6 +109,31 @@ def user_data(url):
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
 	return auth.user_data(tk,server.address())
+
+
+
+@server.route("GET",r"/api/v1/admin")
+def admin(url):
+	tk,ok=_read_token()
+	if (ok==False):
+		return tk
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	return auth.admin(tk,server.address())
+
+
+
+@server.route("POST",r"/api/v1/admin/users")
+def get_users(url):
+	dt,ok=_validate("admin_users","/docs/api",{"query":{"t":str,"p":"body"}},body=True)
+	if (ok==False):
+		return dt
+	tk,ok=_read_token()
+	if (ok==False):
+		return tk
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	return auth.get_users(tk,dt["query"],server.address())
 
 
 
@@ -208,6 +233,4 @@ def version_error(url):
 # @server.route("PUT","/api/v1/auth/profile_image")
 # @server.route("PUT","/api/v1/auth/password")
 # @server.route("PUT","/api/v1/auth/name")
-# @server.route("GET","/api/v1/auth/user_data")
-# @server.route("PUT","/api/v1/auth/logout")
 # @server.route("POST","/api/v1/auth/delete")

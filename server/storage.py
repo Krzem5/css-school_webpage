@@ -1,3 +1,4 @@
+import utils
 import requests
 import time
 import sys
@@ -5,22 +6,45 @@ import json
 import threading
 import chardet
 import base64
+import datetime
 
 
 
-global _bc,_fs,_fs_u
+global _bc,_fs,_fs_d,_fs_s,_fs_u
 REPO_NAME="_app_data"
 with open("server/token.dt","r") as f:
 	GITHUB_TOKEN=f.read().strip()
 GITHUB_HEADERS="application/vnd.github.v3+json,application/vnd.github.mercy-preview+json"
 _bc=None
 _fs={}
+_fs_d={}
+_fs_s=[]
 _fs_u=[]
 
 
 
 def _as_path(fp):
-	return ("/" if fp[0] not in "\\/" else "")+fp.replace("\\","/")
+	return ("/" if fp[0] not in "\\/" else "")+fp.lower().replace("\\","/")
+
+
+
+def _add_dirs(fp):
+	global _fs_d
+	assert(fp[0]=="/")
+	dl=fp.split("/")[1:-1]
+	d="/"
+	i=0
+	while (True):
+		if (d not in _fs_d):
+			_fs_d[d]=[fp]
+		else:
+			_fs_d[d]+=[fp]
+		if (i==len(dl)):
+			break
+		elif (i==0):
+			d=""
+		d+="/"+dl[i]
+		i+=1
 
 
 
@@ -40,15 +64,17 @@ def _request(m="get",**kw):
 
 
 
-def _read_fs(bc,fp=""):
+def _read_fs(bt,fp=""):
 	global _fs
-	t=_request("get",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/trees/{bc['commit']['tree']['sha']}")
+	t=_request("get",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/trees/{bt}")
 	if ("message" in t and t["message"]=="Not Found"):
 		return []
 	for k in t["tree"]:
-		print(k)
 		if (k["type"]=="blob"):
-			_fs[fp+"/"+k["path"]]=[k["url"],None]
+			_fs[fp+"/"+k["path"].lower()]=[k["url"],None]
+			_add_dirs(fp+"/"+k["path"].lower())
+		elif (k["type"]=="tree"):
+			_read_fs(k["sha"],fp=fp+"/"+k["path"].lower())
 		else:
 			raise RuntimeError(f"Unknown File Type '{k['type']}'")
 
@@ -81,23 +107,24 @@ def _write_loop():
 	global _fs_u
 	while (True):
 		l,_fs_u=_fs_u[:],[]
-		print(f"Saving FileSystem Files: {l}")
 		if (len(l)>0):
 			bl=[]
 			for k in l:
+				if (k not in _fs_s):
+					utils.print(f"Saving FileSystem File: '{k}'")
 				dt=f"File too Large (size = {len(_fs[k][1])} b)"
 				b_sha=False
 				if (len(_fs[k][1])<=50*1024*1024):
 					b64=True
 					if (_is_b(_fs[k][1])==False):
 						try:
-							dt=str(_fs[k][1],"utf-8").replace("\r\n","\n")
+							dt=str(_fs[k][1],"cp1252").replace("\r\n","\n")
 							b64=False
 						except:
 							pass
 					if (b64==True):
 						b_sha=True
-						dt=str(base64.b64encode(_fs[k][1]),"utf-8")
+						dt=str(base64.b64encode(_fs[k][1]),"cp1252")
 						if (len(dt)>50*1024*1024):
 							b_sha=False
 							dt=f"File too Large (size = {len(dt)} b)"
@@ -110,8 +137,16 @@ def _write_loop():
 							else:
 								dt=b["sha"]
 				bl+=[({"path":k[1:],"mode":"100644","type":"blob","content":dt} if b_sha==False else {"path":k[1:],"mode":"100644","type":"blob","sha":dt})]
-			_request("patch",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/refs/heads/main",data=json.dumps({"sha":_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/commits",data=json.dumps({"message":f"Commit {time.time()}","tree":_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/trees",data=json.dumps({"base_tree":_bc["sha"],"tree":bl}))["sha"],"parents":[_bc["sha"]]}))["sha"],"force":True}))
-		time.sleep(300)
+			_request("patch",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/refs/heads/main",data=json.dumps({"sha":_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/commits",data=json.dumps({"message":datetime.datetime.now().strftime("Commit %m/%d/%Y, %H:%M:%S"),"tree":_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/trees",data=json.dumps({"base_tree":_bc["sha"],"tree":bl}))["sha"],"parents":[_bc["sha"]]}))["sha"],"force":True}))
+		time.sleep(20)
+
+
+
+def listdir(fp):
+	fp=_as_path(fp)
+	if (fp not in _fs_d):
+		return []
+	return _fs_d[fp][:]
 
 
 
@@ -120,12 +155,25 @@ def exists(fp):
 
 
 
+def set_silent(fp):
+	global _fs,_fs_s
+	fp=_as_path(fp)
+	if (fp not in _fs):
+		_fs[fp]=[None,None]
+	_fs_s+=[fp]
+
+
+
 def read(fp):
+	global _fs
 	fp=_as_path(fp)
 	if (fp not in _fs):
 		raise RuntimeError(f"File '{fp}' not Found")
 	if (_fs[fp][1]==None):
-		_fs[fp][1]=base64.b64decode(_request("get",url=_fs[fp][0])["content"])
+		if (_fs[fp][0]==None):
+			_fs[fp][1]=b""
+		else:
+			_fs[fp][1]=base64.b64decode(_request("get",url=_fs[fp][0])["content"])
 	return _fs[fp][1]
 
 
@@ -139,10 +187,13 @@ def write(fp,dt):
 	fp=_as_path(fp)
 	if (fp not in _fs or _fs[fp][1]!=dt and fp not in _fs_u):
 		_fs_u+=[fp]
-	_fs[fp][1]=dt
+	if (fp not in _fs):
+		_fs[fp]=[None,dt]
+	else:
+		_fs[fp][1]=dt
 
 
 
 _bc=_request("get",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/branches/main")["commit"]
-_read_fs(_bc)
+_read_fs(_bc["commit"]["tree"]["sha"])
 threading.Thread(target=_write_loop).start()

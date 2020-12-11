@@ -9,6 +9,10 @@ document.addEventListener("DOMContentLoaded",()=>{
 	window.onresize();
 	setTimeout(window.onresize,10);
 	setTimeout(window.onresize,100);
+	setTimeout(window.onresize,200);
+	setTimeout(window.onresize,300);
+	setTimeout(window.onresize,400);
+	setTimeout(window.onresize,500);
 	document.querySelector(".icon").onclick=()=>{
 		window.location.href="/";
 	};
