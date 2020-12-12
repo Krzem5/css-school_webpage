@@ -11,20 +11,20 @@ global PAGE_LIST,USER_CACHE
 PAGE_LIST={}
 USER_CACHE={}
 with open("web/page_template.html","rb") as f:
-	PAGE_TEMPLATE=f.read().split(b"$$$__DATA__$$$")[:2]
+	PAGE_TEMPLATE=f.read().split(b"$$$__DATA__$$$")
 with open("web/user_template.html","rb") as f:
-	USER_TEMPLATE=f.read()
+	USER_TEMPLATE=f.read().split(b"$$$__DATA__$$$")
 
 
 
-for k in storage.listdir("pages"):
-	dt=json.loads(storage.read(k))
-	PAGE_LIST[re.sub(r"[^a-zA-Z0-9-]","",k[7:-5].lower())]={"nm":dt["title"],"views":0,"author":dt["author"],"dt":dt,"cache":None}
+for k in storage.listdir("pages")[0]:
+	dt=json.loads(storage.read(k+"/index.json"))
+	PAGE_LIST[re.sub(r"[^a-zA-Z0-9-]","",k[7:].lower())]={"nm":dt["title"],"views":0,"author":dt["author"],"dt":dt,"cache":None}
 
 
 
 def _render_page(pg):
-	o=PAGE_TEMPLATE[0].replace(b"$$$__TITLE__$$$",bytes(pg["dt"]["title"],"utf-8"))+bytes(f"<div class=\"title\">{pg['dt']['title']}</div><div class=\"desc\">{pg['dt']['desc']}</div>","utf-8")
+	o=PAGE_TEMPLATE[0]+bytes(pg["dt"]["title"],"utf-8")+PAGE_TEMPLATE[1]+bytes(f"<div class=\"title\">{pg['dt']['title']}</div><div class=\"desc\">{pg['dt']['desc']}</div>","utf-8")
 	for k in pg["dt"]["data"]:
 		k=re.sub(r"&lt;(br|span)&gt;",r"<\1>",k.replace("<","&lt;").replace(">","&gt;"))
 		i=0
@@ -55,12 +55,12 @@ def _render_page(pg):
 				i=si+15
 			i+=1
 		o+=bytes(f"<p class=\"p\">{k}</p>","utf-8")
-	return o+PAGE_TEMPLATE[1]
+	return o+PAGE_TEMPLATE[2]
 
 
 
 def _render_user(dt):
-	return USER_TEMPLATE.replace(b"$$$__NAME__$$$",bytes(dt["username"],"utf-8")).replace(b"$$$__URL__$$$",bytes(dt["img_url"],"utf-8"))
+	return USER_TEMPLATE[0]+bytes(f"{dt['username']}\",img:\"{dt['img_url']}","utf-8")+USER_TEMPLATE[1]
 
 
 

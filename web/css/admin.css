@@ -92,6 +92,7 @@ body.h {
 	text-align: left;
 	line-height: 100px;
 	user-select: none;
+	white-space: nowrap;
 }
 .bg-r .bg .wr .top .title .c {
 	color: #bbf49e;
@@ -211,9 +212,7 @@ body.h {
 	position: relative;
 	width: 100%;
 	height: 25px;
-}
-.bg-r .bg .wr .main .accounts .list .l-elem.s {
-	height: 230px;
+	cursor: pointer;
 }
 .bg-r .bg .wr .main .accounts .list .l-elem:not(:first-child) {
 	border-top: solid 4px #0f0f0f;
@@ -232,9 +231,6 @@ body.h {
 	font-family: Ubuntu Mono;
 	user-select: none;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem.s .pr {
-	display: none;
-}
 .bg-r .bg .wr .main .accounts .list .l-elem .pr .nm {
 	float: left;
 	color: #724fe6;
@@ -243,39 +239,73 @@ body.h {
 .bg-r .bg .wr .main .accounts .list .l-elem .pr .em {
 	color: #aed42a;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .f {
+
+
+
+.bg-r .bg .wr .main .accounts .user-wr {
 	position: absolute;
 	top: 0;
-	left: 10px;
-	width: calc(100% - 20px);
+	left: 0;
+	width: 100%;
 	height: 100%;
-	line-height: 33px;
-	font-size: 29px;
-	font-family: Ubuntu Mono;
-	color: #fff;
+	background: #000000a1;
 	display: none;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .f .nm {
+.bg-r .bg .wr .main .accounts .user-wr.s {
+	display: initial;
+}
+.bg-r .bg .wr .main .accounts .user {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	max-width: calc(100% - 100px);
+	height: 300px;
+	transform: translate(-50%,-50%);
+	background: #0c0c0c;
+	border: solid 10px #0f0f0f;
+	border-radius: 30px;
+	padding: 10px;
+	font-family: Ubuntu Mono;
+	font-size: 22px;
+}
+.bg-r .bg .wr .main .accounts .user .u-elem {
+	position: relative;
+	width: 100%;
+	height: 25px;
+	user-select: none;
+}
+.bg-r .bg .wr .main .accounts .user .u-elem .k {
+	padding-right: 10px;
+	color: #3d3d3d;
+}
+.bg-r .bg .wr .main .accounts .user .u-elem .v {
+	cursor: pointer;
+}
+.bg-r .bg .wr .main .accounts .user .u-elem .v.nm {
 	color: #724fe6;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .f .em {
+.bg-r .bg .wr .main .accounts .user .u-elem .v.em {
 	color: #aed42a;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .f .id {
+.bg-r .bg .wr .main .accounts .user .u-elem .v.id {
 	color: #2acfb6;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .f .tm {
+.bg-r .bg .wr .main .accounts .user .u-elem .v.tm {
 	color: #cf2aae;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .f .ip {
+.bg-r .bg .wr .main .accounts .user .u-elem .v.ip {
 	color: #f7742a;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .f .img {
+.bg-r .bg .wr .main .accounts .user .u-elem .v.img {
 	color: #29cb5a;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .f .pwd {
+.bg-r .bg .wr .main .accounts .user .u-elem .v.pwd {
 	color: #cf322a;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem.s .f {
-	display: initial;
+.bg-r .bg .wr .main .accounts .user .u-elem .v.tg {
+	color: #686868;
+}
+.bg-r .bg .wr .main .accounts .user .u-elem .v.tg .s {
+	color: #ffc40b;
+	text-decoration: underline;
 }
