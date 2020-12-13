@@ -16,7 +16,7 @@ MIN_PASSWORD_LEN=6
 MAX_PASSWORD_LEN=64
 EMAIL_REGEX=re.compile(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 USERNAME_VALID_LETTERS="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
-RETURN_CODE={"ok":0,"username_to_short":1,"username_to_long":2,"username_invalid":3,"username_used":4,"email_invalid":5,"email_used":6,"password_to_short":7,"password_to_long":8,"password_invalid":9,"login_fail":10,"invalid_token":11,"not_admin":12,"regex_error":13}
+RETURN_CODE={"ok":0,"username_to_short":1,"username_to_long":2,"username_invalid":3,"username_used":4,"email_invalid":5,"email_used":6,"password_to_short":7,"password_to_long":8,"password_invalid":9,"login_fail":10,"invalid_token":11,"not_admin":12,"regex_error":13,"invalid_url":14,"invalid_id":15}
 DB_ID_LEN=16
 DB_KEY_USERNAME=0
 DB_KEY_EMAIL=1
@@ -28,16 +28,19 @@ DB_KEY_TOKEN_END=6
 DB_KEY_EMAIL_VERIFIED=7
 DB_KEY_IMAGE=8
 DB_KEY_ADMIN=9
+DB_KEY_DISABLED=10
 TOKEN_LEN=18
-TOKEN_EXP_DATE=300000
+TOKEN_EXP_DATE=1800
+WS_URL_EXP_TIME=60
 
 
 
-global _db,_db_em,_db_u_nm,_db_u
+global _db,_db_em,_db_u_nm,_db_u,_ws_url
 _db={}
 _db_em={}
 _db_u_nm={}
 _db_u=True
+_ws_url={}
 
 
 
@@ -52,7 +55,7 @@ def _write_db():
 				k=int(k,16)
 				p=int(v[DB_KEY_PASSWORD],16)
 				v[DB_KEY_TIME]=int(v[DB_KEY_TIME])
-				o+=struct.pack(f"<2QB{len(v[DB_KEY_USERNAME])}s{len(v[DB_KEY_EMAIL])}sB4QI4BH{len(v[DB_KEY_IMAGE])}sB",k>>64,k&0xffffffffffffffff,len(v[DB_KEY_USERNAME])|((1 if v[DB_KEY_EMAIL_VERIFIED] else 0)<<5)|((1 if v[DB_KEY_ADMIN] else 0)<<6),bytes(v[DB_KEY_USERNAME],"utf-8"),bytes(v[DB_KEY_EMAIL],"utf-8"),0,p>>192,(p>>128)&0xffffffffffffffff,(p>>64)&0xffffffffffffffff,p&0xffffffffffffffff,v[DB_KEY_TIME],int(v[DB_KEY_IP].split(".")[0]),int(v[DB_KEY_IP].split(".")[1]),int(v[DB_KEY_IP].split(".")[2]),int(v[DB_KEY_IP].split(".")[3].split(":")[0]),int(v[DB_KEY_IP].split(":")[1]),bytes(v[DB_KEY_IMAGE],"utf-8"),0)
+				o+=struct.pack(f"<2QB{len(v[DB_KEY_USERNAME])}s{len(v[DB_KEY_EMAIL])}sB4QI4BH{len(v[DB_KEY_IMAGE])}sB",k>>64,k&0xffffffffffffffff,len(v[DB_KEY_USERNAME])|((1 if v[DB_KEY_EMAIL_VERIFIED] else 0)<<5)|((1 if v[DB_KEY_ADMIN] else 0)<<6)|((1 if v[DB_KEY_DISABLED] else 0)<<6),bytes(v[DB_KEY_USERNAME],"utf-8"),bytes(v[DB_KEY_EMAIL],"utf-8"),0,p>>192,(p>>128)&0xffffffffffffffff,(p>>64)&0xffffffffffffffff,p&0xffffffffffffffff,v[DB_KEY_TIME],int(v[DB_KEY_IP].split(".")[0]),int(v[DB_KEY_IP].split(".")[1]),int(v[DB_KEY_IP].split(".")[2]),int(v[DB_KEY_IP].split(".")[3].split(":")[0]),int(v[DB_KEY_IP].split(":")[1]),bytes(v[DB_KEY_IMAGE],"utf-8"),0)
 			storage.write("database.db",o)
 		time.sleep(300)
 
@@ -118,7 +121,7 @@ def signup(nm,em,pw,ip):
 	if (r!=0):
 		return {"status":RETURN_CODE["password_invalid"]}
 	id_=secrets.token_hex(DB_ID_LEN)
-	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),int(time.time()),f"{ip[0]}:{ip[1]}",None,0,False,"https://via.placeholder.com/128",False]
+	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),int(time.time()),f"{ip[0]}:{ip[1]}",None,0,False,"https://via.placeholder.com/128",False,False]
 	_db_em[em]=id_
 	_db_u_nm[nm.lower()]=id_
 	_db_u=True
@@ -193,6 +196,16 @@ def get_user(u_nm):
 
 
 
+def is_admin(tk):
+	id_=_check_token(tk)
+	if (id_==None):
+		return ({"status":RETURN_CODE["invalid_token"]},False)
+	elif (_db[id_][DB_KEY_ADMIN]!=True):
+		return ({"status":RETURN_CODE["not_admin"]},False)
+	return (None,True)
+
+
+
 def admin(tk,ip):
 	id_=_check_token(tk)
 	if (id_==None):
@@ -209,15 +222,74 @@ def get_users(tk,q,ip):
 		return {"status":RETURN_CODE["invalid_token"]}
 	elif (_db[id_][DB_KEY_ADMIN]!=True):
 		return {"status":RETURN_CODE["not_admin"]}
+	u,e,t=True,True,True
+	if (q.count(":")>0):
+		s,q=q.split(":")[0],q[len(q.split(":")[0])+1:]
+		u,e,t=False,False,False
+		for k in s:
+			if (k=="u"):
+				u=True
+			if (k=="e"):
+				e=True
+			if (k=="t"):
+				t=True
+		if (u==e and e==t and t==False):
+			u,e,t=True,True,True
 	try:
 		q=re.compile(q)
 	except re.error:
 		return {"status":RETURN_CODE["regex_error"]}
 	o=[]
-	for k,v in _db.items():
-		if (q.search(v[DB_KEY_USERNAME])!=None or q.search(v[DB_KEY_EMAIL])!=None):
-			o+=[{"id":k,"username":v[DB_KEY_USERNAME],"email":v[DB_KEY_EMAIL],"password":v[DB_KEY_PASSWORD],"time":v[DB_KEY_TIME],"ip":v[DB_KEY_IP],"token":v[DB_KEY_TOKEN],"token_end":v[DB_KEY_TOKEN_END],"email_verified":v[DB_KEY_EMAIL_VERIFIED],"image":v[DB_KEY_IMAGE],"admin":v[DB_KEY_ADMIN]}]
+	for k,v in list(_db.items()):
+		ts=" ".join((["disabled"] if v[DB_KEY_DISABLED] else [])+(["logged-in"] if v[DB_KEY_TOKEN] else [])+(["verified-email"] if v[DB_KEY_EMAIL_VERIFIED] else [])+(["admin"] if v[DB_KEY_ADMIN] else []))
+		if ((u and q.search(v[DB_KEY_USERNAME])!=None) or (e and q.search(v[DB_KEY_EMAIL])!=None) or (t and q.search(ts)!=None)):
+			o+=[{"id":k,"username":v[DB_KEY_USERNAME],"email":v[DB_KEY_EMAIL],"password":v[DB_KEY_PASSWORD],"time":v[DB_KEY_TIME],"ip":v[DB_KEY_IP],"token":v[DB_KEY_TOKEN],"token_end":v[DB_KEY_TOKEN_END],"email_verified":v[DB_KEY_EMAIL_VERIFIED],"image":v[DB_KEY_IMAGE],"admin":v[DB_KEY_ADMIN],"disabled":v[DB_KEY_DISABLED]}]
 	return {"status":RETURN_CODE["ok"],"users":o}
+
+
+
+def admin_set_name(tk,t_id,nm,ip):
+	global _db,_db_u_nm,_db_u
+	id_=_check_token(tk)
+	if (id_==None):
+		return {"status":RETURN_CODE["invalid_token"]}
+	if (_db[id_][DB_KEY_ADMIN]!=True):
+		return {"status":RETURN_CODE["not_admin"]}
+	if (t_id not in _db):
+		return {"status":RETURN_CODE["invalid_id"]}
+	r=check_username(nm)
+	if (r!=RETURN_CODE["ok"]):
+		return {"status":r}
+	del _db_u_nm[_db[t_id][DB_KEY_USERNAME].lower()]
+	_db_u_nm[nm.lower()]=t_id
+	_db[t_id][DB_KEY_USERNAME]=nm
+	_db_u=True
+	return {"status":RETURN_CODE["ok"]}
+
+
+
+def create_ws_url(tk,ip):
+	global _ws_url
+	id_=_check_token(tk)
+	if (id_==None):
+		return {"status":RETURN_CODE["invalid_token"]}
+	if (_db[id_][DB_KEY_ADMIN]!=True):
+		return {"status":RETURN_CODE["not_admin"]}
+	url=secrets.token_hex(16)
+	_ws_url[url]=time.time()+WS_URL_EXP_TIME
+	return {"status":RETURN_CODE["ok"],"url":url}
+
+
+
+def remove_ws_url(url,ip):
+	global _ws_url
+	if (url not in _ws_url):
+		return ({"status":RETURN_CODE["invalid_url"]},False)
+	t=_ws_url[url]
+	del _ws_url[url]
+	if (t<time.time()):
+		return ({"status":RETURN_CODE["invalid_url"]},False)
+	return (None,True)
 
 
 
@@ -227,7 +299,7 @@ if (storage.exists("database.db")):
 	while (i<len(o)):
 		k1,k2,f=struct.unpack("<2QB",o[i:i+17])
 		k=hex(k1<<64|k2)[2:]
-		a,ve,l=(f>>6)&1,(f>>5)&1,f&0x1f
+		d,a,ve,l=(f>>7)&1,(f>>6)&1,(f>>5)&1,f&0x1f
 		i+=17
 		el=0
 		while (o[i+l+el]!=0):
@@ -236,7 +308,7 @@ if (storage.exists("database.db")):
 		il=0
 		while (o[i+l+el+il+43]!=0):
 			il+=1
-		_db[k]=[str(o[i:i+l],"utf-8"),str(o[i+l:i+l+el],"utf-8"),hex((p1<<192)|(p2<<128)|(p3<<64)|p4)[2:],struct.unpack("<I",o[i+l+el+33:i+l+el+37])[0],".".join([str(e) for e in struct.unpack("<4B",o[i+l+el+37:i+l+el+41])])+":"+str(struct.unpack("<H",o[i+l+el+41:i+l+el+43])[0]),None,0,(True if ve else False),str(o[i+l+el+43:i+l+el+il+43],"utf-8"),(True if a else False)]
+		_db[k]=[str(o[i:i+l],"utf-8"),str(o[i+l:i+l+el],"utf-8"),hex((p1<<192)|(p2<<128)|(p3<<64)|p4)[2:],struct.unpack("<I",o[i+l+el+33:i+l+el+37])[0],".".join([str(e) for e in struct.unpack("<4B",o[i+l+el+37:i+l+el+41])])+":"+str(struct.unpack("<H",o[i+l+el+41:i+l+el+43])[0]),None,0,(True if ve else False),str(o[i+l+el+43:i+l+el+il+43],"utf-8"),(True if a else False),(True if d else False)]
 		_db_em[_db[k][DB_KEY_EMAIL]]=k
 		_db_u_nm[_db[k][DB_KEY_USERNAME].lower()]=k
 		i+=l+el+il+44

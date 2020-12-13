@@ -17,6 +17,7 @@ _epl={}
 
 
 def _handle(cs,a):
+	threading.current_thread()._cs=cs
 	_dt=b""
 	while (True):
 		try:
@@ -30,6 +31,7 @@ def _handle(cs,a):
 			return
 	if (len(_dt)==0):
 		return
+	threading.current_thread()._r_dt=_dt
 	(t,url,threading.current_thread()._rv),threading.current_thread()._rh,threading.current_thread()._rdt=str(_dt.split(b"\r\n")[0],"utf-8").split(" "),{str(e.split(b":")[0],"utf-8"):e[len(e.split(b":")[0])+2:] for e in _dt.split(b"\r\n\r\n")[0].split(b"\r\n")[1:] if len(e)!=0},_dt[len(_dt.split(b"\r\n\r\n")[0])+4:]
 	url=re.sub(r"/\.+/","/./",re.sub(r"\\\.+\\",r"\\.\\",url))
 	url,q=url.split("?")[0],url[len(url.split("?")[0])+1:]
@@ -77,9 +79,10 @@ def _handle(cs,a):
 		traceback.print_exception(None,e,e.__traceback__)
 		c=bytes("Internal Server Error","utf-8")
 		threading.current_thread()._rc=500
-	if (threading.current_thread()._h["Content-Length"]==None):
-		threading.current_thread()._h["Content-Length"]=len(c)
-	cs.sendall(bytes(f"{threading.current_thread()._rc} {HTTP_CODE_MAP[threading.current_thread()._rc]}"+"".join([f"\r\n{k}: {v}" for k,v in threading.current_thread()._h.items()])+"\r\n\r\n","utf-8")+c)
+	if (threading.current_thread()._rc!=-1):
+		if (threading.current_thread()._h["Content-Length"]==None):
+			threading.current_thread()._h["Content-Length"]=len(c)
+		cs.sendall(bytes(f"HTTP/1.1 {threading.current_thread()._rc} {HTTP_CODE_MAP[threading.current_thread()._rc]}"+"".join([f"\r\n{k}: {v}" for k,v in threading.current_thread()._h.items()])+"\r\n\r\n","utf-8")+c)
 
 
 
@@ -101,8 +104,18 @@ def route(m,url):
 
 
 
+def client_socket():
+	return threading.current_thread()._cs
+
+
+
 def address():
 	return threading.current_thread()._a
+
+
+
+def raw_request():
+	return threading.current_thread()._r_dt
 
 
 
@@ -132,8 +145,13 @@ def body():
 
 
 def set_code(c):
+	if (c==-1):
+		threading.current_thread()._rc=-1
+		return
 	if (c not in HTTP_CODES):
 		raise RuntimeError(f"Unknown HTTP Code '{c}'!")
+	if (threading.current_thread()._rc==-1):
+		raise RuntimeError(f"Overriding Non-Returning Socket Handler!")
 	threading.current_thread()._rc=c
 
 
@@ -156,6 +174,5 @@ def run(p):
 	utils.print(f"Server started on port {p}...")
 	while (True):
 		cs,a=ss.accept()
-		cs.sendall(b"HTTP/1.1 ")
 		cs.settimeout(0.1)
 		threading.Thread(target=_handle,args=(cs,a),kwargs={}).start()

@@ -1,5 +1,6 @@
 import server
 import pages
+import ws
 import auth
 import utils
 import json
@@ -134,6 +135,42 @@ def get_users(url):
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
 	return auth.get_users(tk,dt["query"],server.address())
+
+
+
+@server.route("PUT",r"/api/v1/admin/set_name")
+def create_ws_url(url):
+	dt,ok=_validate("admin_set_name","/docs/api",{"name":{"t":str,"p":"body"},"id":{"t":str,"p":"body"}},body=True)
+	if (ok==False):
+		return dt
+	tk,ok=_read_token()
+	if (ok==False):
+		return tk
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	return auth.admin_set_name(tk,dt["id"],dt["name"],server.address())
+
+
+
+@server.route("GET",r"/api/v1/admin/logs")
+def create_ws_url(url):
+	tk,ok=_read_token()
+	if (ok==False):
+		return tk
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	return auth.create_ws_url(tk,server.address())
+
+
+
+@server.route("GET",r"/api/v1/admin/logs/[a-zA-Z0-9]{32}")
+def create_log_ws(url):
+	r,ok=auth.remove_ws_url(url[19:],server.address())
+	if (ok==False):
+		server.set_code(404)
+		return r
+	server.set_code(-1)
+	ws.handle(server.client_socket(),cf=utils.ws_logs_start,df=utils.ws_logs_end,h_dt=server.raw_request())
 
 
 
