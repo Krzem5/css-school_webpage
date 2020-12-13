@@ -88,8 +88,7 @@ def _minify_js(js,fp):
 			o=""
 			while (v):
 				m=(len(b) if len(o)==0 else len(b)+1)
-				s=(0 if len(o)==0 else 1)
-				o=b[int(v%m)-s]+o
+				o=b[int(v%m)-(0 if len(o)==0 else 1)]+o
 				v=v//m
 			return bytes(o,"utf-8")
 		r=JS_RESERVED_IDENTIFIERS[:]
