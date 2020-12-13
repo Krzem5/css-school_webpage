@@ -410,7 +410,7 @@ if (os.path.exists("build")==False):
 	if (subprocess.run(["git","config","--global","user.name",f"\"{USER_NAME}\""]).returncode!=0):
 		os.chdir(cwd)
 		quit()
-	if (subprocess.run(["heroku","git:remote","-a",f"{APP_NAME}"]).returncode!=0):
+	if (subprocess.run(["heroku","git:remote","-a",APP_NAME]).returncode!=0):
 		os.chdir(cwd)
 		quit()
 	os.chdir(cwd)
