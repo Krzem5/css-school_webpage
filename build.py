@@ -86,9 +86,11 @@ def _minify_js(js,fp):
 	def _gen_i(il,b=JS_VAR_LETTERS):
 		def _gen_next(v,b):
 			o=""
-			while (v>0):
-				o=b[int(v%len(b))]+o
-				v=v//len(b)
+			while (v):
+				m=(len(b) if len(o)==0 else len(b)+1)
+				s=(0 if len(o)==0 else 1)
+				o=b[int(v%m)-s]+o
+				v=v//m
 			return bytes(o,"utf-8")
 		r=JS_RESERVED_IDENTIFIERS[:]
 		for k in il:
