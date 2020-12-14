@@ -16,7 +16,7 @@ MIN_PASSWORD_LEN=6
 MAX_PASSWORD_LEN=64
 EMAIL_REGEX=re.compile(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 USERNAME_VALID_LETTERS="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
-RETURN_CODE={"ok":0,"username_to_short":1,"username_to_long":2,"username_invalid":3,"username_used":4,"email_invalid":5,"email_used":6,"password_to_short":7,"password_to_long":8,"password_invalid":9,"login_fail":10,"invalid_token":11,"not_admin":12,"regex_error":13,"invalid_url":14,"invalid_id":15}
+RETURN_CODE={"ok":0,"username_to_short":1,"username_to_long":2,"username_invalid":3,"username_used":4,"email_invalid":5,"email_used":6,"password_to_short":7,"password_to_long":8,"password_invalid":9,"login_fail":10,"invalid_token":11,"not_admin":12,"regex_error":13,"invalid_url":14,"invalid_id":15,"invalid_tag":16}
 DB_ID_LEN=16
 DB_KEY_USERNAME=0
 DB_KEY_EMAIL=1
@@ -55,7 +55,7 @@ def _write_db():
 				k=int(k,16)
 				p=int(v[DB_KEY_PASSWORD],16)
 				v[DB_KEY_TIME]=int(v[DB_KEY_TIME])
-				o+=struct.pack(f"<2QB{len(v[DB_KEY_USERNAME])}s{len(v[DB_KEY_EMAIL])}sB4QI4BH{len(v[DB_KEY_IMAGE])}sB",k>>64,k&0xffffffffffffffff,len(v[DB_KEY_USERNAME])|((1 if v[DB_KEY_EMAIL_VERIFIED] else 0)<<5)|((1 if v[DB_KEY_ADMIN] else 0)<<6)|((1 if v[DB_KEY_DISABLED] else 0)<<6),bytes(v[DB_KEY_USERNAME],"utf-8"),bytes(v[DB_KEY_EMAIL],"utf-8"),0,p>>192,(p>>128)&0xffffffffffffffff,(p>>64)&0xffffffffffffffff,p&0xffffffffffffffff,v[DB_KEY_TIME],int(v[DB_KEY_IP].split(".")[0]),int(v[DB_KEY_IP].split(".")[1]),int(v[DB_KEY_IP].split(".")[2]),int(v[DB_KEY_IP].split(".")[3].split(":")[0]),int(v[DB_KEY_IP].split(":")[1]),bytes(v[DB_KEY_IMAGE],"utf-8"),0)
+				o+=struct.pack(f"<2QB{len(v[DB_KEY_USERNAME])}s{len(v[DB_KEY_EMAIL])}sB4QI4BH{len(v[DB_KEY_IMAGE])}sB",k>>64,k&0xffffffffffffffff,len(v[DB_KEY_USERNAME])|((1 if v[DB_KEY_EMAIL_VERIFIED] else 0)<<5)|((1 if v[DB_KEY_ADMIN] else 0)<<6)|((1 if v[DB_KEY_DISABLED] else 0)<<7),bytes(v[DB_KEY_USERNAME],"utf-8"),bytes(v[DB_KEY_EMAIL],"utf-8"),0,p>>192,(p>>128)&0xffffffffffffffff,(p>>64)&0xffffffffffffffff,p&0xffffffffffffffff,v[DB_KEY_TIME],int(v[DB_KEY_IP].split(".")[0]),int(v[DB_KEY_IP].split(".")[1]),int(v[DB_KEY_IP].split(".")[2]),int(v[DB_KEY_IP].split(".")[3].split(":")[0]),int(v[DB_KEY_IP].split(":")[1]),bytes(v[DB_KEY_IMAGE],"utf-8"),0)
 			storage.write("database.db",o)
 		time.sleep(300)
 
@@ -192,6 +192,8 @@ def get_user(u_nm):
 	if (u_nm not in _db_u_nm):
 		return None
 	id_=_db_u_nm[u_nm]
+	if (_db[id_][DB_KEY_DISABLED]):
+		return None
 	return {"username":_db[id_][DB_KEY_USERNAME],"time":_db[id_][DB_KEY_TIME],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFIED],"img_url":_db[id_][DB_KEY_IMAGE]}
 
 
@@ -236,7 +238,7 @@ def get_users(tk,q,ip):
 		if (u==e and e==t and t==False):
 			u,e,t=True,True,True
 	try:
-		q=re.compile(q)
+		q=re.compile(q,re.I)
 	except re.error:
 		return {"status":RETURN_CODE["regex_error"]}
 	o=[]
@@ -263,6 +265,31 @@ def admin_set_name(tk,t_id,nm,ip):
 	del _db_u_nm[_db[t_id][DB_KEY_USERNAME].lower()]
 	_db_u_nm[nm.lower()]=t_id
 	_db[t_id][DB_KEY_USERNAME]=nm
+	_db_u=True
+	return {"status":RETURN_CODE["ok"]}
+
+
+
+def admin_flip_tag(tk,t_id,tag,ip):
+	global _db,_db_u
+	id_=_check_token(tk)
+	if (id_==None):
+		return {"status":RETURN_CODE["invalid_token"]}
+	if (_db[id_][DB_KEY_ADMIN]!=True):
+		return {"status":RETURN_CODE["not_admin"]}
+	if (t_id not in _db):
+		return {"status":RETURN_CODE["invalid_id"]}
+	if (tag==0):
+		_db[t_id][DB_KEY_DISABLED]=not _db[t_id][DB_KEY_DISABLED]
+	elif (tag==1 and _db[t_id][DB_KEY_TOKEN]!=0):
+		_db[t_id][DB_KEY_TOKEN]=None
+		_db[t_id][DB_KEY_TOKEN_END]=0
+	elif (tag==2):
+		_db[t_id][DB_KEY_EMAIL_VERIFIED]=not _db[t_id][DB_KEY_EMAIL_VERIFIED]
+	elif (tag==3):
+		_db[t_id][DB_KEY_ADMIN]=not _db[t_id][DB_KEY_ADMIN]
+	else:
+		return {"status":RETURN_CODE["invalid_tag"]}
 	_db_u=True
 	return {"status":RETURN_CODE["ok"]}
 

@@ -2,6 +2,7 @@ import server
 import pages
 import ws
 import auth
+import analytics
 import utils
 import json
 import traceback
@@ -14,9 +15,9 @@ JSON_TYPE_MAP={list:"array",str:"string",int:"int",float:"float",bool:"boolean"}
 
 
 def _pg_cmp(a,b):
-	if (a[1]["views"]!=b[1]["views"]):
-		return b[1]["views"]-a[1]["views"]
-	return (1 if a[1]["nm"]>b[1]["nm"] else -1)
+	if (a[1]!=b[1]):
+		return b[1]-a[1]
+	return (1 if a[2]>b[2] else -1)
 
 
 
@@ -35,8 +36,6 @@ def _read_token():
 		server.set_code(401)
 		return ({"error":{"code":"E_UNAUTHORIZED","message":"This Request Requires Authorization","link":"/docs/api/request-authorization"}},False)
 	return (str(tk[1],"utf-8"),True)
-
-
 
 
 
@@ -98,7 +97,7 @@ def popular(url):
 		return dt
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
-	return [{"name":e[1]["nm"],"url":f"/page/{e[0]}","author":e[1]["author"]} for e in sorted(pages.PAGE_LIST.items(),key=cmp_to_key(_pg_cmp))[:dt["count"]]]
+	return [{"name":e[2],"url":f"/page/{e[0]}","author":pages.PAGE_LIST[e[0]]["author"]} for e in sorted([(e,analytics.page_views(e),pages.PAGE_LIST[e]["nm"]) for e in pages.PAGE_LIST.keys()],key=cmp_to_key(_pg_cmp))[:dt["count"]]]
 
 
 
@@ -139,7 +138,7 @@ def get_users(url):
 
 
 @server.route("PUT",r"/api/v1/admin/set_name")
-def create_ws_url(url):
+def admin_set_name(url):
 	dt,ok=_validate("admin_set_name","/docs/api",{"name":{"t":str,"p":"body"},"id":{"t":str,"p":"body"}},body=True)
 	if (ok==False):
 		return dt
@@ -149,6 +148,20 @@ def create_ws_url(url):
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
 	return auth.admin_set_name(tk,dt["id"],dt["name"],server.address())
+
+
+
+@server.route("PUT",r"/api/v1/admin/flip_tag")
+def admin_flip_tag(url):
+	dt,ok=_validate("admin_flip_tag","/docs/api",{"tag":{"t":int,"p":"body","range":[0,3]},"id":{"t":str,"p":"body"}},body=True)
+	if (ok==False):
+		return dt
+	tk,ok=_read_token()
+	if (ok==False):
+		return tk
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	return auth.admin_flip_tag(tk,dt["id"],dt["tag"],server.address())
 
 
 

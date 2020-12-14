@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		return `<span class="c">${e}</span>`;
 	}).join("");
 	let se=document.querySelector(".side");
-	fetch("/api/v1/popular",{}).then((e)=>e.json()).then((e)=>e.forEach((k)=>{
+	fetch("/api/v1/popular?count=10").then((e)=>e.json()).then((e)=>e.forEach((k)=>{
 		se.innerHTML+=`<div class="elem" onclick="window.location.href='${k.url}'">${k.name}</div>`;
 	}));
 	fetch("/api/v1/user_data",{headers:{"authorization":`bearer ${localStorage._tk}`}}).then((e)=>e.json()).then((e)=>{

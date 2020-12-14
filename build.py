@@ -85,22 +85,32 @@ def _minify_css(css,fp):
 def _minify_js(js,fp):
 	def _gen_i(il,b=JS_VAR_LETTERS):
 		def _gen_next(v,b):
+			n=1
+			m=len(b)
+			while (v>m):
+				v-=m
+				m*=len(b)
+				n+=1
+			v-=1
 			o=""
-			while (v):
-				m=(len(b) if len(o)==0 else len(b)+1)
-				o=b[int(v%m)-(0 if len(o)==0 else 1)]+o
-				v=v//m
+			if (v==0):
+				o=b[0]*n
+			else:
+				while (v):
+					o=b[v%len(b)]+o
+					v=v//len(b)
+				o=b[0]*(n-len(o))+o
 			return bytes(o,"utf-8")
 		r=JS_RESERVED_IDENTIFIERS[:]
 		for k in il:
 			r+=k.values()
-		i=0
-		o=bytes(b[0],"utf-8")
+		i=1
+		o=b""
 		while (True):
+			o=_gen_next(i,b)
 			if (o not in r):
 				break
 			i+=1
-			o=_gen_next(i,b)
 		return o
 	def _map_value(v,vml):
 		for i in range(len(vml)-1,-1,-1):
@@ -222,7 +232,7 @@ def _minify_js(js,fp):
 					elif (str(idl[0],"utf-8") not in JS_RESERVED_IDENTIFIERS and (i==0 or (tl[i-1][0]!="operator" or tl[i-1][1]!=b"."))):
 						mv=_map_value(idl[0],vm)
 						if (mv==None):
-							print(f"Variable {idl[0]} is not mapped! (Dict?)")
+							print(f"Variable {idl[0]} is not mapped!")
 						else:
 							idl[0]=mv
 			for k in idl[1:]:
@@ -363,27 +373,36 @@ def _minify_js(js,fp):
 						if (ef[j][0]==bl):
 							ef[j]=(-1,*ef[j][1:])
 		i+=1
-	cvm={}
-	sl=[]
+	cvml=[]
 	for k,v in vfm.items():
-		mv=_gen_i([cvm],b=JS_CONST_LETTERS)
-		if (len(mv)*(v+1)+len(k)+2<=len(k)*v):
-			cvm[k]=mv
-			if (len(sl)==0):
-				sl=[("keyword",b"let")]
-			else:
-				sl+=[("operator",b",")]
-			sl+=[("identifier",mv),("operator",b"="),("identifier",k)]
-	cvma={}
+		if (v>1):
+			cvml+=[(len(k)*v,k,v,False)]
 	for k,v in vfma.items():
-		mv=_gen_i([cvm,cvma],b=JS_CONST_LETTERS)
-		if (len(mv)+len(k)+(len(mv)+1)*v+4<=(len(k)+1)*v):
-			cvma[k]=mv
-			if (len(sl)==0):
-				sl=[("keyword",b"let")]
-			else:
-				sl+=[("operator",b",")]
-			sl+=[("identifier",mv),("operator",b"="),("string",b"\""+k+b"\"")]
+		if (v>1):
+			cvml+=[(len(k)*v,k,v,True)]
+	cvml=sorted(cvml,key=lambda e:-e[0])
+	cvm={}
+	cvma={}
+	sl=[]
+	for k in cvml:
+		if (k[3]==False):
+			mv=_gen_i([cvm,cvma],b=JS_CONST_LETTERS)
+			if (len(mv)*(k[2]+1)+len(k[1])+2<=len(k[1])*k[2]):
+				cvm[k[1]]=mv
+				if (len(sl)==0):
+					sl=[("keyword",b"let")]
+				else:
+					sl+=[("operator",b",")]
+				sl+=[("identifier",mv),("operator",b"="),("identifier",k[1])]
+		else:
+			mv=_gen_i([cvm,cvma],b=JS_CONST_LETTERS)
+			if (len(mv)+len(k[1])+(len(mv)+1)*k[2]+4<=(len(k[1])+1)*k[2]):
+				cvma[k[1]]=mv
+				if (len(sl)==0):
+					sl=[("keyword",b"let")]
+				else:
+					sl+=[("operator",b",")]
+				sl+=[("identifier",mv),("operator",b"="),("string",b"\""+k[1]+b"\"")]
 	if (len(sl)>0):
 		tl=sl+[("operator",b";")]+tl
 	o,_=_write(tl,cvm,cvma,sl=len(sl))
@@ -425,7 +444,6 @@ for k in os.listdir("build"):
 os.mkdir(f"build\\web")
 os.mkdir(f"build\\web/js")
 os.mkdir(f"build\\web/css")
-os.mkdir(f"build\\pages")
 os.mkdir(f"build\\server")
 for fn in os.listdir("web"):
 	if (fn[-5:]==".html"):

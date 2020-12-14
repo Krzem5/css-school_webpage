@@ -195,19 +195,42 @@ body {
 .bg-r .bg .wr .main {
 	position: absolute;
 	top: 120px;
-	left: 270px;
-	width: calc(100% - 280px);
+	left: 260px;
+	width: calc(100% - 270px);
 	min-height: calc(100% - 120px);
 }
-.bg-r .bg .wr .main .img {
+.bg-r .bg .wr .main .a-img {
 	position: absolute;
 	top: 10px;
 	left: 10px;
 	width: 128px;
 	height: 128px;
-	background: red;
-	border-radius: 50%;
 	user-select: none;
+}
+.bg-r .bg .wr .main .a-img .img {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: #131313;
+	border-radius: 50%;
+}
+.bg-r .bg .wr .main .a-img.h .img {
+	display: none;
+}
+.bg-r .bg .wr .main .a-img .i {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%,-50%);
+	font-size: 156px;
+	color: #7c52cf;
+	text-shadow: 0 0 9px #7B55CD, 0 0 9px #7B55CD, 0 0 9px #7B55CD;
+	display: none;
+}
+.bg-r .bg .wr .main .a-img.h .i {
+	display: initial;
 }
 .bg-r .bg .wr .main .nm {
 	position: absolute;
@@ -228,4 +251,71 @@ body {
 .bg-r .bg .wr .main .nm .t::selection {
 	background: #303030;
 	color: #2fcf8e;
+}
+.bg-r .bg .wr .main .list {
+	position: absolute;
+	top: 200px;
+	left: 0;
+	width: 100%;
+	min-height: calc(100% - 220px);
+	grid-template-columns: repeat(3, 1fr);
+	display: grid;
+	gap: 20px;
+}
+.bg-r .bg .wr .main .list .e {
+	position: relative;
+	width: auto;
+	height: 300px;
+}
+.bg-r .bg .wr .main .list .e .e-wr {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: calc(100% - 20px);
+	height: calc(100% - 20px);
+	background: #151515;
+	border-radius: 30px;
+	border: solid 10px #0f0f0f;
+	cursor: pointer;
+}
+.bg-r .bg .wr .main .list .e .e-wr .t {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	right: 10px;
+	bottom: 40px;
+	font-family: Nova Mono, sans-serif;
+	font-size: 32px;
+	color: #ffbf0f;
+}
+.bg-r .bg .wr .main .list .e .e-wr .t::selection {
+	background: #303030;
+	color: #FFE960;
+}
+.bg-r .bg .wr .main .list .e .e-wr .a {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+	right: 10px;
+	height: 30px;
+	font-family: Ubuntu Mono, sans-serif;
+	font-size: 20px;
+	line-height: 30px;
+	text-align: right;
+	color: #d82b34;
+	user-select: none;
+}
+.bg-r .bg .wr .main .list .e .e-wr .a span {
+	text-decoration: underline;
+}
+.bg-r .bg .wr .main .list .err {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translate(-50%,0);
+	font-family: Montserrat Alternates;
+	font-weight: 500;
+	font-size: 20px;
+	color: #5a5a5a;
+	user-select: none;
 }

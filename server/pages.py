@@ -1,14 +1,16 @@
 import server
 import storage
 import auth
+import analytics
 import utils
 import json
 import re
 
 
 
-global PAGE_LIST,USER_CACHE
+global PAGE_LIST,USER_PAGE_MAP,USER_CACHE
 PAGE_LIST={}
+USER_PAGE_MAP={}
 USER_CACHE={}
 with open("web/page_template.html","rb") as f:
 	PAGE_TEMPLATE=f.read().split(b"$$$__DATA__$$$")
@@ -19,7 +21,11 @@ with open("web/user_template.html","rb") as f:
 
 for k in storage.listdir("pages")[0]:
 	dt=json.loads(storage.read(k+"/index.json"))
-	PAGE_LIST[re.sub(r"[^a-zA-Z0-9-]","",k[7:].lower())]={"nm":dt["title"],"views":0,"author":dt["author"],"dt":dt,"cache":None}
+	id_=re.sub(r"[^a-zA-Z0-9-]","",k[7:].lower())
+	PAGE_LIST[id_]={"nm":dt["title"],"author":dt["author"],"dt":dt,"cache":None}
+	if (dt["author"] not in USER_PAGE_MAP):
+		USER_PAGE_MAP[dt["author"]]=[]
+	USER_PAGE_MAP[dt["author"]]+=[id_]
 
 
 
@@ -60,7 +66,13 @@ def _render_page(pg):
 
 
 def _render_user(dt):
-	return USER_TEMPLATE[0]+bytes(f"{dt['username']}\",img:\"{dt['img_url']}","utf-8")+USER_TEMPLATE[1]
+	o=USER_TEMPLATE[0]+bytes(f"{dt['username']}\",img:\"{dt['img_url']}","utf-8")+USER_TEMPLATE[1]
+	if (dt["username"] in USER_PAGE_MAP and len(USER_PAGE_MAP[dt["username"]])>0):
+		for k in USER_PAGE_MAP[dt["username"]]:
+			o+=bytes(f"<div class=\"e\"><div class=\"e-wr\"><div class=\"t\" onclick=\"window.location.href='/page/{k}'\">{PAGE_LIST[k]['nm']}</div><div class=\"a\" onclick=\"window.location.href='/user/{dt['username']}'\">By <span>@{dt['username']}</span></div></div></div>","utf-8")
+	else:
+		o+=b"<div class=\"err\">No Articles to Show</div>"
+	return o+USER_TEMPLATE[2]
 
 
 
@@ -106,7 +118,7 @@ def page(url):
 	server.set_header("Content-Type","text/html")
 	if (url in PAGE_LIST):
 		pg=PAGE_LIST[url]
-		pg["views"]+=1
+		analytics.view_page(url)
 		if (pg["cache"]==None):
 			pg["cache"]=_render_page(pg)
 		return pg["cache"]
