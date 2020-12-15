@@ -17,6 +17,8 @@ with open("web/page_template.html","rb") as f:
 	PAGE_TEMPLATE=f.read().split(b"$$$__DATA__$$$")
 with open("web/user_template.html","rb") as f:
 	USER_TEMPLATE=f.read().split(b"$$$__DATA__$$$")
+with open("web/current_user_template.html","rb") as f:
+	CURRENT_USER_TEMPLATE=f.read().split(b"$$$__DATA__$$$")
 
 
 
@@ -74,6 +76,17 @@ def _render_user(dt):
 	else:
 		o+=b"<div class=\"err\">No Articles to Show</div>"
 	return o+USER_TEMPLATE[2]
+
+
+
+def _render_c_user(dt):
+	o=CURRENT_USER_TEMPLATE[0]+bytes(f"{dt['username']}\",img:\"{dt['img_url']}","utf-8")+CURRENT_USER_TEMPLATE[1]
+	if (dt["username"] in USER_PAGE_MAP and len(USER_PAGE_MAP[dt["username"]])>0):
+		for k in USER_PAGE_MAP[dt["username"]]:
+			o+=bytes(f"<div class=\"e\"><div class=\"e-wr\"><div class=\"t\" onclick=\"window.location.href='/page/{k}'\">{PAGE_LIST[k]['nm']}</div><div class=\"a\" onclick=\"window.location.href='/user/{dt['username']}'\">By <span>@{dt['username']}</span></div></div></div>","utf-8")
+	else:
+		o+=b"<div class=\"err\">No Articles to Show</div>"
+	return o+CURRENT_USER_TEMPLATE[2]
 
 
 
@@ -145,10 +158,10 @@ def user(url):
 	dt=auth.get_user(url)
 	if (dt!=None):
 		tk,ok=api.read_token()
-		analytics.view_user(url,u_id=(auth.get_id(tk) if ok else None))
-		if (url not in USER_CACHE):
-			USER_CACHE[url]=_render_user(dt)
-		return USER_CACHE[url]
+		id_=(auth.get_id(tk) if ok else None)
+		analytics.view_user(url,u_id=id_)
+		print(auth.get_id_from_username(url),id_)
+		return (_render_c_user if id_!=None and auth.get_id_from_username(url)==id_ else _render_user)(dt)
 	else:
 		server.set_code(404)
 		return utils.cache("web/not-found.html")
