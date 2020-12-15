@@ -32,7 +32,7 @@ def _handle(cs,a):
 	if (len(_dt)==0):
 		return
 	threading.current_thread()._r_dt=_dt
-	(t,url,threading.current_thread()._rv),threading.current_thread()._rh,threading.current_thread()._rdt=str(_dt.split(b"\r\n")[0],"utf-8").split(" "),{str(e.split(b":")[0],"utf-8"):e[len(e.split(b":")[0])+2:] for e in _dt.split(b"\r\n\r\n")[0].split(b"\r\n")[1:] if len(e)!=0},_dt[len(_dt.split(b"\r\n\r\n")[0])+4:]
+	(t,url,threading.current_thread()._rv),threading.current_thread()._rh,threading.current_thread()._rdt=str(_dt.split(b"\r\n")[0],"utf-8").split(" "),{str(e.split(b":")[0],"utf-8").lower():e[len(e.split(b":")[0])+2:] for e in _dt.split(b"\r\n\r\n")[0].split(b"\r\n")[1:] if len(e)!=0},_dt[len(_dt.split(b"\r\n\r\n")[0])+4:]
 	url=re.sub(r"/\.+/","/./",re.sub(r"\\\.+\\",r"\\.\\",url))
 	url,q=url.split("?")[0],url[len(url.split("?")[0])+1:]
 	threading.current_thread()._a=a

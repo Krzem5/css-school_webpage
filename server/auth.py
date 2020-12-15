@@ -1,3 +1,4 @@
+import server
 import storage
 import utils
 import re
@@ -75,6 +76,16 @@ def _check_token(tk):
 
 
 
+def get_id(tk):
+	return _check_token(tk)
+
+
+
+def get_id_from_username(nm):
+	return _db_u_nm[nm]
+
+
+
 def check_username(nm):
 	if (len(nm)<MIN_USERNAME_LEN):
 		return RETURN_CODE["username_to_short"]
@@ -121,6 +132,9 @@ def signup(nm,em,pw,ip):
 	if (r!=0):
 		return {"status":RETURN_CODE["password_invalid"]}
 	id_=secrets.token_hex(DB_ID_LEN)
+	while (id_=="0"*auth.DB_ID_LEN*2 or id_=="0"*(auth.DB_ID_LEN*2-1)+"1"):
+		id_=secrets.token_hex(DB_ID_LEN)
+	id_=hex(id_)[2:]
 	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),int(time.time()),f"{ip[0]}:{ip[1]}",None,0,False,"https://via.placeholder.com/128",False,False]
 	_db_em[em]=id_
 	_db_u_nm[nm.lower()]=id_
@@ -150,7 +164,8 @@ def login(em,pw,ip):
 		return {"status":RETURN_CODE["login_fail"]}
 	_db[id_][DB_KEY_TOKEN]=str(base64.urlsafe_b64encode(secrets.token_bytes(TOKEN_LEN)),"utf-8")
 	_db[id_][DB_KEY_TOKEN_END]=int(time.time())+TOKEN_EXP_DATE
-	return {"status":RETURN_CODE["ok"],"token":_db[id_][DB_KEY_TOKEN]}
+	server.set_header("Set-cookie",f"__ctoken={_db[id_][DB_KEY_TOKEN]};Max-Age={TOKEN_EXP_DATE};SameSite=Secure;Secure;HttpOnly;Path=/")
+	return {"status":RETURN_CODE["ok"]}
 
 
 

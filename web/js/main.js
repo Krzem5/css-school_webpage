@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		setTimeout(window.onresize,400);
 		setTimeout(window.onresize,500);
 	});
-	fetch("/api/v1/user_data",{headers:{"authorization":`bearer ${localStorage._tk}`}}).then((e)=>e.json()).then((e)=>{
+	fetch("/api/v1/user_data").then((e)=>e.json()).then((e)=>{
 		if (e.status!=0){
 			localStorage._tk=null;
 		}

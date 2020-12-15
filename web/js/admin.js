@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 	let t2;
 	let t3;
 	function _start_socket(){
-		fetch("/api/v1/admin/logs",{headers:{"authorization":`bearer ${localStorage._tk}`}}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
+		fetch("/api/v1/admin/logs").catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 			if (!e||e.status){
 				location.reload();
 			}
@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 					if (t==0){
 						t2=e.split("] ")[0];
 						le.innerHTML+=`<div class="msg"><span class="t">${t2}] </span><span class="m">${e.substring(t2.length+2)}</span></div>`;
+						le.removeChild(le.children[0]);
 					}
 					else{
 						for (t of e.split("\n")){
@@ -75,7 +76,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 	}
 	window.switch(0);
 	window.change_tag=(t,id)=>{
-		fetch("/api/v1/admin/flip_tag",{method:"PUT",headers:{"authorization":`bearer ${localStorage._tk}`},body:JSON.stringify({tag:t,id:id})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
+		fetch("/api/v1/admin/flip_tag",{method:"PUT",body:JSON.stringify({tag:t,id:id})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 			if (e&&!e.status){
 				aue.classList.remove("s");
 				aie.onkeyup();
@@ -91,7 +92,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		t=document.querySelector(".ch-nm");
 		t.onkeyup=(e)=>{
 			if (e.keyCode==13){
-				fetch("/api/v1/admin/set_name",{method:"PUT",headers:{"authorization":`bearer ${localStorage._tk}`},body:JSON.stringify({id:id,name:t.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
+				fetch("/api/v1/admin/set_name",{method:"PUT",body:JSON.stringify({id:id,name:t.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 					if (e&&!e.status){
 						aue.classList.remove("s");
 						aie.onkeyup();
@@ -120,7 +121,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 			return n;
 		}
 		if (!e||e.keyCode==13){
-			fetch("/api/v1/admin/users",{method:"POST",headers:{"authorization":`bearer ${localStorage._tk}`},body:JSON.stringify({query:aie.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
+			fetch("/api/v1/admin/users",{method:"POST",body:JSON.stringify({query:aie.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 				if (!e||e.status){
 					location.href="/";
 				}
@@ -135,12 +136,4 @@ document.addEventListener("DOMContentLoaded",()=>{
 			});
 		}
 	}
-	fetch("/api/v1/admin",{headers:{"authorization":`bearer ${localStorage._tk}`}}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
-		if (!e||e.status){
-			location.href="/";
-		}
-		else{
-			document.body.classList.remove("h");
-		}
-	});
 },false);

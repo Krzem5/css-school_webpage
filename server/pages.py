@@ -1,6 +1,7 @@
 import server
 import storage
 import auth
+import api
 import analytics
 import utils
 import json
@@ -102,6 +103,11 @@ def signup(url):
 
 @server.route("GET",r"/admin")
 def admin(url):
+	tk,ok=api.read_token()
+	if (ok==False or auth.is_admin(tk)[1]==False):
+		server.set_code(307)
+		server.set_header("Location","https://krzem.herokuapp.com/")
+		return b""
 	server.set_code(200)
 	server.set_header("Content-Type","text/html")
 	return utils.cache("web/admin.html")
@@ -110,7 +116,6 @@ def admin(url):
 
 @server.route("GET",r"/page/[a-zA-Z0-9-]+(?:\.html)?")
 def page(url):
-	global PAGE_LIST
 	url=url[6:].lower()
 	if (url.endswith(".html")):
 		url=url[:-5]
@@ -118,7 +123,8 @@ def page(url):
 	server.set_header("Content-Type","text/html")
 	if (url in PAGE_LIST):
 		pg=PAGE_LIST[url]
-		analytics.view_page(url)
+		tk,ok=api.read_token()
+		analytics.view_page(url,u_id=(auth.get_id(tk) if ok else None))
 		if (pg["cache"]==None):
 			pg["cache"]=_render_page(pg)
 		return pg["cache"]
@@ -138,6 +144,8 @@ def user(url):
 	server.set_header("Content-Type","text/html")
 	dt=auth.get_user(url)
 	if (dt!=None):
+		tk,ok=api.read_token()
+		analytics.view_user(url,u_id=(auth.get_id(tk) if ok else None))
 		if (url not in USER_CACHE):
 			USER_CACHE[url]=_render_user(dt)
 		return USER_CACHE[url]

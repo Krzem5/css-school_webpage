@@ -21,24 +21,6 @@ def _pg_cmp(a,b):
 
 
 
-def _read_token():
-	h=server.headers()
-	tk=None
-	if ("Authorization" in h):
-		tk=h["Authorization"]
-	elif ("authorization" in h):
-		tk=h["authorization"]
-	else:
-		server.set_code(401)
-		return ({"error":{"code":"E_UNAUTHORIZED","message":"This Request Requires Authorization","link":"/docs/api/request-authorization"}},False)
-	tk=tk.split(b" ")
-	if (len(tk)!=2 or tk[0].lower()!=b"bearer"):
-		server.set_code(401)
-		return ({"error":{"code":"E_UNAUTHORIZED","message":"This Request Requires Authorization","link":"/docs/api/request-authorization"}},False)
-	return (str(tk[1],"utf-8"),True)
-
-
-
 def _validate(eb,d_url,t,body=False):
 	b_dt=None
 	if (body==True):
@@ -90,6 +72,27 @@ def _validate(eb,d_url,t,body=False):
 
 
 
+def read_token():
+	h=server.headers()
+	tk=None
+	if ("cookie" in h):
+		for k in h["cookie"].split(b";"):
+			k=k.split(b"=")
+			if (k[0]==b"__ctoken"):
+				return (str(k[1],"utf-8"),True)
+	if ("authorization" in h):
+		tk=h["authorization"]
+	else:
+		server.set_code(401)
+		return ({"error":{"code":"E_UNAUTHORIZED","message":"This Request Requires Authorization","link":"/docs/api/request-authorization"}},False)
+	tk=tk.split(b" ")
+	if (len(tk)!=2 or tk[0].lower()!=b"bearer"):
+		server.set_code(401)
+		return ({"error":{"code":"E_UNAUTHORIZED","message":"This Request Requires Authorization","link":"/docs/api/request-authorization"}},False)
+	return (str(tk[1],"utf-8"),True)
+
+
+
 @server.route("GET",r"/api/v1/popular")
 def popular(url):
 	dt,ok=_validate("popular","/docs/api/popular",{"count":{"t":int,"p":"query","d":10,"range":[1,100]}})
@@ -103,7 +106,7 @@ def popular(url):
 
 @server.route("GET",r"/api/v1/user_data")
 def user_data(url):
-	tk,ok=_read_token()
+	tk,ok=read_token()
 	if (ok==False):
 		return tk
 	server.set_code(200)
@@ -114,7 +117,7 @@ def user_data(url):
 
 @server.route("GET",r"/api/v1/admin")
 def admin(url):
-	tk,ok=_read_token()
+	tk,ok=read_token()
 	if (ok==False):
 		return tk
 	server.set_code(200)
@@ -128,7 +131,7 @@ def get_users(url):
 	dt,ok=_validate("admin_users","/docs/api",{"query":{"t":str,"p":"body"}},body=True)
 	if (ok==False):
 		return dt
-	tk,ok=_read_token()
+	tk,ok=read_token()
 	if (ok==False):
 		return tk
 	server.set_code(200)
@@ -142,7 +145,7 @@ def admin_set_name(url):
 	dt,ok=_validate("admin_set_name","/docs/api",{"name":{"t":str,"p":"body"},"id":{"t":str,"p":"body"}},body=True)
 	if (ok==False):
 		return dt
-	tk,ok=_read_token()
+	tk,ok=read_token()
 	if (ok==False):
 		return tk
 	server.set_code(200)
@@ -156,7 +159,7 @@ def admin_flip_tag(url):
 	dt,ok=_validate("admin_flip_tag","/docs/api",{"tag":{"t":int,"p":"body","range":[0,3]},"id":{"t":str,"p":"body"}},body=True)
 	if (ok==False):
 		return dt
-	tk,ok=_read_token()
+	tk,ok=read_token()
 	if (ok==False):
 		return tk
 	server.set_code(200)
@@ -167,7 +170,7 @@ def admin_flip_tag(url):
 
 @server.route("GET",r"/api/v1/admin/logs")
 def create_ws_url(url):
-	tk,ok=_read_token()
+	tk,ok=read_token()
 	if (ok==False):
 		return tk
 	server.set_code(200)
@@ -233,7 +236,7 @@ def login(url):
 
 @server.route("PUT",r"/api/v1/auth/check_token")
 def check_token(url):
-	tk,ok=_read_token()
+	tk,ok=read_token()
 	if (ok==False):
 		return tk
 	server.set_code(200)
@@ -244,7 +247,7 @@ def check_token(url):
 
 @server.route("POST",r"/api/v1/auth/refresh_token")
 def refresh_token(url):
-	tk,ok=_read_token()
+	tk,ok=read_token()
 	if (ok==False):
 		return tk
 	server.set_code(200)
@@ -255,7 +258,7 @@ def refresh_token(url):
 
 @server.route("PUT",r"/api/v1/auth/logout")
 def logout(url):
-	tk,ok=_read_token()
+	tk,ok=read_token()
 	if (ok==False):
 		return tk
 	server.set_code(200)
