@@ -127,7 +127,20 @@ def admin(url):
 
 
 
-@server.route("GET",r"/page/[a-zA-Z0-9-]+(?:\.html)?")
+@server.route("GET",r"/new")
+def admin(url):
+	tk,ok=api.read_token()
+	if (ok==False):
+		server.set_code(307)
+		server.set_header("Location","https://krzem.herokuapp.com/")
+		return b""
+	server.set_code(200)
+	server.set_header("Content-Type","text/html")
+	return utils.cache("web/new.html")
+
+
+
+@server.route("GET",r"/page/[a-z0-9-]+(?:\.html)?")
 def page(url):
 	url=url[6:].lower()
 	if (url.endswith(".html")):

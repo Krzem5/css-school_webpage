@@ -1,0 +1,242 @@
+html, body {
+	position: fixed;
+}
+body, body * {
+	margin: 0;
+	border: none;
+	padding: 0;
+	outline: none;
+}
+body {
+	width: 100%;
+	height: 100%;
+}
+
+
+
+.bg-r {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow-y: scroll;
+}
+.bg-r::-webkit-scrollbar {
+	width: 15px;
+	background: #020202;
+}
+.bg-r::-webkit-scrollbar-track {
+	background: #212121;
+	border-radius: 8px;
+}
+.bg-r::-webkit-scrollbar-thumb {
+	background: #2d2d2d;
+	border-radius: 8px;
+}
+.bg-r .bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	min-height: 100%;
+	background-color: #020202;
+	background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #0a0a0a 10px, #0a0a0a 12px), repeating-linear-gradient(45deg, transparent, transparent 10px, #0a0a0a 10px, #0a0a0a 12px);
+}
+.bg-r .bg .wr {
+	position: absolute;
+	top: 20px;
+	left: 50px;
+	right: 50px;
+	height: calc(100% - 40px);
+	background: #0c0c0c;
+	border-radius: 30px;
+	border: solid 10px #0f0f0f;
+	overflow: hidden;
+}
+
+
+
+.bg-r .bg .wr .top {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100px;
+	background: #1e1e1e;
+	border-bottom: solid 10px #0f0f0f;
+}
+.bg-r .bg .wr .top .icon {
+	position: absolute;
+	top: 0;
+	left: 15px;
+	width: 100px;
+	height: 100px;
+	user-select: none;
+}
+.bg-r .bg .wr .top .icon .i {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	text-align: center;
+	display: inline-block;
+	line-height: 100px;
+	vertical-align: middle;
+	font-size: 100px;
+	color: #9cdcf5;
+	text-shadow: 0 0 9px #1889e6, 0 0 9px #1889e6, 0 0 9px #1889e6;
+}
+.bg-r .bg .wr .top .icon .i:hover{
+	cursor: pointer;
+}
+.bg-r .bg .wr .top .title {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	height: 100%;
+	transform: translate(-50%,0);
+	font-family: Turret Road, sans-serif;
+	font-weight: 700;
+	font-size: 70px;
+	text-align: left;
+	line-height: 100px;
+	user-select: none;
+}
+.bg-r .bg .wr .top .title .c {
+	color: #bbf49e;
+	text-shadow: 0 0 8px #5be113, 0 0 8px #5be113, 0 0 8px #5be113;
+	transition: color 0.1s, text-shadow 0.1s;
+}
+.bg-r .bg .wr .top .title .c:hover {
+	color: #869380;
+	text-shadow: 0 0 2px #283620, 0 0 2px #283620, 0 0 2px #283620;
+	transition: color 0.1s, text-shadow 0.1s;
+}
+.bg-r .bg .wr .top .account {
+	position: absolute;
+	top: 0;
+	right: 15px;
+	width: 100px;
+	height: 100px;
+	user-select: none;
+}
+.bg-r .bg .wr .top .account .i {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	text-align: center;
+	display: inline-block;
+	line-height: 100px;
+	vertical-align: middle;
+	font-size: 90px;
+	color: #edc94a;
+	text-shadow: 0 0 9px #e8bc16, 0 0 9px #e8bc16, 0 0 9px #e8bc16;
+	display: initial;
+	cursor: pointer;
+}
+
+
+
+.bg-r .bg .wr .code {
+	position: absolute;
+	top: 110px;
+	left: 0;
+	width: calc(50% - 5px);
+	height: calc(100% - 110px);
+	border-right: solid 10px #0f0f0f;
+}
+.bg-r .bg .wr .code .e {
+	min-width: calc(100% - 20px);
+	min-height: calc(100% - 20px);
+	padding: 10px;
+	resize: none;
+	font-family: Ubuntu Mono;
+	font-size: 20px;
+	overflow-x: scroll;
+	white-space: nowrap;
+	background: #020202;
+	color: #d9d9d9;
+}
+.bg-r .bg .wr .code .e::-webkit-scrollbar {
+	width: 15px;
+	background: #020202;
+}
+.bg-r .bg .wr .code .e::-webkit-scrollbar-track {
+	background: #212121;
+	border-radius: 8px;
+}
+.bg-r .bg .wr .code .e::-webkit-scrollbar-thumb {
+	background: #2d2d2d;
+	border-radius: 8px;
+}
+.bg-r .bg .wr .code .e::selection {
+	background: #303030;
+	color: #2fcf8e;
+}
+
+
+
+.bg-r .bg .wr .preview {
+	position: absolute;
+	top: 110px;
+	right: 10px;
+	width: calc(50% - 25px);
+	height: calc(100% - 110px);
+}
+.bg-r .bg .wr .preview .title {
+	position: relative;
+	width: 100%;
+	font-family: Turret Road, sans-serif;
+	font-weight: 400;
+	text-align: center;
+	line-height: 90px;
+	font-size: 70px;
+	color: #4837db;
+	user-select: none;
+}
+.bg-r .bg .wr .preview .desc {
+	position: relative;
+	width: 100%;
+	font-family: Montserrat Alternates, sans-serif;
+	font-style: italic;
+	text-align: left;
+	line-height: 22px;
+	font-size: 17px;
+	padding-bottom: 15px;
+	text-align: center;
+	color: #efefef;
+}
+.bg-r .bg .wr .preview .p {
+	padding-top: 14px;
+	font-family: Montserrat, sans-serif;
+	color: #f6f6f6;
+}
+.bg-r .bg .wr .preview .p:first-child {
+	padding-top: 0;
+}
+.bg-r .bg .wr .preview .p .i {
+	font-style: italic;
+}
+.bg-r .bg .wr .preview .p .b {
+	font-weight: 600;
+}
+.bg-r .bg .wr .preview .p .c {
+	border-radius: 5px;
+	padding: 3px;
+	padding-top: 1px;
+	background: #383838;
+	color: #bababa;
+	font-family: Ubuntu Mono, sans-serif;
+}
+.bg-r .bg .wr .preview .desc::selection, .bg-r .bg .wr .preview .p::selection, .bg-r .bg .wr .preview .p *::selection {
+	background: #303030;
+	color: #2fcf8e;
+}
+.bg-r .bg .wr .preview .p .c::selection {
+	background: #399c7173;
+	color: #fcfcfc;
+}
