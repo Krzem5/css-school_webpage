@@ -5,6 +5,7 @@ import auth
 import analytics
 import utils
 import json
+import re
 import traceback
 from functools import cmp_to_key
 
@@ -100,7 +101,7 @@ def popular(url):
 		return dt
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
-	return [{"name":e[2],"url":f"/page/{e[0]}","author":pages.PAGE_LIST[e[0]]["author"]} for e in sorted([(e,analytics.page_views(e),pages.PAGE_LIST[e]["nm"]) for e in pages.PAGE_LIST.keys()],key=cmp_to_key(_pg_cmp))[:dt["count"]]]
+	return [{"name":e[2],"url":f"/page/{e[0]}","author":auth.get_username_from_id(pages.PAGE_LIST[e[0]]["author"])} for e in sorted([(e,analytics.page_views(e),pages.PAGE_LIST[e]["nm"]) for e in pages.PAGE_LIST.keys()],key=cmp_to_key(_pg_cmp))[:dt["count"]]]
 
 
 
@@ -112,6 +113,35 @@ def user_data(url):
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
 	return auth.user_data(tk,server.address())
+
+
+
+@server.route("PUT",r"/api/v1/save")
+def save(url):
+	dt,ok=_validate("save","/docs/api/save",{"id":{"t":str,"p":"body"},"title":{"t":str,"p":"body"},"desc":{"t":str,"p":"body"},"p":{"t":list,"p":"body"}},body=True)
+	if (ok==False):
+		return dt
+	tk,ok=read_token()
+	if (ok==False):
+		return tk
+	dt["id"]=re.sub(r"[^a-z0-9\-]","",dt["id"])[:32]
+	dt["title"]=re.sub(r"[^a-zA-Z0-9_\- ]","",dt["title"])[:64]
+	dt["desc"]=re.sub(r"[^a-zA-Z0-9_\-\.\!\(\)\?\% ]","",dt["desc"])[:256]
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	id_=auth.get_id(tk)
+	if (id_==None):
+		return {"status":auth.RETURN_CODE["invalid_token"]}
+	for k,v in pages.PAGE_LIST.items():
+		if (k==dt["id"] and v["author"]!=id_):
+			return {"status":auth.RETURN_CODE["id_already_used"]}
+		elif (k!=dt["id"] and v["nm"]==dt["title"]):
+			return {"status":auth.RETURN_CODE["title_already_used"]}
+	pg,ok=pages.render(dt["p"])
+	if (ok==False):
+		return {"status":auth.RETURN_CODE["malformated_input"],"reason":pg}
+	pages.add_page(dt["id"],{"title":dt["title"],"desc":dt["desc"],"author":id_,"data":pg})
+	return {"status":auth.RETURN_CODE["ok"]}
 
 
 

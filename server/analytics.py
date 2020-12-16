@@ -85,13 +85,13 @@ def page_views(id_):
 
 if (storage.exists("analytics.db")):
 	o=storage.read("analytics.db")
-	print(o)
 	i=0
 	while (True):
 		l=0
 		while (o[i+l]!=0):
 			l+=1
 		if (l==0):
+			i+=1
 			break
 		id_=str(o[i:i+l],"utf-8")
 		um={}

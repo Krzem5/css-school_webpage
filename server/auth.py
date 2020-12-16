@@ -17,7 +17,7 @@ MIN_PASSWORD_LEN=6
 MAX_PASSWORD_LEN=64
 EMAIL_REGEX=re.compile(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 USERNAME_VALID_LETTERS="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
-RETURN_CODE={"ok":0,"username_to_short":1,"username_to_long":2,"username_invalid":3,"username_used":4,"email_invalid":5,"email_used":6,"password_to_short":7,"password_to_long":8,"password_invalid":9,"login_fail":10,"invalid_token":11,"not_admin":12,"regex_error":13,"invalid_url":14,"invalid_id":15,"invalid_tag":16}
+RETURN_CODE={"ok":0,"username_to_short":1,"username_to_long":2,"username_invalid":3,"username_used":4,"email_invalid":5,"email_used":6,"password_to_short":7,"password_to_long":8,"password_invalid":9,"login_fail":10,"invalid_token":11,"not_admin":12,"regex_error":13,"invalid_url":14,"invalid_id":15,"invalid_tag":16,"id_already_used":17,"title_already_used":18,"malformated_input":19}
 DB_ID_LEN=16
 DB_KEY_USERNAME=0
 DB_KEY_EMAIL=1
@@ -82,7 +82,12 @@ def get_id(tk):
 
 
 def get_id_from_username(nm):
-	return _db_u_nm[nm]
+	return _db_u_nm[nm.lower()]
+
+
+
+def get_username_from_id(id_):
+	return _db[id_][DB_KEY_USERNAME]
 
 
 
@@ -209,7 +214,7 @@ def get_user(u_nm):
 	id_=_db_u_nm[u_nm]
 	if (_db[id_][DB_KEY_DISABLED]):
 		return None
-	return {"username":_db[id_][DB_KEY_USERNAME],"time":_db[id_][DB_KEY_TIME],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFIED],"img_url":_db[id_][DB_KEY_IMAGE]}
+	return {"username":_db[id_][DB_KEY_USERNAME],"time":_db[id_][DB_KEY_TIME],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFIED],"img_url":_db[id_][DB_KEY_IMAGE],"id":id_}
 
 
 

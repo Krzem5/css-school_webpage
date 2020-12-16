@@ -4,15 +4,17 @@ import auth
 import api
 import analytics
 import utils
+import requests
 import json
 import re
 
 
 
-global PAGE_LIST,USER_PAGE_MAP,USER_CACHE
+global PAGE_LIST,USER_PAGE_MAP,USER_CACHE,IMG_CACHE
 PAGE_LIST={}
 USER_PAGE_MAP={}
 USER_CACHE={}
+IMG_CACHE={}
 with open("web/page_template.html","rb") as f:
 	PAGE_TEMPLATE=f.read().split(b"$$$__DATA__$$$")
 with open("web/user_template.html","rb") as f:
@@ -24,7 +26,7 @@ with open("web/current_user_template.html","rb") as f:
 
 for k in storage.listdir("pages")[0]:
 	dt=json.loads(storage.read(k+"/index.json"))
-	id_=re.sub(r"[^a-zA-Z0-9-]","",k[7:].lower())
+	id_=re.sub(r"[^a-zA-Z0-9\-]","",k[7:].lower())
 	PAGE_LIST[id_]={"nm":dt["title"],"author":dt["author"],"dt":dt,"cache":None}
 	if (dt["author"] not in USER_PAGE_MAP):
 		USER_PAGE_MAP[dt["author"]]=[]
@@ -33,45 +35,14 @@ for k in storage.listdir("pages")[0]:
 
 
 def _render_page(pg):
-	o=PAGE_TEMPLATE[0]+bytes(pg["dt"]["title"],"utf-8")+PAGE_TEMPLATE[1]+bytes(f"<div class=\"title\">{pg['dt']['title']}</div><div class=\"desc\">{pg['dt']['desc']}</div>","utf-8")
-	for k in pg["dt"]["data"]:
-		k=re.sub(r"&lt;(br|span)&gt;",r"<\1>",k.replace("<","&lt;").replace(">","&gt;"))
-		i=0
-		while (i<len(k)):
-			if (k[i:i+3]=="```"):
-				si=i+0
-				i+=3
-				while (k[i:i+3]!="```"):
-					i+=1
-				k=k[:si]+f"<code class=\"c\">{k[si+3:i]}</code>"+k[i+3:]
-				i+=9
-			elif (k[i]=="*" and k[i+1]=="*"):
-				b=0
-				si=i+0
-				i+=2
-				while ((b%2)!=0 or k[i]!="*" or k[i+1]!="*"):
-					if (k[i]=="*"):
-						b+=1
-					i+=1
-				k=k[:si]+f"<span class=\"b\">{k[si+2:i]}</span>"+k[i+2:]
-				i=si+15
-			elif (k[i]=="*"):
-				si=i+0
-				i+=1
-				while (k[i]!="*"):
-					i+=1
-				k=k[:si]+f"<span class=\"i\">{k[si+1:i]}</span>"+k[i+1:]
-				i=si+15
-			i+=1
-		o+=bytes(f"<p class=\"p\">{k}</p>","utf-8")
-	return o+PAGE_TEMPLATE[2]
+	return PAGE_TEMPLATE[0]+bytes(pg["dt"]["title"],"utf-8")+PAGE_TEMPLATE[1]+bytes(f"<div class=\"title\">{pg['dt']['title']}</div><div class=\"desc\">{pg['dt']['desc']}</div>"+pg["dt"]["data"],"utf-8")+PAGE_TEMPLATE[2]
 
 
 
 def _render_user(dt):
 	o=USER_TEMPLATE[0]+bytes(f"{dt['username']}\",img:\"{dt['img_url']}","utf-8")+USER_TEMPLATE[1]
-	if (dt["username"] in USER_PAGE_MAP and len(USER_PAGE_MAP[dt["username"]])>0):
-		for k in USER_PAGE_MAP[dt["username"]]:
+	if (dt["id"] in USER_PAGE_MAP and len(USER_PAGE_MAP[dt["id"]])>0):
+		for k in USER_PAGE_MAP[dt["id"]]:
 			o+=bytes(f"<div class=\"e\"><div class=\"e-wr\"><div class=\"t\" onclick=\"window.location.href='/page/{k}'\">{PAGE_LIST[k]['nm']}</div><div class=\"a\" onclick=\"window.location.href='/user/{dt['username']}'\">By <span>@{dt['username']}</span></div></div></div>","utf-8")
 	else:
 		o+=b"<div class=\"err\">No Articles to Show</div>"
@@ -81,12 +52,99 @@ def _render_user(dt):
 
 def _render_c_user(dt):
 	o=CURRENT_USER_TEMPLATE[0]+bytes(f"{dt['username']}\",img:\"{dt['img_url']}","utf-8")+CURRENT_USER_TEMPLATE[1]
-	if (dt["username"] in USER_PAGE_MAP and len(USER_PAGE_MAP[dt["username"]])>0):
-		for k in USER_PAGE_MAP[dt["username"]]:
+	if (dt["id"] in USER_PAGE_MAP and len(USER_PAGE_MAP[dt["id"]])>0):
+		for k in USER_PAGE_MAP[dt["id"]]:
 			o+=bytes(f"<div class=\"e\"><div class=\"e-wr\"><div class=\"t\" onclick=\"window.location.href='/page/{k}'\">{PAGE_LIST[k]['nm']}</div><div class=\"a\" onclick=\"window.location.href='/user/{dt['username']}'\">By <span>@{dt['username']}</span></div></div></div>","utf-8")
 	else:
 		o+=b"<div class=\"err\">No Articles to Show</div>"
 	return o+CURRENT_USER_TEMPLATE[2]
+
+
+
+def add_page(id_,dt):
+	global PAGE_LIST,USER_PAGE_MAP
+	PAGE_LIST[id_]={"nm":dt["title"],"author":dt["author"],"dt":dt,"cache":None}
+	if (dt["author"] not in USER_PAGE_MAP):
+		USER_PAGE_MAP[dt["author"]]=[]
+	if (id_ not in USER_PAGE_MAP[dt["author"]]):
+		USER_PAGE_MAP[dt["author"]]+=[id_]
+	storage.write(f"pages/{id_}/index.json",bytes(json.dumps({"title":dt["title"],"desc":dt["desc"],"author":dt["author"],"data":dt["data"]}),"utf-8"))
+
+
+
+def render(l):
+	global IMG_CACHE
+	o=""
+	for j,k in enumerate(l):
+		k=k.replace("<","&lt;").replace(">","&gt;")
+		i=0
+		ln=1
+		while (i<len(k)):
+			if (k[i]=="\n"):
+				ln+=1
+			elif (k[i:i+2]=="!["):
+				si=i
+				i+=2;
+				while (k[i]!="]"):
+					if (i>=len(k)):
+						return (f"Unterminated Square Brackets in Paragraph {j}, Line {ln}",False)
+					i+=1
+				i+=1
+				if (k[i]!="{"):
+					i=si+1
+					continue
+				i+=1
+				si2=i
+				while (k[i]!="}"):
+					if (i>=len(k)):
+						return (f"Unterminated Curly Brackets in Paragraph {j}, Line {ln}",False)
+					i+=1;
+				u=k[si2:i]
+				if (u not in IMG_CACHE):
+					r=requests.get(u,headers={"Accept":"image/*","Accept-Encoding":"gzip,deflate,br"})
+					r.headers={ek.lower():ev for ek,ev in r.headers.items()}
+					print(r.content)
+					if (r.status_code!=200 or "content-type" not in r.headers or r.headers["content-type"][:6]!="image/"):
+						IMG_CACHE[u]=False
+					else:
+						IMG_CACHE[u]=True
+				if (IMG_CACHE[u]==False):
+					return (f"Unable to Load Image '{u}'",False)
+				k=k[:si]+f"<img class=\"i\" src=\"{u}\" alt=\"{k[si+2:si2-2]}\">"+k[i+1:]
+				i+=24
+			elif (k[i:i+3]=="```"):
+				si=i+0
+				i+=3
+				while (k[i:i+3]!="```"):
+					if (i>=len(k)):
+						return (f"Unterminated Triple Quotes in Paragraph {j}, Line {ln}",False)
+					i+=1
+				k=k[:si]+f"<code class=\"c\">{k[si+3:i]}</code>"+k[i+3:]
+				i+=19
+			elif (k[i]=="*" and k[i+1]=="*"):
+				b=0
+				si=i+0
+				i+=2
+				while ((b%2)!=0 or k[i]!="*" or k[i+1]!="*"):
+					if (i>=len(k)):
+						return (f"Unterminated Double Quotes in Paragraph {j}, Line {ln}",False)
+					if (k[i]=="*"):
+						b+=1
+					i+=1
+				k=k[:si]+f"<span class=\"b\">{k[si+2:i]}</span>"+k[i+2:]
+				i=si+15
+			elif (k[i]=="*"):
+				si=i+0
+				i+=1
+				while (k[i]!="*"):
+					if (i>=len(k)):
+						return (f"Unterminated Single Quotes in Paragraph {j}, Line {ln}",False)
+					i+=1
+				k=k[:si]+f"<span class=\"i\">{k[si+1:i]}</span>"+k[i+1:]
+				i=si+15
+			i+=1
+		o+=f"<p class=\"p\">{k.replace(chr(10),'<br>')}</p>"
+	return (o,True)
 
 
 
@@ -173,7 +231,6 @@ def user(url):
 		tk,ok=api.read_token()
 		id_=(auth.get_id(tk) if ok else None)
 		analytics.view_user(url,u_id=id_)
-		print(auth.get_id_from_username(url),id_)
 		return (_render_c_user if id_!=None and auth.get_id_from_username(url)==id_ else _render_user)(dt)
 	else:
 		server.set_code(404)

@@ -198,6 +198,7 @@ body {
 	left: 270px;
 	width: calc(100% - 280px);
 	min-height: calc(100% - 120px);
+	overflow: hidden;
 }
 .bg-r .bg .wr .main .title {
 	position: relative;
@@ -243,6 +244,12 @@ body {
 	background: #383838;
 	color: #bababa;
 	font-family: Ubuntu Mono, sans-serif;
+}
+.bg-r .bg .wr .main .p img {
+	position: relative;
+	left: 50%;
+	transform: translate(-50%,0);
+	user-select: none;
 }
 .bg-r .bg .wr .main .desc::selection, .bg-r .bg .wr .main .p::selection, .bg-r .bg .wr .main .p *::selection {
 	background: #303030;
