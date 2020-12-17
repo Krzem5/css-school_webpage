@@ -198,6 +198,20 @@ def admin_flip_tag(url):
 
 
 
+@server.route("POST",r"/api/v1/admin/pages")
+def get_pages(url):
+	dt,ok=_validate("admin_users","/docs/api",{"query":{"t":str,"p":"body"}},body=True)
+	if (ok==False):
+		return dt
+	tk,ok=read_token()
+	if (ok==False):
+		return tk
+	server.set_code(200)
+	server.set_header("Content-Type","application/json")
+	return auth.get_pages(tk,dt["query"],server.address())
+
+
+
 @server.route("GET",r"/api/v1/admin/logs")
 def create_ws_url(url):
 	tk,ok=read_token()

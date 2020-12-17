@@ -1,4 +1,5 @@
 import server
+import pages
 import storage
 import utils
 import re
@@ -329,6 +330,35 @@ def admin_flip_tag(tk,t_id,tag,ip):
 	_db_u=True
 	_tl.release()
 	return {"status":RETURN_CODE["ok"]}
+
+
+
+def get_pages(tk,q,ip):
+	id_=_check_token(tk)
+	if (id_==None):
+		return {"status":RETURN_CODE["invalid_token"]}
+	elif (_db[id_][DB_KEY_ADMIN]!=True):
+		return {"status":RETURN_CODE["not_admin"]}
+	i,t=True,True
+	if (q.count(":")>0):
+		s,q=q.split(":")[0],q[len(q.split(":")[0])+1:]
+		i,t=False,False
+		for k in s:
+			if (k=="i"):
+				i=True
+			if (k=="t"):
+				t=True
+		if (i==t and t==False):
+			i,t=True,True
+	try:
+		q=re.compile(q,re.I)
+	except re.error:
+		return {"status":RETURN_CODE["regex_error"]}
+	o=[]
+	for k,v in list(pages.PAGE_LIST.items()):
+		if ((i and q.search(k)!=None) or (t and q.search(v["nm"])!=None)):
+			o+=[{"id":k,"title":v["nm"],"author":v["author"],"desc":v["dt"]["desc"],"time":v["vl"]["current"][1]}]
+	return {"status":RETURN_CODE["ok"],"users":o}
 
 
 

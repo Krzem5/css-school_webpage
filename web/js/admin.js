@@ -2,17 +2,27 @@ document.addEventListener("DOMContentLoaded",()=>{
 	let LOCATION_ARR=["accounts","pages","logs"];
 	let te=document.querySelector(".title");
 	let mne=document.querySelector(".main");
-	let aie=document.querySelector(".s-inp");
-	let ae=document.querySelector(".list");
+	let aie=document.querySelector(".a-s-inp");
+	let ae=document.querySelector(".a-list");
 	let aue=document.querySelector(".user-wr");
+	let pie=document.querySelector(".p-s-inp");
+	let pe=document.querySelector(".p-list");
+	let ppe=document.querySelector(".page-wr");
 	let le=document.querySelector(".logs");
 	let s=null;
 	let t;
 	let t2;
 	let t3;
+	function _pad_num(n){
+		n=Number(n).toString();
+		if (n.length<2){
+			n="0"+n;
+		}
+		return n;
+	}
 	function _start_socket(){
 		fetch("/api/v1/admin/logs").catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
-			if (!e||e.status){
+			if (!e||e.status||e.code){
 				location.hash="";
 				location.href="/";
 				return;
@@ -64,7 +74,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 		}
 		location.hash=nh||LOCATION_ARR[id];
 		aie.value="";
+		pie.value=""
 		ae.innerHTML="";
+		pe.innerHTML="";
 		le.innerHTML="";
 		aue.classList.remove("s");
 		mne.classList.remove(`id${window.s}`);
@@ -78,7 +90,10 @@ document.addEventListener("DOMContentLoaded",()=>{
 		if (id==0){
 			aie.onkeyup();
 		}
-		if (id==2){
+		if (id==1){
+			pie.onkeyup();
+		}
+		else{
 			_start_socket();
 		}
 	}
@@ -114,26 +129,30 @@ document.addEventListener("DOMContentLoaded",()=>{
 			}
 		}
 	}
+	window.show_pg=(id,t,d,tm,a)=>{
+		location.hash="pages-"+id;
+		ppe.classList.add("s");
+		ppe.innerHTML=`<div class="page"><div class="p-elem"><span class="k">ID:</span><span class="v id" onclick="window.copy(this)">${id}</span></div><div class="p-elem"><span class="k">Title:</span><span class="v t" onclick="window.copy(this)">${t}</span></div><div class="p-elem"><span class="k">Desc:</span><span class="v d" onclick="window.copy(this)">${d}</span></div><div class="p-elem"><span class="k">Creation Date:</span><span class="v tm" onclick="window.copy(this)">${tm}</span></div><div class="p-elem"><span class="k">Author:</span><span class="v a" onclick="window.copy(this)">${a}</span></div></div>`;
+	}
 	window.copy=(e)=>{
 		navigator.clipboard.writeText(e.innerText);
 	}
 	document.body.onkeydown=(e)=>{
-		if (e.keyCode==27&&window.s==0){
-			aue.classList.remove("s");
-			location.hash="accounts";
+		if (e.keyCode==27){
+			if (!window.s){
+				aue.classList.remove("s");
+				location.hash="accounts";
+			}
+			else if (window.s==1){
+				ppe.classList.remove("s");
+				location.hash="pages";
+			}
 		}
 	}
 	aie.onkeyup=(oe)=>{
-		function pad(n){
-			n=Number(n).toString();
-			if (n.length<2){
-				n="0"+n;
-			}
-			return n;
-		}
 		if (!oe||oe.keyCode==13){
 			fetch("/api/v1/admin/users",{method:"POST",body:JSON.stringify({query:aie.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
-				if (!e||e.status){
+				if (!e||e.status||e.code){
 					location.hash="";
 					location.href="/";
 				}
@@ -144,9 +163,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 						oe=oe[1];
 					}
 					for (t of e.users){
-						t2=new Date(t.time*1000);
-						t3=new Date(t.token_end*1000);
-						ae.innerHTML+=`<div class="l-elem" onclick="window.show('${t.username}','${t.email}','${t.id}','${pad(t2.getMonth()+1)}/${pad(t2.getDate())}/${t2.getFullYear()} ${pad(t2.getHours())}:${pad(t2.getMinutes())}:${pad(t2.getSeconds())} (${t.time})','${t.ip}',${(t.token?"\'"+t.token+"\'":null)},'${pad(t3.getMonth()+1)}/${pad(t3.getDate())}/${t3.getFullYear()} ${pad(t3.getHours())}:${pad(t3.getMinutes())}:${pad(t3.getSeconds())} (${t.token_end})','${t.image}','${t.password}',${t.email_verified},${t.admin},${t.disabled})"><div class="pr"><span class="nm">${t.username}</span><span class="em">${t.email}</span></div></div>`;
+						t2=new Date(t.time*1e3);
+						t3=new Date(t.token_end*1e3);
+						ae.innerHTML+=`<div class="l-elem" onclick="window.show('${t.username}','${t.email}','${t.id}','${_pad_num(t2.getMonth()+1)}/${_pad_num(t2.getDate())}/${t2.getFullYear()} ${_pad_num(t2.getHours())}:${_pad_num(t2.getMinutes())}:${_pad_num(t2.getSeconds())} (${t.time})','${t.ip}',${(t.token?"\'"+t.token+"\'":null)},'${_pad_num(t3.getMonth()+1)}/${_pad_num(t3.getDate())}/${t3.getFullYear()} ${_pad_num(t3.getHours())}:${_pad_num(t3.getMinutes())}:${_pad_num(t3.getSeconds())} (${t.token_end})','${t.image}','${t.password}',${t.email_verified},${t.admin},${t.disabled})"><div class="pr"><span class="nm">${t.username}</span><span class="em">${t.email}</span></div></div>`;
 						if (oe==t.id){
 							ae.childNodes[ae.childElementCount-1].onclick();
 							oe=-1;
@@ -154,6 +173,34 @@ document.addEventListener("DOMContentLoaded",()=>{
 					}
 					if (oe!=-1){
 						location.hash="accounts";
+					}
+				}
+			});
+		}
+	}
+	pie.onkeyup=(oe)=>{
+		if (!oe||oe.keyCode==13){
+			fetch("/api/v1/admin/pages",{method:"POST",body:JSON.stringify({query:pie.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
+				if (!e||e.status||e.code){
+					location.hash="";
+					location.href="/";
+				}
+				else{
+					pe.innerHTML="";
+					oe=(!oe?location.hash.split("-"):null);
+					if (oe&&oe.length>1){
+						oe=oe.slice(1).join("-");
+					}
+					for (t of e.users){
+						t2=new Date(t.time*1e3);
+						pe.innerHTML+=`<div class="l-elem" onclick="window.show_pg('${t.id}','${t.title}','${t.desc}','${_pad_num(t2.getMonth()+1)}/${_pad_num(t2.getDate())}/${t2.getFullYear()} ${_pad_num(t2.getHours())}:${_pad_num(t2.getMinutes())}:${_pad_num(t2.getSeconds())} (${t.time})','${t.author}')"><div class="pr"><span class="id">${t.id}</span><span class="tt">${t.title}</span></div></div>`;
+						if (oe==t.id){
+							pe.childNodes[pe.childElementCount-1].onclick();
+							oe=-1;
+						}
+					}
+					if (oe!=-1){
+						location.hash="pages";
 					}
 				}
 			});

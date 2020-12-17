@@ -137,12 +137,6 @@ body {
 	width: calc(100% - 250px);
 	min-height: calc(100% - 110px);
 }
-.bg-r .bg .wr .main.id1 .pages {
-	display: initial;
-}
-.bg-r .bg .wr .main.id2 .logs {
-	display: initial;
-}
 .bg-r .bg .wr .main>div {
 	position: absolute;
 	top: 0;
@@ -160,7 +154,7 @@ body {
 .bg-r .bg .wr .main.id0 .accounts {
 	display: initial;
 }
-.bg-r .bg .wr .main .accounts .search {
+.bg-r .bg .wr .main .accounts .a-search {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -168,7 +162,7 @@ body {
 	height: 50px;
 	border-bottom: solid 8px #0f0f0f;
 }
-.bg-r .bg .wr .main .accounts .search .s-inp {
+.bg-r .bg .wr .main .accounts .a-search .a-s-inp {
 	position: absolute;
 	top: 0;
 	left: 10px;
@@ -180,11 +174,11 @@ body {
 	font-family: Ubuntu Mono;
 	color: #f5f5f5;
 }
-.bg-r .bg .wr .main .accounts .search .s-inp::selection {
+.bg-r .bg .wr .main .accounts .a-search .a-s-inp::selection {
 	background: #606060;
 	color: #2fcf8e;
 }
-.bg-r .bg .wr .main .accounts .list {
+.bg-r .bg .wr .main .accounts .a-list {
 	position: absolute;
 	top: 58px;
 	left: 0;
@@ -193,31 +187,31 @@ body {
 	background: #0c0c0c;
 	overflow-y: scroll;
 }
-.bg-r .bg .wr .main .accounts .list::-webkit-scrollbar {
+.bg-r .bg .wr .main .accounts .a-list::-webkit-scrollbar {
 	width: 15px;
 	background: #0c0c0c;
 }
-.bg-r .bg .wr .main .accounts .list::-webkit-scrollbar-track {
+.bg-r .bg .wr .main .accounts .a-list::-webkit-scrollbar-track {
 	background: #212121;
 	border-radius: 8px;
 }
-.bg-r .bg .wr .main .accounts .list::-webkit-scrollbar-thumb {
+.bg-r .bg .wr .main .accounts .a-list::-webkit-scrollbar-thumb {
 	background: #2d2d2d;
 	border-radius: 8px;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem {
+.bg-r .bg .wr .main .accounts .a-list .l-elem {
 	position: relative;
 	width: 100%;
 	height: 25px;
 	cursor: pointer;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem:not(:first-child) {
+.bg-r .bg .wr .main .accounts .a-list .l-elem:not(:first-child) {
 	border-top: solid 4px #0f0f0f;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem:nth-child(even) {
+.bg-r .bg .wr .main .accounts .a-list .l-elem:nth-child(even) {
 	background: #151515;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .pr {
+.bg-r .bg .wr .main .accounts .a-list .l-elem .pr {
 	position: absolute;
 	top: 0;
 	left: 10px;
@@ -228,12 +222,12 @@ body {
 	font-family: Ubuntu Mono;
 	user-select: none;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .pr .nm {
+.bg-r .bg .wr .main .accounts .a-list .l-elem .pr .nm {
 	float: left;
 	color: #724fe6;
 	padding-right: 20px;
 }
-.bg-r .bg .wr .main .accounts .list .l-elem .pr .em {
+.bg-r .bg .wr .main .accounts .a-list .l-elem .pr .em {
 	color: #aed42a;
 }
 .bg-r .bg .wr .main .accounts .user-wr {
@@ -265,16 +259,18 @@ body {
 .bg-r .bg .wr .main .accounts .user .u-elem {
 	position: relative;
 	width: 100%;
-	height: 25px;
+	min-height: 25px;
 	user-select: none;
-	white-space: nowrap;
 }
 .bg-r .bg .wr .main .accounts .user .u-elem .k {
 	padding-right: 10px;
 	color: #3d3d3d;
+	white-space: nowrap;
 }
 .bg-r .bg .wr .main .accounts .user .u-elem .v {
+	width: 100%;
 	cursor: pointer;
+	white-space: pre-wrap;
 }
 .bg-r .bg .wr .main .accounts .user .u-elem .v.nm {
 	color: #724fe6;
@@ -345,6 +341,147 @@ body {
 
 
 
+.bg-r .bg .wr .main .pages {
+	background: #2f2f2f;
+}
+.bg-r .bg .wr .main.id1 .pages {
+	display: initial;
+}
+.bg-r .bg .wr .main .pages .p-search {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 50px;
+	border-bottom: solid 8px #0f0f0f;
+}
+.bg-r .bg .wr .main .pages .p-search .p-s-inp {
+	position: absolute;
+	top: 0;
+	left: 10px;
+	width: calc(100% - 20px);
+	height: 50px;
+	font-size: 28px;
+	line-height: 50px;
+	background: transparent;
+	font-family: Ubuntu Mono;
+	color: #f5f5f5;
+}
+.bg-r .bg .wr .main .pages .p-search .p-s-inp::selection {
+	background: #606060;
+	color: #2fcf8e;
+}
+.bg-r .bg .wr .main .pages .p-list {
+	position: absolute;
+	top: 58px;
+	left: 0;
+	width: 100%;
+	bottom: 0;
+	background: #0c0c0c;
+	overflow-y: scroll;
+}
+.bg-r .bg .wr .main .pages .p-list::-webkit-scrollbar {
+	width: 15px;
+	background: #0c0c0c;
+}
+.bg-r .bg .wr .main .pages .p-list::-webkit-scrollbar-track {
+	background: #212121;
+	border-radius: 8px;
+}
+.bg-r .bg .wr .main .pages .p-list::-webkit-scrollbar-thumb {
+	background: #2d2d2d;
+	border-radius: 8px;
+}
+.bg-r .bg .wr .main .pages .p-list .l-elem {
+	position: relative;
+	width: 100%;
+	height: 25px;
+	cursor: pointer;
+}
+.bg-r .bg .wr .main .pages .p-list .l-elem:not(:first-child) {
+	border-top: solid 4px #0f0f0f;
+}
+.bg-r .bg .wr .main .pages .p-list .l-elem:nth-child(even) {
+	background: #151515;
+}
+.bg-r .bg .wr .main .pages .p-list .l-elem .pr {
+	position: absolute;
+	top: 0;
+	left: 10px;
+	width: calc(100% - 20px);
+	height: 100%;
+	line-height: 25px;
+	font-size: 23px;
+	font-family: Ubuntu Mono;
+	user-select: none;
+}
+.bg-r .bg .wr .main .pages .p-list .l-elem .pr .id {
+	float: left;
+	color: #724fe6;
+	padding-right: 20px;
+}
+.bg-r .bg .wr .main .pages .p-list .l-elem .pr .tt {
+	color: #aed42a;
+}
+.bg-r .bg .wr .main .pages .page-wr {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: #000000a1;
+	display: none;
+}
+.bg-r .bg .wr .main .pages .page-wr.s {
+	display: initial;
+}
+.bg-r .bg .wr .main .pages .page {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: calc(100% - 200px);
+	transform: translate(-50%,-50%);
+	background: #0c0c0c;
+	border: solid 10px #0f0f0f;
+	border-radius: 30px;
+	padding: 10px;
+	font-family: Ubuntu Mono;
+	font-size: 22px;
+}
+.bg-r .bg .wr .main .pages .page .p-elem {
+	position: relative;
+	width: 100%;
+	min-height: 25px;
+	user-select: none;
+}
+.bg-r .bg .wr .main .pages .page .p-elem .k {
+	padding-right: 10px;
+	color: #3d3d3d;
+	white-space: nowrap;
+}
+.bg-r .bg .wr .main .pages .page .p-elem .v {
+	width: 100%;
+	cursor: pointer;
+	white-space: pre-wrap;
+}
+.bg-r .bg .wr .main .pages .page .p-elem .v.id {
+	color: #724fe6;
+}
+.bg-r .bg .wr .main .pages .page .p-elem .v.t {
+	color: #aed42a;
+}
+.bg-r .bg .wr .main .pages .page .p-elem .v.d {
+	color: #2acfb6;
+}
+.bg-r .bg .wr .main .pages .page .p-elem .v.tm {
+	color: #cf2aae;
+}
+.bg-r .bg .wr .main .pages .page .p-elem .v.a {
+	color: #f7742a;
+}
+
+
+
 .bg-r .bg .wr .main .logs {
 	position: absolute;
 	top: 0;
@@ -356,6 +493,9 @@ body {
 	font-size: 20px;
 	background: #0c0c0c;
 	overflow-y: scroll;
+}
+.bg-r .bg .wr .main.id2 .logs {
+	display: initial;
 }
 .bg-r .bg .wr .main .logs::-webkit-scrollbar {
 	width: 15px;
