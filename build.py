@@ -185,8 +185,8 @@ def _minify_js(js,fp):
 					else:
 						idl[j+1]=b"."+e
 				o+=b"".join(idl)
-			elif (tl[i][0]=="keyword" and tl[i][1] in [b"false",b"true",b"undefined",b"null"]):
-				o+={b"false":b"!1",b"true":b"!0",b"undefined":b"0",b"null":b"0"}[tl[i][1]]
+			elif (tl[i][0]=="keyword" and tl[i][1] in [b"false",b"true"]):
+				o+={b"false":b"!1",b"true":b"!0"}[tl[i][1]]
 			elif (tl[i][0]=="stringS"):
 				o+=tl[i][1]+b"${"
 				to,ti=_write(tl[i+1:],cvm,cvma)
@@ -216,6 +216,7 @@ def _minify_js(js,fp):
 	bl=0
 	vfm={}
 	vfma={}
+	v_nm=False
 	while (i<len(tl)):
 		if (tl[i][0]=="identifier"):
 			idl=tl[i][1].split(b".")
@@ -233,6 +234,7 @@ def _minify_js(js,fp):
 						mv=_map_value(idl[0],vm)
 						if (mv==None):
 							print(f"Variable '{str(idl[0],'utf-8')}' is not mapped!")
+							v_nm=True
 						else:
 							idl[0]=mv
 			for k in idl[1:]:
@@ -373,6 +375,8 @@ def _minify_js(js,fp):
 						if (ef[j][0]==bl):
 							ef[j]=(-1,*ef[j][1:])
 		i+=1
+	if (v_nm):
+		quit()
 	cvml=[]
 	for k,v in vfm.items():
 		if (v>1):

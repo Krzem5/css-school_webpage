@@ -9,6 +9,7 @@ import json
 import re
 import time
 import hashlib
+import threading
 
 
 
@@ -23,18 +24,20 @@ with open("web/user_template.html","rb") as f:
 	USER_TEMPLATE=f.read().split(b"$$$__DATA__$$$")
 with open("web/current_user_template.html","rb") as f:
 	CURRENT_USER_TEMPLATE=f.read().split(b"$$$__DATA__$$$")
+_tl=threading.Lock()
 
 
 
+_tl.acquire()
 for k in storage.listdir("pages")[0]:
 	vl=json.loads(storage.read(k+"/index.json"))
 	id_=re.sub(r"[^a-zA-Z0-9\-]","",k[7:].lower())
-	print(vl)
-	dt=json.loads(storage.read(f"{k}/{vl['current'][0]}/data.json"))
+	dt=json.loads(storage.read(f"{k}/{vl['current'][0]}.json"))
 	PAGE_LIST[id_]={"vl":vl,"nm":dt["title"],"author":dt["author"],"dt":dt,"cache":None}
 	if (dt["author"] not in USER_PAGE_MAP):
 		USER_PAGE_MAP[dt["author"]]=[]
 	USER_PAGE_MAP[dt["author"]]+=[id_]
+_tl.release()
 
 
 
@@ -44,7 +47,7 @@ def _render_page(pg):
 
 
 def _render_user(dt):
-	o=USER_TEMPLATE[0]+bytes(f"{dt['username']}\",img:\"{dt['img_url']}","utf-8")+USER_TEMPLATE[1]
+	o=USER_TEMPLATE[0]+bytes(f"{dt['username']}\",verified:{('true' if dt['email_verified'] else 'false')},img:\"{dt['img_url']}","utf-8")+USER_TEMPLATE[1]
 	if (dt["id"] in USER_PAGE_MAP and len(USER_PAGE_MAP[dt["id"]])>0):
 		for k in USER_PAGE_MAP[dt["id"]]:
 			o+=bytes(f"<div class=\"e\"><div class=\"e-wr\"><div class=\"t\" onclick=\"window.location.href='/page/{k}'\">{PAGE_LIST[k]['nm']}</div><div class=\"a\" onclick=\"window.location.href='/user/{dt['username']}'\">By <span>@{dt['username']}</span></div></div></div>","utf-8")
@@ -55,7 +58,7 @@ def _render_user(dt):
 
 
 def _render_c_user(dt):
-	o=CURRENT_USER_TEMPLATE[0]+bytes(f"{dt['username']}\",img:\"{dt['img_url']}","utf-8")+CURRENT_USER_TEMPLATE[1]
+	o=CURRENT_USER_TEMPLATE[0]+bytes(f"{dt['username']}\",verified:{('true' if dt['email_verified'] else 'false')},img:\"{dt['img_url']}","utf-8")+CURRENT_USER_TEMPLATE[1]
 	if (dt["id"] in USER_PAGE_MAP and len(USER_PAGE_MAP[dt["id"]])>0):
 		for k in USER_PAGE_MAP[dt["id"]]:
 			o+=bytes(f"<div class=\"e\"><div class=\"e-wr\"><div class=\"t\" onclick=\"window.location.href='/page/{k}'\">{PAGE_LIST[k]['nm']}</div><div class=\"a\" onclick=\"window.location.href='/user/{dt['username']}'\">By <span>@{dt['username']}</span></div></div></div>","utf-8")
@@ -67,17 +70,19 @@ def _render_c_user(dt):
 
 def add_page(id_,dt):
 	global PAGE_LIST,USER_PAGE_MAP
-	vl=(PAGE_LIST[id_]["vl"] if id_ in PAGE_LIST else {"current":None,"all":[]})
+	_tl.acquire()
+	vl=(PAGE_LIST[id_]["vl"] if id_ in PAGE_LIST else {"all":{}})
 	dt_id=hashlib.md5(bytes(dt["title"]+"\x00"+dt["desc"]+"\x00"+dt["data"],"utf-8")).hexdigest()
-	vl["current"]=(dt_id,time.time())
-	vl["all"]+=[vl["current"]]
+	vl["current"]=(dt_id,int(time.time()))
+	vl["all"][dt_id]=vl["current"][1]
 	PAGE_LIST[id_]={"vl":vl,"nm":dt["title"],"author":dt["author"],"dt":dt,"cache":None}
 	if (dt["author"] not in USER_PAGE_MAP):
 		USER_PAGE_MAP[dt["author"]]=[]
 	if (id_ not in USER_PAGE_MAP[dt["author"]]):
 		USER_PAGE_MAP[dt["author"]]+=[id_]
+	_tl.release()
 	storage.write(f"pages/{id_}/index.json",bytes(json.dumps(vl),"utf-8"))
-	storage.write(f"pages/{id_}/{dt_id}/data.json",bytes(json.dumps({"title":dt["title"],"desc":dt["desc"],"author":dt["author"],"data":dt["data"]}),"utf-8"))
+	storage.write(f"pages/{id_}/{dt_id}.json",bytes(json.dumps({"title":dt["title"],"desc":dt["desc"],"author":dt["author"],"data":dt["data"]}),"utf-8"))
 
 
 
@@ -229,7 +234,6 @@ def page(url):
 
 @server.route("GET",r"/user/[a-zA-Z0-9\-_]+(?:\.html)?")
 def user(url):
-	global USER_CACHE
 	url=url[6:].lower()
 	if (url.endswith(".html")):
 		url=url[:-5]

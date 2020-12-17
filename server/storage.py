@@ -20,6 +20,7 @@ _fs={}
 _fs_d={}
 _fs_s=[]
 _fs_u=[]
+_tl=threading.Lock()
 
 
 
@@ -86,20 +87,24 @@ def _request(m="get",**kw):
 
 
 
-def _read_fs(bt,fp=""):
+def _read_fs(bt,fp="",_l=False):
 	global _fs
 	utils.print(f"Reading Directory '{_as_path(fp)}' (sha={bt})")
 	t=_request("get",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/trees/{bt}")
 	if ("message" in t and t["message"]=="Not Found"):
 		return []
+	if (_l==False):
+		_tl.acquire()
 	for k in t["tree"]:
 		if (k["type"]=="blob"):
 			_fs[fp+"/"+k["path"].lower()]=[k["url"],None,True]
 			_add_dirs(fp+"/"+k["path"].lower())
 		elif (k["type"]=="tree"):
-			_read_fs(k["sha"],fp=fp+"/"+k["path"].lower())
+			_read_fs(k["sha"],fp=fp+"/"+k["path"].lower(),_l=True)
 		else:
 			raise RuntimeError(f"Unknown File Type '{k['type']}'")
+	if (_l==False):
+		_tl.release()
 
 
 
@@ -129,10 +134,10 @@ def _is_b(dt):
 def _write_fs():
 	global _bc,_fs_u
 	while (True):
-		l,_fs_u=_fs_u[:],[]
-		if (len(l)>0):
+		if (len(_fs_u)>0):
+			_tl.acquire()
 			bl=[]
-			for k in l:
+			for k in _fs_u:
 				if (k in _fs):
 					if (k not in _fs_s):
 						utils.print(f"Saving FileSystem File: '{k}'")
@@ -166,8 +171,10 @@ def _write_fs():
 					if (k not in _fs_s):
 						utils.print(f"Deleting FileSystem File: '{k}'")
 					bl+=[{"path":k[1:],"mode":"100644","type":"blob","sha":None}]
+			_fs_u=[]
 			_bc=_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/commits",data=json.dumps({"message":datetime.datetime.now().strftime("Commit %m/%d/%Y, %H:%M:%S"),"tree":_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/trees",data=json.dumps({"base_tree":_bc["sha"],"tree":bl}))["sha"],"parents":[_bc["sha"]]}))
 			_request("patch",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/refs/heads/main",data=json.dumps({"sha":_bc["sha"],"force":True}))
+			_tl.release()
 		time.sleep(20)
 
 
@@ -188,9 +195,11 @@ def exists(fp):
 def set_silent(fp):
 	global _fs,_fs_s
 	fp=_as_path(fp)
+	_tl.acquire()
 	if (fp not in _fs):
 		_fs[fp]=[None,None,False]
 	_fs_s+=[fp]
+	_tl.release()
 
 
 
@@ -200,10 +209,12 @@ def read(fp):
 	if (fp not in _fs):
 		raise RuntimeError(f"File '{fp}' not Found")
 	if (_fs[fp][1]==None):
+		_tl.acquire()
 		if (_fs[fp][0]==None):
 			_fs[fp][1]=b""
 		else:
 			_fs[fp][1]=base64.b64decode(_request("get",url=_fs[fp][0])["content"])
+		_tl.release()
 	return _fs[fp][1]
 
 
@@ -215,6 +226,7 @@ def write(fp,dt):
 	if (_is_b(dt)==True):
 		dt=dt.replace(b"\r\n",b"\n")
 	fp=_as_path(fp)
+	_tl.acquire()
 	_add_dirs(fp)
 	if (fp not in _fs or _fs[fp][1]!=dt and fp not in _fs_u):
 		_fs_u+=[fp]
@@ -222,18 +234,21 @@ def write(fp,dt):
 		_fs[fp]=[None,dt,False]
 	else:
 		_fs[fp][1]=dt
+	_tl.release()
 
 
 
 def delete(fp):
 	global _fs,_fs_u
 	fp=_as_path(fp)
+	_tl.acquire()
 	if (fp in _fs):
 		if (_fs[fp][2]==True):
 			if (fp not in _fs_u):
 				_fs_u+=[fp]
 		del _fs[fp]
 		_remove_dirs(fp)
+	_tl.release()
 
 
 

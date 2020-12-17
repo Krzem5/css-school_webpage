@@ -13,7 +13,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 	function _start_socket(){
 		fetch("/api/v1/admin/logs").catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 			if (!e||e.status){
-				location.reload();
+				location.hash="";
+				location.href="/";
+				return;
 			}
 			s=new WebSocket(`wss://krzem.herokuapp.com/api/v1/admin/logs/${e.url}`);
 			s.onclose=()=>{

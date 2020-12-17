@@ -10,6 +10,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 		document.querySelector(".a-img").classList.remove("h");
 		ie.style.backgroundImage=`url(${window._dt.img})`;
 	}
+	if (window._dt.verified){
+		document.querySelector(".v").classList.remove("h");
+	}
 	window.onresize=()=>{
 		be.style.height="initial";
 		wre.style.height="initial";

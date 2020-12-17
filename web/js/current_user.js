@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 	let te=document.querySelector(".title");
 	let se=document.querySelector(".side");
 	let ie=document.querySelector(".img");
+	let t;
 	document.title+=" "+window._dt.name;
 	document.querySelector(".t").innerText=window._dt.name;
 	document.querySelector(".icn").onclick=()=>{
@@ -16,12 +17,15 @@ document.addEventListener("DOMContentLoaded",()=>{
 		document.querySelector(".a-img").classList.remove("h");
 		ie.style.backgroundImage=`url(${window._dt.img})`;
 	}
+	if (window._dt.verified){
+		document.querySelector(".v").classList.remove("h");
+	}
 	window.onresize=()=>{
 		be.style.height="initial";
 		wre.style.height="initial";
-		let h=Math.max(document.querySelector(".list").getBoundingClientRect().height+310,document.body.getBoundingClientRect().height-70);
-		be.style.height=`${h+70}px`;
-		wre.style.height=`${h}px`;
+		t=Math.max(document.querySelector(".list").getBoundingClientRect().height+310,document.body.getBoundingClientRect().height-70);
+		be.style.height=`${t+70}px`;
+		wre.style.height=`${t}px`;
 	};
 	window.onresize();
 	setTimeout(window.onresize,10);

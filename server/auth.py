@@ -42,6 +42,7 @@ _db_em={}
 _db_u_nm={}
 _db_u=True
 _ws_url={}
+_tl=threading.Lock()
 
 
 
@@ -50,6 +51,7 @@ def _write_db():
 	while (True):
 		utils.print(f"Saving Auth Database... (save={_db_u})")
 		if (_db_u):
+			_tl.acquire()
 			_db_u=False
 			o=b""
 			for k,v in list(_db.items()):
@@ -58,6 +60,7 @@ def _write_db():
 				v[DB_KEY_TIME]=int(v[DB_KEY_TIME])
 				o+=struct.pack(f"<2QB{len(v[DB_KEY_USERNAME])}s{len(v[DB_KEY_EMAIL])}sB4QI4BH{len(v[DB_KEY_IMAGE])}sB",k>>64,k&0xffffffffffffffff,len(v[DB_KEY_USERNAME])|((1 if v[DB_KEY_EMAIL_VERIFIED] else 0)<<5)|((1 if v[DB_KEY_ADMIN] else 0)<<6)|((1 if v[DB_KEY_DISABLED] else 0)<<7),bytes(v[DB_KEY_USERNAME],"utf-8"),bytes(v[DB_KEY_EMAIL],"utf-8"),0,p>>192,(p>>128)&0xffffffffffffffff,(p>>64)&0xffffffffffffffff,p&0xffffffffffffffff,v[DB_KEY_TIME],int(v[DB_KEY_IP].split(".")[0]),int(v[DB_KEY_IP].split(".")[1]),int(v[DB_KEY_IP].split(".")[2]),int(v[DB_KEY_IP].split(".")[3].split(":")[0]),int(v[DB_KEY_IP].split(":")[1]),bytes(v[DB_KEY_IMAGE],"utf-8"),0)
 			storage.write("database.db",o)
+			_tl.release()
 		time.sleep(300)
 
 
@@ -140,10 +143,12 @@ def signup(nm,em,pw,ip):
 	while (id_=="0"*auth.DB_ID_LEN*2 or id_=="0"*(auth.DB_ID_LEN*2-1)+"1"):
 		id_=secrets.token_hex(DB_ID_LEN)
 	id_=hex(id_)[2:]
+	_tl.acquire()
 	_db[id_]=[nm,em,hashlib.sha256(bytes(id_,"utf-8")+b"\x00"+bytes(em,"utf-8")+b"\x00"+pw).hexdigest(),int(time.time()),f"{ip[0]}:{ip[1]}",None,0,False,"https://via.placeholder.com/128",False,False]
 	_db_em[em]=id_
 	_db_u_nm[nm.lower()]=id_
 	_db_u=True
+	_tl.release()
 	return {"status":RETURN_CODE["ok"]}
 
 
@@ -167,8 +172,10 @@ def login(em,pw,ip):
 			r|=1
 	if (r!=0):
 		return {"status":RETURN_CODE["login_fail"]}
+	_tl.acquire()
 	_db[id_][DB_KEY_TOKEN]=str(base64.urlsafe_b64encode(secrets.token_bytes(TOKEN_LEN)),"utf-8")
 	_db[id_][DB_KEY_TOKEN_END]=int(time.time())+TOKEN_EXP_DATE
+	_tl.release()
 	server.set_header("Set-cookie",f"__ctoken={_db[id_][DB_KEY_TOKEN]};Max-Age={TOKEN_EXP_DATE};SameSite=Secure;Secure;HttpOnly;Path=/")
 	return {"status":RETURN_CODE["ok"]}
 
@@ -180,11 +187,14 @@ def check_token(tk,ip):
 
 
 def refresh_token(tk,ip):
+	global _db
 	id_=_check_token(tk)
 	if (id_==None):
 		return {"status":RETURN_CODE["invalid_token"]}
+	_tl.acquire()
 	_db[id_][DB_KEY_TOKEN]=str(base64.urlsafe_b64encode(secrets.token_bytes(TOKEN_LEN)),"utf-8")
 	_db[id_][DB_KEY_TOKEN_END]=int(time.time())+TOKEN_EXP_DATE
+	_tl.release()
 	return {"status":RETURN_CODE["ok"],"token":_db[id_][DB_KEY_TOKEN]}
 
 
@@ -198,11 +208,14 @@ def user_data(tk,ip):
 
 
 def logout(tk,ip):
+	global _db
 	id_=_check_token(tk)
 	if (id_==None):
 		return {"status":RETURN_CODE["invalid_token"]}
+	_tl.acquire()
 	_db[id_][DB_KEY_TOKEN]=None
 	_db[id_][DB_KEY_TOKEN_END]=0
+	_tl.release()
 	return {"status":RETURN_CODE["ok"]}
 
 
@@ -282,10 +295,12 @@ def admin_set_name(tk,t_id,nm,ip):
 	r=check_username(nm)
 	if (r!=RETURN_CODE["ok"]):
 		return {"status":r}
+	_tl.acquire()
 	del _db_u_nm[_db[t_id][DB_KEY_USERNAME].lower()]
 	_db_u_nm[nm.lower()]=t_id
 	_db[t_id][DB_KEY_USERNAME]=nm
 	_db_u=True
+	_tl.release()
 	return {"status":RETURN_CODE["ok"]}
 
 
@@ -299,6 +314,7 @@ def admin_flip_tag(tk,t_id,tag,ip):
 		return {"status":RETURN_CODE["not_admin"]}
 	if (t_id not in _db):
 		return {"status":RETURN_CODE["invalid_id"]}
+	_tl.acquire()
 	if (tag==0):
 		_db[t_id][DB_KEY_DISABLED]=not _db[t_id][DB_KEY_DISABLED]
 	elif (tag==1 and _db[t_id][DB_KEY_TOKEN]!=0):
@@ -311,6 +327,7 @@ def admin_flip_tag(tk,t_id,tag,ip):
 	else:
 		return {"status":RETURN_CODE["invalid_tag"]}
 	_db_u=True
+	_tl.release()
 	return {"status":RETURN_CODE["ok"]}
 
 
@@ -323,7 +340,9 @@ def create_ws_url(tk,ip):
 	if (_db[id_][DB_KEY_ADMIN]!=True):
 		return {"status":RETURN_CODE["not_admin"]}
 	url=secrets.token_hex(16)
+	_tl.acquire()
 	_ws_url[url]=time.time()+WS_URL_EXP_TIME
+	_tl.release()
 	return {"status":RETURN_CODE["ok"],"url":url}
 
 
@@ -332,8 +351,10 @@ def remove_ws_url(url,ip):
 	global _ws_url
 	if (url not in _ws_url):
 		return ({"status":RETURN_CODE["invalid_url"]},False)
+	_tl.acquire()
 	t=_ws_url[url]
 	del _ws_url[url]
+	_tl.release()
 	if (t<time.time()):
 		return ({"status":RETURN_CODE["invalid_url"]},False)
 	return (None,True)
@@ -342,6 +363,7 @@ def remove_ws_url(url,ip):
 
 if (storage.exists("database.db")):
 	o=storage.read("database.db")
+	_tl.acquire()
 	i=0
 	while (i<len(o)):
 		k1,k2,f=struct.unpack("<2QB",o[i:i+17])
@@ -359,4 +381,5 @@ if (storage.exists("database.db")):
 		_db_em[_db[k][DB_KEY_EMAIL]]=k
 		_db_u_nm[_db[k][DB_KEY_USERNAME].lower()]=k
 		i+=l+el+il+44
+	_tl.release()
 threading.Thread(target=_write_db).start()
