@@ -37,7 +37,7 @@ def _write_a_db():
 				o+=struct.pack(f"<2QI",0,0,v[1])
 			o+=struct.pack(f"<2Q",0,0)
 			storage.write("analytics.db",o)
-		time.sleep(15)
+		time.sleep(150)
 
 
 

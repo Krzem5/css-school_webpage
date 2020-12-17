@@ -62,7 +62,7 @@ def _write_db():
 				o+=struct.pack(f"<2QB{len(v[DB_KEY_USERNAME])}s{len(v[DB_KEY_EMAIL])}sB4QI4BH{len(v[DB_KEY_IMAGE])}sB",k>>64,k&0xffffffffffffffff,len(v[DB_KEY_USERNAME])|((1 if v[DB_KEY_EMAIL_VERIFIED] else 0)<<5)|((1 if v[DB_KEY_ADMIN] else 0)<<6)|((1 if v[DB_KEY_DISABLED] else 0)<<7),bytes(v[DB_KEY_USERNAME],"utf-8"),bytes(v[DB_KEY_EMAIL],"utf-8"),0,p>>192,(p>>128)&0xffffffffffffffff,(p>>64)&0xffffffffffffffff,p&0xffffffffffffffff,v[DB_KEY_TIME],int(v[DB_KEY_IP].split(".")[0]),int(v[DB_KEY_IP].split(".")[1]),int(v[DB_KEY_IP].split(".")[2]),int(v[DB_KEY_IP].split(".")[3].split(":")[0]),int(v[DB_KEY_IP].split(":")[1]),bytes(v[DB_KEY_IMAGE],"utf-8"),0)
 			storage.write("database.db",o)
 			_tl.release()
-		time.sleep(300)
+		time.sleep(150)
 
 
 

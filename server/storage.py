@@ -175,7 +175,7 @@ def _write_fs():
 			_bc=_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/commits",data=json.dumps({"message":datetime.datetime.now().strftime("Commit %m/%d/%Y, %H:%M:%S"),"tree":_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/trees",data=json.dumps({"base_tree":_bc["sha"],"tree":bl}))["sha"],"parents":[_bc["sha"]]}))
 			_request("patch",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/refs/heads/main",data=json.dumps({"sha":_bc["sha"],"force":True}))
 			_tl.release()
-		time.sleep(20)
+		time.sleep(150)
 
 
 

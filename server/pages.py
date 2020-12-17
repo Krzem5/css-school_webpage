@@ -228,7 +228,7 @@ def page(url):
 		return pg["cache"]
 	else:
 		server.set_code(404)
-		return utils.cache("web/not-found.html")
+		return utils.cache("web/not_found.html")
 
 
 
@@ -247,7 +247,7 @@ def user(url):
 		return (_render_c_user if id_!=None and auth.get_id_from_username(url)==id_ else _render_user)(dt)
 	else:
 		server.set_code(404)
-		return utils.cache("web/not-found.html")
+		return utils.cache("web/not_found.html")
 
 
 
@@ -271,4 +271,4 @@ def css_file(url):
 def not_found(url):
 	server.set_code(404)
 	server.set_header("Content-Type","text/html")
-	return utils.cache("web/not-found.html")
+	return utils.cache("web/not_found.html")
