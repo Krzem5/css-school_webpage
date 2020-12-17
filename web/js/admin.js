@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		return `<span class="c">${e}</span>`;
 	}).join("");
 	document.querySelector(".icon").onclick=()=>{
+		location.hash="";
 		location.href="/";
 	}
 	window.switch=(id,nh)=>{
@@ -86,6 +87,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 				aie.onkeyup();
 			}
 			else{
+				location.hash="";
 				location.href="/";
 			}
 		});
@@ -103,6 +105,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 						aie.onkeyup();
 					}
 					else{
+						location.hash="";
 						location.href="/";
 					}
 				});
@@ -129,6 +132,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		if (!oe||oe.keyCode==13){
 			fetch("/api/v1/admin/users",{method:"POST",body:JSON.stringify({query:aie.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 				if (!e||e.status){
+					location.hash="";
 					location.href="/";
 				}
 				else{

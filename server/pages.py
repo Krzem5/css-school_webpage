@@ -7,6 +7,8 @@ import utils
 import requests
 import json
 import re
+import time
+import hashlib
 
 
 
@@ -25,9 +27,11 @@ with open("web/current_user_template.html","rb") as f:
 
 
 for k in storage.listdir("pages")[0]:
-	dt=json.loads(storage.read(k+"/index.json"))
+	vl=json.loads(storage.read(k+"/index.json"))
 	id_=re.sub(r"[^a-zA-Z0-9\-]","",k[7:].lower())
-	PAGE_LIST[id_]={"nm":dt["title"],"author":dt["author"],"dt":dt,"cache":None}
+	print(vl)
+	dt=json.loads(storage.read(f"{k}/{vl['current'][0]}/data.json"))
+	PAGE_LIST[id_]={"vl":vl,"nm":dt["title"],"author":dt["author"],"dt":dt,"cache":None}
 	if (dt["author"] not in USER_PAGE_MAP):
 		USER_PAGE_MAP[dt["author"]]=[]
 	USER_PAGE_MAP[dt["author"]]+=[id_]
@@ -63,12 +67,17 @@ def _render_c_user(dt):
 
 def add_page(id_,dt):
 	global PAGE_LIST,USER_PAGE_MAP
-	PAGE_LIST[id_]={"nm":dt["title"],"author":dt["author"],"dt":dt,"cache":None}
+	vl=(PAGE_LIST[id_]["vl"] if id_ in PAGE_LIST else {"current":None,"all":[]})
+	dt_id=hashlib.md5(bytes(dt["title"]+"\x00"+dt["desc"]+"\x00"+dt["data"],"utf-8")).hexdigest()
+	vl["current"]=(dt_id,time.time())
+	vl["all"]+=[vl["current"]]
+	PAGE_LIST[id_]={"vl":vl,"nm":dt["title"],"author":dt["author"],"dt":dt,"cache":None}
 	if (dt["author"] not in USER_PAGE_MAP):
 		USER_PAGE_MAP[dt["author"]]=[]
 	if (id_ not in USER_PAGE_MAP[dt["author"]]):
 		USER_PAGE_MAP[dt["author"]]+=[id_]
-	storage.write(f"pages/{id_}/index.json",bytes(json.dumps({"title":dt["title"],"desc":dt["desc"],"author":dt["author"],"data":dt["data"]}),"utf-8"))
+	storage.write(f"pages/{id_}/index.json",bytes(json.dumps(vl),"utf-8"))
+	storage.write(f"pages/{id_}/{dt_id}/data.json",bytes(json.dumps({"title":dt["title"],"desc":dt["desc"],"author":dt["author"],"data":dt["data"]}),"utf-8"))
 
 
 

@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 	let bge=document.querySelector(".bg");
 	let wre=document.querySelector(".wr");
 	let le=document.querySelector(".list");
+	location.hash="";
 	window.onresize=()=>{
 		bge.style.height="initial";
 		wre.style.height="initial";
