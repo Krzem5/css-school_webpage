@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		}
 		else{
 			document.querySelector(".account").classList.add("l");
-			document.querySelector(".icn").onclick=()=>{
+			document.querySelector(".account-i").onclick=()=>{
 				window.location.href=`/user/${e.username}`;
 			};
 		}

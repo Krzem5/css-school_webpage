@@ -124,7 +124,7 @@ def render(l):
 						IMG_CACHE[u]=True
 				if (IMG_CACHE[u]==False):
 					return (f"Unable to Load Image '{u}'",False)
-				k=k[:si]+f"<img class=\"i\" src=\"{u}\" alt=\"{k[si+2:si2-2]}\">"+k[i+1:]
+				k=k[:si]+f"<img src=\"{u}\" alt=\"{k[si+2:si2-2]}\">"+k[i+1:]
 				i+=24
 			elif (k[i:i+3]=="```"):
 				si=i+0
@@ -166,6 +166,7 @@ def render(l):
 def index(url):
 	server.set_code(200)
 	server.set_header("Content-Type","text/html")
+	server.set_header("Cache-Control","public,max-age=31536000,immutable")
 	return utils.cache("web/index.html")
 
 
@@ -174,6 +175,7 @@ def index(url):
 def login(url):
 	server.set_code(200)
 	server.set_header("Content-Type","text/html")
+	server.set_header("Cache-Control","public,max-age=31536000,immutable")
 	return utils.cache("web/login.html")
 
 
@@ -182,6 +184,7 @@ def login(url):
 def signup(url):
 	server.set_code(200)
 	server.set_header("Content-Type","text/html")
+	server.set_header("Cache-Control","public,max-age=31536000,immutable")
 	return utils.cache("web/signup.html")
 
 
@@ -195,6 +198,7 @@ def admin(url):
 		return b""
 	server.set_code(200)
 	server.set_header("Content-Type","text/html")
+	server.set_header("Cache-Control","public,max-age=31536000,immutable")
 	return utils.cache("web/admin.html")
 
 
@@ -208,6 +212,7 @@ def admin(url):
 		return b""
 	server.set_code(200)
 	server.set_header("Content-Type","text/html")
+	server.set_header("Cache-Control","public,max-age=31536000,immutable")
 	return utils.cache("web/new.html")
 
 
@@ -248,22 +253,6 @@ def user(url):
 	else:
 		server.set_code(404)
 		return utils.cache("web/not_found.html")
-
-
-
-@server.route("GET",r"/js/[^/]*\.js")
-def js_file(url):
-	server.set_code(200)
-	server.set_header("Content-Type","text/javascript")
-	return utils.cache(f"web/{url}")
-
-
-
-@server.route("GET",r"/css/[^/]*\.css")
-def css_file(url):
-	server.set_code(200)
-	server.set_header("Content-Type","text/css")
-	return utils.cache(f"web/{url}")
 
 
 

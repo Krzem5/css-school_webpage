@@ -6,19 +6,19 @@ document.addEventListener("DOMContentLoaded",()=>{
 	let ie=document.querySelector(".img");
 	let t;
 	document.title+=" "+window._dt.name;
-	document.querySelector(".t").innerText=window._dt.name;
-	document.querySelector(".icn").onclick=()=>{
+	document.querySelector(".nm-t").innerText=window._dt.name;
+	document.querySelector(".account-i").onclick=()=>{
 		window.location.href="/user/"+window._dt.username;
 	};
-	document.querySelector(".n").onclick=()=>{
+	document.querySelector(".new").onclick=()=>{
 		window.location.href="/new";
 	};
 	if (window._dt.img){
-		document.querySelector(".a-img").classList.remove("h");
+		document.querySelector(".a-img").classList.remove("a-img-h");
 		ie.style.backgroundImage=`url(${window._dt.img})`;
 	}
 	if (window._dt.verified){
-		document.querySelector(".v").classList.remove("h");
+		document.querySelector(".v").classList.remove("v-h");
 	}
 	window.onresize=()=>{
 		be.style.height="initial";

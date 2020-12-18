@@ -75,7 +75,7 @@ body {
 	animation: err 1.4s cubic-bezier(1, 0, 0.6, 0.9) 0s infinite alternate;
 	user-select: none;
 }
-.bg .wr .img .i {
+.bg .wr .img .img-i {
 	font-size: 300px;
 }
 .bg .wr .lnk {
@@ -89,7 +89,7 @@ body {
 	cursor: pointer;
 	user-select: none;
 }
-.bg .wr .lnk .i {
+.bg .wr .lnk .lnk-i {
 	user-select: none;
 	font-size: 42px;
 	transform: translate(0,8px);

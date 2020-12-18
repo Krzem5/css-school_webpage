@@ -145,14 +145,14 @@ body {
 	height: 100%;
 	display: none;
 }
+.bg-r .bg .wr .main>div.main-v {
+	display: initial;
+}
 
 
 
 .bg-r .bg .wr .main .accounts {
 	background: #2f2f2f;
-}
-.bg-r .bg .wr .main.id0 .accounts {
-	display: initial;
 }
 .bg-r .bg .wr .main .accounts .a-search {
 	position: absolute;
@@ -199,19 +199,19 @@ body {
 	background: #2d2d2d;
 	border-radius: 8px;
 }
-.bg-r .bg .wr .main .accounts .a-list .l-elem {
+.bg-r .bg .wr .main .accounts .a-list .a-l-elem {
 	position: relative;
 	width: 100%;
 	height: 25px;
 	cursor: pointer;
 }
-.bg-r .bg .wr .main .accounts .a-list .l-elem:not(:first-child) {
+.bg-r .bg .wr .main .accounts .a-list .a-l-elem:not(:first-child) {
 	border-top: solid 4px #0f0f0f;
 }
-.bg-r .bg .wr .main .accounts .a-list .l-elem:nth-child(even) {
+.bg-r .bg .wr .main .accounts .a-list .a-l-elem:nth-child(even) {
 	background: #151515;
 }
-.bg-r .bg .wr .main .accounts .a-list .l-elem .pr {
+.bg-r .bg .wr .main .accounts .a-list .a-l-elem .a-l-elem-pr {
 	position: absolute;
 	top: 0;
 	left: 10px;
@@ -222,12 +222,12 @@ body {
 	font-family: Ubuntu Mono;
 	user-select: none;
 }
-.bg-r .bg .wr .main .accounts .a-list .l-elem .pr .nm {
+.bg-r .bg .wr .main .accounts .a-list .a-l-elem .a-l-elem-pr .a-l-elem-pr-nm {
 	float: left;
 	color: #724fe6;
 	padding-right: 20px;
 }
-.bg-r .bg .wr .main .accounts .a-list .l-elem .pr .em {
+.bg-r .bg .wr .main .accounts .a-list .a-l-elem .a-l-elem-pr .a-l-elem-pr-em {
 	color: #aed42a;
 }
 .bg-r .bg .wr .main .accounts .user-wr {
@@ -242,7 +242,7 @@ body {
 .bg-r .bg .wr .main .accounts .user-wr.s {
 	display: initial;
 }
-.bg-r .bg .wr .main .accounts .user {
+.bg-r .bg .wr .main .accounts .user-wr .user {
 	position: absolute;
 	top: 50%;
 	left: 50%;
@@ -256,54 +256,54 @@ body {
 	font-family: Ubuntu Mono;
 	font-size: 22px;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem {
 	position: relative;
 	width: 100%;
 	min-height: 25px;
 	user-select: none;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .k {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-k {
 	padding-right: 10px;
 	color: #3d3d3d;
 	white-space: nowrap;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v {
 	width: 100%;
 	cursor: pointer;
 	white-space: pre-wrap;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v.nm {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v.u-nm {
 	color: #724fe6;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v.em {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v.u-em {
 	color: #aed42a;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v.id {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v.u-id {
 	color: #2acfb6;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v.tm {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v.u-tm {
 	color: #cf2aae;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v.ip {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v.u-ip {
 	color: #f7742a;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v.tk {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v.u-tk {
 	color: #024591;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v.img {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v.u-img {
 	color: #29cb5a;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v.pwd {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v.u-pwd {
 	color: #cf322a;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v.tg {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v.u-tg {
 	color: #686868;
 }
-.bg-r .bg .wr .main .accounts .user .u-elem .v.tg .s {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-elem .u-elem-v.u-tg .u-tg-s {
 	color: #ffc40b;
 	text-decoration: underline;
 }
-.bg-r .bg .wr .main .accounts .user .ch-nm {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-ch-nm {
 	position: absolute;
 	left: 10px;
 	bottom: 50px;
@@ -314,14 +314,14 @@ body {
 	border-bottom: solid 5px #151515;
 	width: 300px;
 }
-.bg-r .bg .wr .main .accounts .user .ch-nm::selection {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-ch-nm::selection {
 	background: #606060;
 	color: #2fcf8e;
 }
-.bg-r .bg .wr .main .accounts .user .ch-nm::placeholder {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-ch-nm::placeholder {
 	color: #474747;
 }
-.bg-r .bg .wr .main .accounts .user .ch-t {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-ch-t {
 	position: absolute;
 	left: 330px;
 	bottom: 50px;
@@ -334,7 +334,7 @@ body {
 	white-space: nowrap;
 	cursor: pointer;
 }
-.bg-r .bg .wr .main .accounts .user .ch-t .s {
+.bg-r .bg .wr .main .accounts .user-wr .user .u-ch-t .u-ch-t-s {
 	color: #ffc40b;
 	text-decoration: underline;
 }
@@ -343,9 +343,6 @@ body {
 
 .bg-r .bg .wr .main .pages {
 	background: #2f2f2f;
-}
-.bg-r .bg .wr .main.id1 .pages {
-	display: initial;
 }
 .bg-r .bg .wr .main .pages .p-search {
 	position: absolute;
@@ -392,19 +389,19 @@ body {
 	background: #2d2d2d;
 	border-radius: 8px;
 }
-.bg-r .bg .wr .main .pages .p-list .l-elem {
+.bg-r .bg .wr .main .pages .p-list .p-l-elem {
 	position: relative;
 	width: 100%;
 	height: 25px;
 	cursor: pointer;
 }
-.bg-r .bg .wr .main .pages .p-list .l-elem:not(:first-child) {
+.bg-r .bg .wr .main .pages .p-list .p-l-elem:not(:first-child) {
 	border-top: solid 4px #0f0f0f;
 }
-.bg-r .bg .wr .main .pages .p-list .l-elem:nth-child(even) {
+.bg-r .bg .wr .main .pages .p-list .p-l-elem:nth-child(even) {
 	background: #151515;
 }
-.bg-r .bg .wr .main .pages .p-list .l-elem .pr {
+.bg-r .bg .wr .main .pages .p-list .p-l-elem .p-l-elem-pr {
 	position: absolute;
 	top: 0;
 	left: 10px;
@@ -415,12 +412,12 @@ body {
 	font-family: Ubuntu Mono;
 	user-select: none;
 }
-.bg-r .bg .wr .main .pages .p-list .l-elem .pr .id {
+.bg-r .bg .wr .main .pages .p-list .p-l-elem .p-l-elem-pr .p-l-elem-pr-id {
 	float: left;
 	color: #724fe6;
 	padding-right: 20px;
 }
-.bg-r .bg .wr .main .pages .p-list .l-elem .pr .tt {
+.bg-r .bg .wr .main .pages .p-list .p-l-elem .p-l-elem-pr .p-l-elem-pr-tt {
 	color: #aed42a;
 }
 .bg-r .bg .wr .main .pages .page-wr {
@@ -454,29 +451,29 @@ body {
 	min-height: 25px;
 	user-select: none;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .k {
+.bg-r .bg .wr .main .pages .page .p-elem .p-elem-k {
 	padding-right: 10px;
 	color: #3d3d3d;
 	white-space: nowrap;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .v {
+.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v {
 	width: 100%;
 	cursor: pointer;
 	white-space: pre-wrap;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .v.id {
+.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v.p-id {
 	color: #724fe6;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .v.t {
+.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v.p-t {
 	color: #aed42a;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .v.d {
+.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v.p-d {
 	color: #2acfb6;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .v.tm {
+.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v.p-tm {
 	color: #cf2aae;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .v.a {
+.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v.p-a {
 	color: #f7742a;
 }
 
@@ -494,9 +491,6 @@ body {
 	background: #0c0c0c;
 	overflow-y: scroll;
 }
-.bg-r .bg .wr .main.id2 .logs {
-	display: initial;
-}
 .bg-r .bg .wr .main .logs::-webkit-scrollbar {
 	width: 15px;
 	background: #0c0c0c;
@@ -512,20 +506,20 @@ body {
 .bg-r .bg .wr .main .logs::-webkit-scrollbar-corner {
 	background: #0c0c0c;
 }
-.bg-r .bg .wr .main .logs .msg {
+.bg-r .bg .wr .main .logs .l-msg {
 	position: relative;
 }
-.bg-r .bg .wr .main .logs .msg:nth-child(even) {
+.bg-r .bg .wr .main .logs .l-msg:nth-child(even) {
 	background: #101010;
 }
-.bg-r .bg .wr .main .logs .msg .t {
+.bg-r .bg .wr .main .logs .l-msg .l-msg-t {
 	color: #2f2f2f;
 	user-select: none;
 }
-.bg-r .bg .wr .main .logs .msg .m {
+.bg-r .bg .wr .main .logs .l-msg .l-msg-m {
 	color: #cdcdcd;
 }
-.bg-r .bg .wr .main .logs .msg .m::selection {
+.bg-r .bg .wr .main .logs .l-msg .l-msg-m::selection {
 	background: #606060;
 	color: #2fcf8e;
 }

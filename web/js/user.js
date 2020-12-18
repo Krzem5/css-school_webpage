@@ -5,13 +5,13 @@ document.addEventListener("DOMContentLoaded",()=>{
 	let se=document.querySelector(".side");
 	let ie=document.querySelector(".img");
 	document.title+=" "+window._dt.name;
-	document.querySelector(".t").innerText=window._dt.name;
+	document.querySelector(".nm-t").innerText=window._dt.name;
 	if (window._dt.img){
-		document.querySelector(".a-img").classList.remove("h");
+		document.querySelector(".a-img").classList.remove("a-img-h");
 		ie.style.backgroundImage=`url(${window._dt.img})`;
 	}
 	if (window._dt.verified){
-		document.querySelector(".v").classList.remove("h");
+		document.querySelector(".v").classList.remove("v-h");
 	}
 	window.onresize=()=>{
 		be.style.height="initial";
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		}
 		else{
 			document.querySelector(".account").classList.add("l");
-			document.querySelector(".icn").onclick=()=>{
+			document.querySelector(".account-i").onclick=()=>{
 				window.location.href=`/user/${e.username}`;
 			};
 		}
