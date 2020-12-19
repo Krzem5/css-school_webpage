@@ -128,7 +128,7 @@ def _minify_html(html,fp,fp_b):
 					else:
 						tcm[c]+=1
 		return o
-	def _parse_js(js,tcm):
+	def _parse_js(js,tcm,vfm,vfma):
 		def _map_value(v,vml):
 			for i in range(len(vml)-1,-1,-1):
 				if (v in vml[i]):
@@ -198,8 +198,6 @@ def _minify_html(html,fp,fp_b):
 		efbl={}
 		ee={}
 		bl=0
-		vfm={}
-		vfma={}
 		v_nm=False
 		vdl={}
 		print("    Parsing Structure...")
@@ -460,18 +458,33 @@ def _minify_html(html,fp,fp_b):
 										for sk in il:
 											if (sk[0]<=i+evi and i+evi<sk[1]):
 												if (tl[sk[2]][0]!="string" and b" " not in ev):
-													cl.insert(0,(True,b"\""+e+b"\"",sk[2],i+evi-sk[0]-1))
+													cl.insert(0,(0,b"\""+e+b"\"",sk[2],i+evi-sk[0]-1))
 												else:
-													cl.insert(0,(True,e,sk[2],i+evi-sk[0]))
+													cl.insert(0,(0,e,sk[2],i+evi-sk[0]))
 												break
 										evi+=len(e)+1
 								elif (str(ek,"utf-8") in HTML_TAG_JS_ATTRIBUTES):
-									if (JS_WARN_EXEC_TAGS==True):
-										print(f"Executable JS Tag Found inside HTML String in JS: {str(ek,'utf-8')}=\"{str(ev,'utf-8')}\"")
+									m=JS_REGEX_LIST["identifier"].match(ev)
+									if (m!=None):
+										sm=ev[:m.end(0)].split(b".")
+										if (sm[0] not in vfm):
+											vfm[sm[0]]=1
+										else:
+											vfm[sm[0]]+=1
+										for sme in sm[1:]:
+											if (sme not in vfma):
+												vfma[sme]=1
+											else:
+												vfma[sme]+=1
+										for sk in il:
+											if (sk[0]<=i-len(ev) and i-len(ev)<sk[1]):
+												cl.insert(0,(1,ev[:m.end(0)],sk[2],i-len(ev)-sk[0]))
+												icc+=1
+												break
 								elif (b" " not in ev and len(ev)>0):
 									for sk in il:
 										if (sk[0]<=i-len(ev) and i-len(ev)<sk[1]):
-												cl.insert(0,(False,ev,sk[2],i-sk[0]-len(ev)-1))
+												cl.insert(0,(2,ev,sk[2],i-sk[0]-len(ev)-1))
 												icc+=1
 												break
 								ek=b""
@@ -488,24 +501,6 @@ def _minify_html(html,fp,fp_b):
 					i+=1
 				bf=b""
 				il=[]
-		print(f"    Formatting HTML Strings ({len(cl)-icc} class{('es' if len(cl)-icc!=1 else '')})...")
-		for t,e,j,sj in cl:
-			v=tl[j][1]
-			if (t==True):
-				if (e not in tcm):
-					tcm[e]=1
-				else:
-					tcm[e]+=1
-				if (tl[j][0]=="stringS"):
-					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringS",v[sj+len(e)+1:])]+tl[j+1:]
-				elif (tl[j][0]=="stringM" or tl[j][0]=="string" or tl[j][0]=="_raw"):
-					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("_raw",v[sj+len(e)+1:])]+tl[j+1:]
-				elif (tl[j][0]=="stringE"):
-					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringE",v[sj+len(e)+1:])]+tl[j+1:]
-				else:
-					raise RuntimeError
-			else:
-				tl[j]=(tl[j][0],v[:sj+1]+e+v[sj+len(e)+3:])
 		print(f"    Finding Global Object Substitutions ({len(vfm.keys())} object{('s' if len(vfm.keys())!=1 else '')})...")
 		cvml=[]
 		for k,v in vfm.items():
@@ -540,6 +535,29 @@ def _minify_html(html,fp,fp_b):
 					else:
 						sl+=[("operator",b",")]
 					sl+=[("identifier",mv),("operator",b"="),("string",b"\""+k[1]+b"\"")]
+		print(f"    Formatting HTML Strings ({len(cl)-icc} class{('es' if len(cl)-icc!=1 else '')})...")
+		for t,e,j,sj in cl:
+			v=tl[j][1]
+			if (t==0):
+				if (e not in tcm):
+					tcm[e]=1
+				else:
+					tcm[e]+=1
+				if (tl[j][0]=="stringS"):
+					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringS",v[sj+len(e)+1:])]+tl[j+1:]
+				elif (tl[j][0]=="stringM" or tl[j][0]=="string" or tl[j][0]=="_raw"):
+					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("_raw",v[sj+len(e)+1:])]+tl[j+1:]
+				elif (tl[j][0]=="stringE"):
+					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringE",v[sj+len(e)+1:])]+tl[j+1:]
+				else:
+					raise RuntimeError
+			elif (t==1):
+				el,ne,e=len(e),e.split(b".")[1:],(cvm[e.split(b".")[0]] if e.split(b".")[0] in cvm else e.split(b".")[0])
+				for nee in ne:
+					e+=(b"["+cvma[nee]+b"]" if nee in cvma else b"."+nee)
+				tl[j]=(tl[j][0],v[:sj+1]+e+v[sj+el+1:])
+			else:
+				tl[j]=(tl[j][0],v[:sj+1]+e+v[sj+len(e)+3:])
 		if (len(sl)>0):
 			tl=sl+[("operator",b";")]+tl
 		return (tl,cvm,cvma,len(sl))
@@ -673,7 +691,7 @@ def _minify_html(html,fp,fp_b):
 					o+=b" "
 			i+=1
 		return (o,i)
-	def _write_html(e,tcm):
+	def _write_html(e,tcm,js_om):
 		o=b"<"+e[0]
 		for k,v in e[1].items():
 			if (k==b"class"):
@@ -681,6 +699,15 @@ def _minify_html(html,fp,fp_b):
 				for c in v.split(b" "):
 					nv+=(b" " if len(nv)>0 else b"")+tcm[c]
 				v=nv
+			elif (str(k,"utf-8") in HTML_TAG_JS_ATTRIBUTES):
+				m=JS_REGEX_LIST["identifier"].match(v)
+				if (m!=None):
+					v,ev=m.group(0).split(b".")[0],v[m.end(0):]
+					if (v in js_om[0]):
+						v=js_om[0][v]
+					for i in m.group(0).split(b".")[1:]:
+						v+=(b"["+js_om[1][i]+b"]" if i in js_om[1] else b"."+i)
+					v+=ev
 			if (o[-1]!=b"\""):
 				o+=b" "
 			q=(b"\"" if re.search(HTML_QUOTED_ATTRIBUTE_REGEX,v)!=None else b"")
@@ -690,7 +717,7 @@ def _minify_html(html,fp,fp_b):
 			if (t[0]=="__text__"):
 				o+=t[1]
 			else:
-				o+=_write_html(t,tcm)
+				o+=_write_html(t,tcm,js_om)
 		return o+b"</"+e[0]+b">"
 	print(f"Minifying File '{fp}'...")
 	l=len(html)
@@ -703,6 +730,8 @@ def _minify_html(html,fp,fp_b):
 	html=re.sub(HTML_REMOVE_WHITEPSACE_REGEX,br"",html,re.I|re.M|re.X)
 	i=0
 	ttc=0
+	vfm={}
+	vfma={}
 	print("  Parsing HTML...")
 	while (i<len(html)):
 		m=HTML_TAG_REGEX.search(html[i:])
@@ -721,11 +750,20 @@ def _minify_html(html,fp,fp_b):
 		pm={}
 		if (len(m.group(2))>0):
 			for k,v in re.findall(HTML_ATTRIBUTE_REGEX,m.group(2)):
-				if (not (k[:5]==b"data-" and len(k)>5)):
-					if (str(k,"utf-8") not in HTML_TAG_ATTRIBUTE_MAP or (HTML_TAG_ATTRIBUTE_MAP[str(k,"utf-8")]!=None and str(t_nm,"utf-8") not in HTML_TAG_ATTRIBUTE_MAP[str(k,"utf-8")])):
-						raise RuntimeError(f"Tag <{str(t_nm,'utf-8')}> Contains an Invalid Attribute '{str(k,'utf-8')}'")
-				if (str(k,"utf-8") in HTML_TAG_JS_ATTRIBUTES and JS_WARN_EXEC_TAGS==True):
-					print(f"  Executable JS Tag Found: {str(k,'utf-8')}=\"{str(v,'utf-8')}\"")
+				if (not (k[:5]==b"data-" and len(k)>5) and str(k,"utf-8") not in HTML_TAG_ATTRIBUTE_MAP or (HTML_TAG_ATTRIBUTE_MAP[str(k,"utf-8")]!=None and str(t_nm,"utf-8") not in HTML_TAG_ATTRIBUTE_MAP[str(k,"utf-8")])):
+					raise RuntimeError(f"Tag <{str(t_nm,'utf-8')}> Contains an Invalid Attribute '{str(k,'utf-8')}'")
+				elif (str(k,"utf-8") in HTML_TAG_JS_ATTRIBUTES):
+					sm=JS_REGEX_LIST["identifier"].match(v)
+					if (sm!=None):
+						sm=sm.group(0).split(b".")
+						if (sm[0] not in vfm):
+							vfm[sm[0]]=1
+						else:
+							vfm[sm[0]]+=1
+						for sme in sm[1:]:
+							vfma[sme]=1
+						else:
+							vfma[sme]+=1
 				pm[k]=v
 		v=None
 		if (t_nm==b"script" and b"type" in pm and pm[b"type"]==b"text/javascript" and b"src" in pm and b"async" not in pm and b"defer" not in pm):
@@ -804,7 +842,7 @@ def _minify_html(html,fp,fp_b):
 	if (js_t!=None):
 		print(f"  Parsing JS ({js_t[0][1]} script{('s' if js_t[0][1]!=1 else '')}, {len(js_t[0][0])} byte{('s' if len(js_t[0][0])!=1 else '')})...")
 		l+=len(js_t[0][0])
-		js_t[0]=(len(js_t[0][0]),*_parse_js(js_t[0][0],tcm))
+		js_t[0]=(len(js_t[0][0]),*_parse_js(js_t[0][0],tcm,vfm,vfma))
 	if (css_t!=None):
 		print(f"  Parsing CSS ({css_t[0][1]} script{('s' if css_t[0][1]!=1 else '')}, {len(css_t[0][0])} byte{('s' if len(css_t[0][0])!=1 else '')})...")
 		l+=len(css_t[0][0])
@@ -820,9 +858,11 @@ def _minify_html(html,fp,fp_b):
 	for k,v in sorted(tcm.items(),key=lambda e:-len(e[0])*e[1]):
 		ntcm[k]=_gen_i([ntcm],CSS_CLASS_LETTERS)
 	js_s="none"
+	js_om=({},{})
 	if (js_t!=None):
 		print(f"  Regenerating JS ({len(js_t[0][1])} token{('s' if len(js_t[0][1])!=1 else '')})...")
 		sl=js_t[0][0]
+		js_om=js_t[0][2:4]
 		js_t[0]=("__text__",_write_js(*js_t[0][1:],ntcm)[0])
 		js_s=f"{sl} -> {len(js_t[0][1])} (-{round(10000-10000*len(js_t[0][1])/sl)/100}%)"
 	css_s="none"
@@ -836,7 +876,7 @@ def _minify_html(html,fp,fp_b):
 		css_t[0]=("__text__",css_o)
 		css_s=f"{sl} -> {len(css_o)} (-{round(10000-10000*len(css_o)/sl)/100}%)"
 	print(f"  Writing HTML ({ttc} tag{('s' if ttc!=1 else '')})...")
-	o=b"<!DOCTYPE html>"+_write_html(r,ntcm)
+	o=b"<!DOCTYPE html>"+_write_html(r,ntcm,js_om)
 	print(f"Minified HTML: (\n  JS: {js_s}\n  CSS: {css_s}\n  HTML: {l} -> {len(o)} (-{round(10000-10000*len(o)/l)/100}%)\n)")
 	return o
 
@@ -877,6 +917,7 @@ os.mkdir(f"build\\server")
 for fn in os.listdir("web"):
 	if (fn[-5:]==".html"):
 		_copy(f"web\\{fn}",f=lambda dt,fp:_minify_html(dt,fp,"web"))
+quit()
 for fn in os.listdir("server"):
 	if (os.path.isfile(f"server\\{fn}")==True):
 		_copy(f"server\\{fn}")
