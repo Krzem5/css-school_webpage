@@ -258,7 +258,7 @@ def get_users(tk,q,ip):
 		return {"status":RETURN_CODE["invalid_token"]}
 	elif (_db[id_][DB_KEY_ADMIN]!=True):
 		return {"status":RETURN_CODE["not_admin"]}
-	u,e,t=True,True,True
+	u,e,t,i=True,True,True,True
 	if (q.count(":")>0):
 		s,q=q.split(":")[0],q[len(q.split(":")[0])+1:]
 		u,e,t=False,False,False
@@ -269,8 +269,10 @@ def get_users(tk,q,ip):
 				e=True
 			if (k=="t"):
 				t=True
-		if (u==e and e==t and t==False):
-			u,e,t=True,True,True
+			if (k=="i"):
+				t=True
+		if (u==e and e==t and t==i and i==False):
+			u,e,t,i=True,True,True,True
 	try:
 		q=re.compile(q,re.I)
 	except re.error:
@@ -278,7 +280,7 @@ def get_users(tk,q,ip):
 	o=[]
 	for k,v in list(_db.items()):
 		ts=" ".join((["disabled"] if v[DB_KEY_DISABLED] else [])+(["logged-in"] if v[DB_KEY_TOKEN] else [])+(["verified-email"] if v[DB_KEY_EMAIL_VERIFIED] else [])+(["admin"] if v[DB_KEY_ADMIN] else []))
-		if ((u and q.search(v[DB_KEY_USERNAME])!=None) or (e and q.search(v[DB_KEY_EMAIL])!=None) or (t and q.search(ts)!=None)):
+		if ((u and q.search(v[DB_KEY_USERNAME])!=None) or (e and q.search(v[DB_KEY_EMAIL])!=None) or (t and q.search(ts)!=None) or (i and q.search(k)!=None)):
 			o+=[{"id":k,"username":v[DB_KEY_USERNAME],"email":v[DB_KEY_EMAIL],"password":v[DB_KEY_PASSWORD],"time":v[DB_KEY_TIME],"ip":v[DB_KEY_IP],"token":v[DB_KEY_TOKEN],"token_end":v[DB_KEY_TOKEN_END],"email_verified":v[DB_KEY_EMAIL_VERIFIED],"image":v[DB_KEY_IMAGE],"admin":v[DB_KEY_ADMIN],"disabled":v[DB_KEY_DISABLED]}]
 	return {"status":RETURN_CODE["ok"],"users":o}
 

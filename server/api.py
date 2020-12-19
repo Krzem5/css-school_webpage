@@ -140,7 +140,7 @@ def save(url):
 	pg,ok=pages.render(dt["p"])
 	if (ok==False):
 		return {"status":auth.RETURN_CODE["malformated_input"],"reason":pg}
-	pages.add_page(dt["id"],{"title":dt["title"],"desc":dt["desc"],"author":id_,"data":pg})
+	pages.add_page(dt["id"],{"title":dt["title"],"desc":dt["desc"],"author":id_,"data":dt["p"]},pg)
 	return {"status":auth.RETURN_CODE["ok"]}
 
 

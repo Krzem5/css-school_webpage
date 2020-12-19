@@ -274,12 +274,13 @@ body {
 	display: grid;
 	gap: 20px;
 }
-.bg-r .bg .wr .main .list .e {
+.bg-r .bg .wr .main .list a-e {
 	position: relative;
 	width: auto;
 	height: 300px;
+	display: block;
 }
-.bg-r .bg .wr .main .list .e .e-wr {
+.bg-r .bg .wr .main .list a-e a-w {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -289,8 +290,9 @@ body {
 	border-radius: 30px;
 	border: solid 10px #0f0f0f;
 	cursor: pointer;
+	display: block;
 }
-.bg-r .bg .wr .main .list .e .e-wr .t {
+.bg-r .bg .wr .main .list a-e a-w a-t {
 	position: absolute;
 	top: 10px;
 	left: 10px;
@@ -299,12 +301,13 @@ body {
 	font-family: Nova Mono, sans-serif;
 	font-size: 32px;
 	color: #ffbf0f;
+	display: block;
 }
-.bg-r .bg .wr .main .list .e .e-wr .t::selection {
+.bg-r .bg .wr .main .list a-e a-w a-t::selection {
 	background: #303030;
 	color: #FFE960;
 }
-.bg-r .bg .wr .main .list .e .e-wr .a {
+.bg-r .bg .wr .main .list a-e a-w a-a {
 	position: absolute;
 	bottom: 10px;
 	left: 10px;
@@ -316,11 +319,12 @@ body {
 	text-align: right;
 	color: #d82b34;
 	user-select: none;
+	display: block;
 }
-.bg-r .bg .wr .main .list .e .e-wr .a span {
+.bg-r .bg .wr .main .list a-e a-w a-a span {
 	text-decoration: underline;
 }
-.bg-r .bg .wr .main .list .err {
+.bg-r .bg .wr .main .list f-e {
 	position: absolute;
 	top: 0;
 	left: 50%;

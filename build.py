@@ -29,9 +29,9 @@ HTML_TAG_REGEX=re.compile(br"<([!/]?[a-zA-Z0-9\-_]+)\s*(.*?)\s*(/?)>",re.I|re.M|
 HTML_URL_REGEX=re.compile(br"^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\xa1\xff0-9]+-?)*[a-z\xa1-\xff0-9]+)(?:\.(?:[a-z\xa1-\xff0-9]+-?)*[a-z\xa1-\xff0-9]+)*(?:\.(?:[a-z\xa1-\xff]{2,})))(?::\d{2,5})?(?:/[^\s]*)?$",re.I|re.S)
 HTML_ATTRIBUTE_REGEX=re.compile(br'''([a-zA-Z0-9\-_]+)\s*(?:=\s*"((?:[^\"\\]|\\.)*))?"''')
 HTML_QUOTED_ATTRIBUTE_REGEX=re.compile(br"[^a-z0-9\-_]")
-CSS_SELECTOR_REGEX=re.compile(br"([\>\+\~]|\s*)?(#[a-zA-Z0-9_\-]+|\*|(?:[a-zA-Z]+)?)((?:\.[a-zA-Z0-9_\-]+)*)((?:\[[a-zA-Z0-9_]+[~|^$*]?=\])*)((?:\:{1,2}[a-zA-Z0-9_\-]+(?:\([^\)]+\))?)*)")
+CSS_SELECTOR_REGEX=re.compile(br"([\>\+\~]|\s*)?(#[a-zA-Z0-9_\-]+|\*|(?:[a-zA-Z0-9\-]+)?)((?:\.[a-zA-Z0-9_\-]+)*)((?:\[[a-zA-Z0-9_]+[~|^$*]?=\])*)((?:\:{1,2}[a-zA-Z0-9_\-]+(?:\([^\)]+\))?)*)")
 CSS_UNIT_REGEX=re.compile(br":\s*0(\.\d+(?:[cm]m|e[mx]|in|p[ctx]))\s*;")
-CSS_HEX_COLOR_REGEX=re.compile(br"#([0-9a-f]{1,2})([0-9a-f]{1,2})([0-9a-f]{1,2})(\s|;)")
+CSS_HEX_COLOR_REGEX=re.compile(br"#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3(\s|;)")
 CSS_URL_REGEX=re.compile(br"""url\(([\"'])([^)]*)\1\)""")
 CSS_WHITESPACE_REGEX=re.compile(br"/\*[\s\S]*?\*/")
 CSS_SELECTOR_VALUE_REGEX=re.compile(br"\s*([^{]+?)\s*{")
@@ -55,12 +55,16 @@ def _minify_html(html,fp,fp_b):
 			_get_url_cache._d={}
 		if (h not in _get_url_cache._d):
 			if (not ntpath.exists(f"__url_cache/{h}")):
+				print(f"    Downloading '{str(url,'utf-8')}'...")
 				with open(f"__url_cache/{h}","wb") as f:
 					_get_url_cache._d[h]=requests.get(url).content
 					f.write(_get_url_cache._d[h])
 			else:
+				print(f"    Using Cached '{str(url,'utf-8')}'...")
 				with open(f"__url_cache/{h}","rb") as f:
 					_get_url_cache._d[h]=f.read()
+		else:
+			print(f"    Using Cached '{str(url,'utf-8')}'...")
 		return _get_url_cache._d[h]
 	def _gen_i(il,b,r=None):
 		def _gen_next(v,b):
@@ -100,7 +104,9 @@ def _minify_html(html,fp,fp_b):
 			km=CSS_SELECTOR_REGEX.search(k[j:])
 			kms=km.start(0)
 			if (kms!=0):
-				raise RuntimeError(f"Unable to Parse Part of the CSS Selector: '{str(k[j:j+kms],'utf-8')}' ('{str(k,'utf-8')}')")
+				raise RuntimeError(f"Unable to Parse Part of the CSS Selector: '{str(k[j:],'utf-8')}' ('{str(k,'utf-8')}')")
+			if (km.end(0)-kms==0):
+				raise RuntimeError(f"Unable to Parse CSS Selector: '{str(k[j:],'utf-8')}' ('{str(k,'utf-8')}')")
 			ss,st,sc,sp,se=km.group(1),km.group(2),km.group(3),km.group(4),km.group(5)
 			if (len(ss)>0 and ss in b"+~"):
 				raise RuntimeError("CSS Selector Symbols '+' and '~' aren't Implemented Yet!")
@@ -122,7 +128,7 @@ def _minify_html(html,fp,fp_b):
 					else:
 						tcm[c]+=1
 		return o
-	def _preprocess_js(js,tcm):
+	def _parse_js(js,tcm):
 		def _map_value(v,vml):
 			for i in range(len(vml)-1,-1,-1):
 				if (v in vml[i]):
@@ -183,6 +189,7 @@ def _minify_html(html,fp,fp_b):
 				raise RuntimeError(f"ERROR: {s[i:]}")
 			return (o,i)
 		ofl=len(js)
+		print("    Tokenizing...")
 		tl,_=_tokenize(js)
 		i=0
 		vm=[{}]
@@ -194,6 +201,7 @@ def _minify_html(html,fp,fp_b):
 		vfm={}
 		vfma={}
 		v_nm=False
+		print("    Parsing Structure...")
 		while (i<len(tl)):
 			if (tl[i][0]=="identifier"):
 				idl=tl[i][1].split(b".")
@@ -368,6 +376,7 @@ def _minify_html(html,fp,fp_b):
 		bf=b""
 		il=[]
 		cl=[]
+		print("    Parsing HTML Strings...")
 		for i,k in enumerate(tl):
 			if (k[0]=="stringS" and JS_STRING_HTML_TAG_REGEX.match(k[1][1:])):
 				si=i+0
@@ -423,7 +432,7 @@ def _minify_html(html,fp,fp_b):
 												break
 										evi+=len(e)+1
 								elif (str(ek,"utf-8") in HTML_TAG_JS_ATTRIBUTES and JS_WARN_EXEC_TAGS==True):
-									print(f"Executable JS Tag inside HTML String in JS: {str(ek,'utf-8')}=\"{str(ev,'utf-8')}\"")
+									print(f"Executable JS Tag Found inside HTML String in JS: {str(ek,'utf-8')}=\"{str(ev,'utf-8')}\"")
 								ek=b""
 								ev=None
 							else:
@@ -438,6 +447,7 @@ def _minify_html(html,fp,fp_b):
 					i+=1
 				bf=b""
 				il=[]
+		print(f"    Formatting HTML Strings ({len(cl)} class{('es' if len(cl)!=1 else '')})...")
 		for e,j,sj in cl:
 			if (e not in tcm):
 				tcm[e]=1
@@ -452,14 +462,18 @@ def _minify_html(html,fp,fp_b):
 				tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringE",v[sj+len(e)+1:])]+tl[j+1:]
 			else:
 				raise RuntimeError
+		print(f"    Finding Global Object Substitutions ({len(vfm.keys())} object{('s' if len(vfm.keys())!=1 else '')})...")
 		cvml=[]
 		for k,v in vfm.items():
 			if (v>1):
 				cvml+=[(len(k)*v,k,v,False)]
+		print(f"    Finding Attribute Substitutions ({len(vfma.keys())} attribute{('s' if len(vfma.keys())!=1 else '')})...")
 		for k,v in vfma.items():
-			if (v>1):
+			if (v>1 and len(k)>2):
 				cvml+=[(len(k)*v,k,v,True)]
+		print("    Sorting Substitution List...")
 		cvml=sorted(cvml,key=lambda e:-e[0])
+		print(f"    Generating Substitutions ({len(cvml)} item{('s' if len(cvml)!=1 else '')})...")
 		cvm={}
 		cvma={}
 		sl=[]
@@ -485,14 +499,19 @@ def _minify_html(html,fp,fp_b):
 		if (len(sl)>0):
 			tl=sl+[("operator",b";")]+tl
 		return (tl,cvm,cvma,len(sl))
-	def _preprocess_css(css,tcm):
+	def _parse_css(css,tcm):
 		sl=len(css)
+		print("    Removing Whitespace & Shortening Colors...")
 		css=re.sub(CSS_UNIT_REGEX,br":\1;",re.sub(CSS_HEX_COLOR_REGEX,br"#\1\2\3\4",re.sub(CSS_URL_REGEX,br"url(\2)",re.sub(CSS_WHITESPACE_REGEX,b"",css))))
 		i=0
-		ko=b""
+		eo=b""
 		vm={}
 		vml=[]
 		gc=[]
+		sc=0
+		pc=0
+		ec=0
+		print("    Parsing Styles...")
 		while (i<len(css)):
 			m=re.match(CSS_SELECTOR_VALUE_REGEX,css[i:])
 			if (m!=None):
@@ -518,12 +537,14 @@ def _minify_html(html,fp,fp_b):
 							if (e[0].lower() not in l[-1]):
 								l[-1]+=[e[0].lower()]
 							v[-1][e[0].lower()]=e[1]
-						if (len(l)==0):
+						pc+=len(l[-1])
+						if (len(l[-1])==0):
 							v=v[:-1]
 							l=l[:-1]
 							t=t[:-1]
 					if (len(t)>0):
-						ko+=b",".join(s)+b"{"+b"".join([k+b"{"+b";".join([e+b":"+re.sub(CSS_SELECTOR_COMMA_REGEX,b",",v[i][e]) for e in sorted(l[i])])+b";}" for i,k in enumerate(t)])+b"}"
+						eo+=b",".join(s)+b"{"+b"".join([k+b"{"+b";".join([e+b":"+re.sub(CSS_SELECTOR_COMMA_REGEX,b",",v[i][e]) for e in sorted(l[i])])+b";}" for i,k in enumerate(t)])+b"}"
+						ec+=1
 				elif (len(s)==1 and s[0]==b"@font-face"):
 					v={}
 					l=[]
@@ -531,8 +552,12 @@ def _minify_html(html,fp,fp_b):
 						if (e[0].lower() not in l):
 							l+=[e[0].lower()]
 						v[e[0].lower()]=e[1]
+					pc+=len(l)
 					if (len(l)>0):
-						ko+=b"@font-face{"+b";".join([e+b":"+re.sub(CSS_SELECTOR_COMMA_REGEX,b",",v[e]) for e in sorted(l)])+b";}"
+						eo+=b"@font-face{"+b";".join([e+b":"+re.sub(CSS_SELECTOR_COMMA_REGEX,b",",v[e]) for e in sorted(l)])+b";}"
+						ec+=1
+				elif (s[0][:1]==b"@"):
+					raise RuntimeError(f"Unknown At-Rule: '{str(s[0],'utf-8')}'")
 				else:
 					ns=[_parse_css_selector(k,tcm,gc) for k in s]
 					v={}
@@ -542,7 +567,9 @@ def _minify_html(html,fp,fp_b):
 							raise RuntimeError(f"Duplicate Property '{str(k[0].lower(),'utf-8')}' in CSS Selector '{str(b''.join(s),'utf-8')}'")
 						l+=[k[0].lower()]
 						v[k[0].lower()]=k[1]
+					pc+=len(l)
 					if (len(l)>0):
+						sc+=len(ns)
 						fs=b";".join([e+b":"+re.sub(CSS_SELECTOR_COMMA_REGEX,b",",v[e]) for e in l])
 						fsh=hashlib.sha1(fs).hexdigest()
 						if (fsh not in vm):
@@ -553,7 +580,7 @@ def _minify_html(html,fp,fp_b):
 							vml.append(fsh)
 							vm[fsh][1].extend(ns)
 			i+=1
-		return (sl,vm,vml,ko,gc)
+		return (sl,vm,vml,eo,sc,pc,ec,gc)
 	def _write_css_selector(k,tcm):
 		o=b""
 		for ss,st,sc,sp,se in k:
@@ -621,6 +648,7 @@ def _minify_html(html,fp,fp_b):
 			else:
 				o+=_write_html(t,tcm)
 		return o+b"</"+e[0]+b">"
+	print(f"Minifying File '{fp}'...")
 	l=len(html)
 	r=None
 	c=None
@@ -630,6 +658,8 @@ def _minify_html(html,fp,fp_b):
 	stcm={}
 	html=re.sub(HTML_REMOVE_WHITEPSACE_REGEX,br"",html,re.I|re.M|re.X)
 	i=0
+	ttc=0
+	print("  Parsing HTML...")
 	while (i<len(html)):
 		m=HTML_TAG_REGEX.search(html[i:])
 		if (m==None):
@@ -651,25 +681,29 @@ def _minify_html(html,fp,fp_b):
 					if (str(k,"utf-8") not in HTML_TAG_ATTRIBUTE_MAP or (HTML_TAG_ATTRIBUTE_MAP[str(k,"utf-8")]!=None and str(t_nm,"utf-8") not in HTML_TAG_ATTRIBUTE_MAP[str(k,"utf-8")])):
 						raise RuntimeError(f"Tag <{str(t_nm,'utf-8')}> Contains an Invalid Attribute '{str(k,'utf-8')}'")
 				if (str(k,"utf-8") in HTML_TAG_JS_ATTRIBUTES and JS_WARN_EXEC_TAGS==True):
-					print(f"Executable JS Tag: {str(k,'utf-8')}=\"{str(v,'utf-8')}\"")
+					print(f"  Executable JS Tag Found: {str(k,'utf-8')}=\"{str(v,'utf-8')}\"")
 				pm[k]=v
 		v=None
 		if (t_nm==b"script" and b"type" in pm and pm[b"type"]==b"text/javascript" and b"src" in pm and b"async" not in pm and b"defer" not in pm):
 			if (ntpath.exists(fp_b+str(pm[b"src"],"utf-8"))):
+				print(f"  Found Local JavaScript: '{fp_b+str(pm[b'src'],'utf-8')}'")
 				with open(fp_b+str(pm[b"src"],"utf-8"),"rb") as rf:
 					dt=rf.read()
 					v=("__js__",dt)
 			elif (HTML_URL_REGEX.match(pm[b"src"])):
+				print(f"  Found External JavaScript: '{str(pm[b'src'],'utf-8')}'")
 				v=("__js__",_get_url_cache(pm[b"src"]))
 			else:
 				raise RuntimeError(f"Unable to Decode <script> src: '{pm[b'src']}'")
 			pm={b"type":b"text/javascript"}
 		elif (t_nm==b"link" and b"rel" in pm and pm[b"rel"]==b"stylesheet" and b"href" in pm):
 			if (ntpath.exists(fp_b+str(pm[b"href"],"utf-8"))):
+				print(f"  Found Local CSS: '{fp_b+str(pm[b'href'],'utf-8')}'")
 				with open(fp_b+str(pm[b"href"],"utf-8"),"rb") as rf:
 					dt=rf.read()
 					v=("__css__",dt)
 			elif (HTML_URL_REGEX.match(pm[b"href"])):
+				print(f"  Found External CSS: '{str(pm[b'href'],'utf-8')}'")
 				v=("__css__",_get_url_cache(pm[b"href"]))
 			else:
 				raise RuntimeError(f"Unable to Decode <link> href: '{pm[b'href']}'")
@@ -691,6 +725,7 @@ def _minify_html(html,fp,fp_b):
 					elif (cs not in stcm[tc]):
 						stcm[tc]+=[cs]
 			if (r==None):
+				ttc+=1
 				r=(t_nm,pm,[])
 				c=[r]
 				if (len(e)!=0):
@@ -701,57 +736,64 @@ def _minify_html(html,fp,fp_b):
 						raise RuntimeError(f"Expected '</{str(c[-1][0],'utf-8')}>', found '<{str(t_nm,'utf-8')}>'")
 					c=c[:-1]
 				else:
+					ttc+=1
 					c[-1][2].append((t_nm,pm,[]))
 					if (len(e)==0 and str(t_nm,"utf-8") not in HTML_AUTO_CLOSE_TAGS):
 						c+=[c[-1][2][-1]]
 		if (v!=None):
 			if (v[0]=="__js__"):
 				if (js_t==None):
-					c[-1][2].append(v[1])
+					c[-1][2].append((v[1],1))
 					js_t=c[-1][2]
 				else:
-					js_t[0]=v[1]+b"\n\n\n"+js_t[0]
+					js_t[0]=(v[1]+b"\n\n\n"+js_t[0][0],js_t[0][1]+1)
 			else:
 				if (css_t==None):
-					c[-1][2].append(v[1])
+					c[-1][2].append((v[1],1))
 					css_t=c[-1][2]
 					c=c[:-1]
 				else:
-					css_t[0]=v[1]+b"\n\n\n"+css_t[0]
+					css_t[0]=(v[1]+b"\n\n\n"+css_t[0][0],css_t[0][1]+1)
 		i+=m.end(0)
 	if (len(c)):
-		raise RuntimeError(f"Unclosed Tags: {[str(e[0],'utf-8') for e in c]}")
+		raise RuntimeError(f"Unclosed Tags: ['{(chr(39)+'; '+chr(39)).join(['<'+str(e[0],'utf-8')+'>' for e in c[::-1]])}']")
 	if (js_t!=None):
-		l+=len(js_t[0])
-		js_t[0]=(len(js_t[0]),*_preprocess_js(js_t[0],tcm))
+		print(f"  Parsing JS ({js_t[0][1]} script{('s' if js_t[0][1]!=1 else '')}, {len(js_t[0][0])} byte{('s' if len(js_t[0][0])!=1 else '')})...")
+		l+=len(js_t[0][0])
+		js_t[0]=(len(js_t[0][0]),*_parse_js(js_t[0][0],tcm))
 	if (css_t!=None):
-		l+=len(css_t[0])
-		css_t[0]=_preprocess_css(css_t[0],tcm)
-		for k in css_t[0][4]:
+		print(f"  Parsing CSS ({css_t[0][1]} script{('s' if css_t[0][1]!=1 else '')}, {len(css_t[0][0])} byte{('s' if len(css_t[0][0])!=1 else '')})...")
+		l+=len(css_t[0][0])
+		css_t[0]=_parse_css(css_t[0][0],tcm)
+		for k in css_t[0][7]:
 			if (k in stcm):
 				del stcm[k]
+	print(f"  Generating Class Names ({len(tcm.keys())} item{('s' if len(tcm.keys())!=1 else '')})...")
 	for k,v in stcm.items():
 		if (len(v)>1):
 			raise RuntimeError(f"Duplicate Non-Global Class '{str(k,'utf-8')}' in {len(v)} Tags: ['{(chr(39)+'; '+chr(39)).join([str(e,'utf-8').replace('$',' > ') for e in v])}']")
 	ntcm={}
 	for k,v in sorted(tcm.items(),key=lambda e:-len(e[0])*e[1]):
 		ntcm[k]=_gen_i([ntcm],CSS_CLASS_LETTERS)
-	js_os="none"
+	js_s="none"
 	if (js_t!=None):
+		print(f"  Regenerating JS ({len(js_t[0][1])} token{('s' if len(js_t[0][1])!=1 else '')})...")
 		sl=js_t[0][0]
 		js_t[0]=("__text__",_write_js(*js_t[0][1:],ntcm)[0])
-		js_os=f"{sl} -> {len(js_t[0][1])} (-{round(10000-10000*len(js_t[0][1])/sl)/100}%)"
-	css_os="none"
+		js_s=f"{sl} -> {len(js_t[0][1])} (-{round(10000-10000*len(js_t[0][1])/sl)/100}%)"
+	css_s="none"
 	if (css_t!=None):
-		sl,vm,vml,ko,_=css_t[0]
+		sl,vm,vml,ko,sc,pc,ec,_=css_t[0]
+		print(f"  Regenerating CSS ({len(vml)} style{('s' if len(vml)!=1 else '')}, {sc} selector{('s' if sc!=1 else '')}, {pc} propert{('ies' if pc!=1 else 'y')}, {ec} @-rule{('s' if ec!=1 else '')})...")
 		css_o=b""
 		for k in vml:
 			css_o+=b",".join([_write_css_selector(sk,ntcm) for sk in vm[k][1]])+b"{"+vm[k][0]+b";}"
 		css_o+=ko
 		css_t[0]=("__text__",css_o)
-		css_os=f"{sl} -> {len(css_o)} (-{round(10000-10000*len(css_o)/sl)/100}%)"
+		css_s=f"{sl} -> {len(css_o)} (-{round(10000-10000*len(css_o)/sl)/100}%)"
+	print(f"  Writing HTML ({ttc} tag{('s' if ttc!=1 else '')})...")
 	o=b"<!DOCTYPE html>"+_write_html(r,ntcm)
-	print(f"Minified HTML '{fp}': {l} -> {len(o)} (-{round(10000-10000*len(o)/l)/100}%) (JS: {js_os}, CSS: {css_os})")
+	print(f"Minified HTML: (\n  JS: {js_s},\n  CSS: {css_s}\n  HTML: {l} -> {len(o)} (-{round(10000-10000*len(o)/l)/100}%)\n)")
 	return o
 
 

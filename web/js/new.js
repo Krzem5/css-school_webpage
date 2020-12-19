@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 	let be=document.querySelector(".bg");
 	let wre=document.querySelector(".wr");
 	let te=document.querySelector(".title");
-	let ce=document.querySelector(".e");
+	let ce=document.querySelector(".code-e");
 	let pe=document.querySelector(".preview");
 	let ee=document.querySelector(".e-err");
 	window.onresize=()=>{
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 			if (u&&!window._ic){
 				fetch("/api/v1/save",{method:"PUT",body:JSON.stringify(window._n)}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 					if (!e||e.status){
-						ee.innerText=(e?{11:"Invalid Login Credentials",17:"Page ID Already Used",18:"Page Title Already Used"}[e.status]:"Unable to Save the Draft");
+						ee.innerText=(e&&e.status?{11:"Invalid Login Credentials",17:"Page ID Already Used",18:"Page Title Already Used"}[e.status]:"Unable to Save Connect to the Server");
 						if (ee.t){
 							clearTimeout(ee.t);
 						}
@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 			return;
 		}
 		d=d[1].trim();
-		pe.innerHTML=`<div class="title">${t}</div><div class="desc">${d}</div>`;
+		pe.innerHTML=`<f-t>${t}</f-t><f-d>${d}</f-d>`;
 		let j=0;
 		let l;
 		window._le=(window._le+1)%100;
@@ -137,8 +137,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 							window._e(u,le);
 						}
 						ti.src=u;
-						k=k.substring(0,si)+`<img src="${u}" alt="${k.substring(si+2,si2-2)}">`+k.substring(i+1);
-						i+=24;
+						k=k.substring(0,si)+`<img src="${u}" alt="${k.substring(si+2,si2-2)}"><br>`+k.substring(i+1);
+						i+=18;
 					}
 					else if (k.substring(i,i+3)=="```"){
 						let si=i;
@@ -150,8 +150,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 							}
 							i++;
 						}
-						k=k.substring(0,si)+`<code class="c">${k.substring(si+3,i)}</code>`+k.substring(i+3);
-						i+=19;
+						k=k.substring(0,si)+`<f-c>${k.substring(si+3,i)}</f-c>`+k.substring(i+3);
+						i+=7;
 					}
 					else if (k.substring(i,i+2)=="**"){
 						let b=0;
@@ -167,8 +167,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 							}
 							i++;
 						}
-						k=k.substring(0,si)+`<span class="b">${k.substring(si+2,i)}</span>`+k.substring(i+2);
-						i=si+15;
+						k=k.substring(0,si)+`<f-b>${k.substring(si+2,i)}</f-b>`+k.substring(i+2);
+						i=si+4;
 					}
 					else if (k[i]=="*"){
 						let si=i;
@@ -180,13 +180,13 @@ document.addEventListener("DOMContentLoaded",()=>{
 							}
 							i++;
 						}
-						k=k.substring(0,si)+`<span class="i">${k.substring(si+1,i)}</span>`+k.substring(i+1);
-						i=si+15;
+						k=k.substring(0,si)+`<f-i>${k.substring(si+1,i)}</f-i>`+k.substring(i+1);
+						i=si+4;
 					}
 					i++;
 				}
 				window._ic--;
-				pe.innerHTML+=`<p class="p">${k.replace(/\n/gm,"<br>")}</p>`;
+				pe.innerHTML+=`<p>${k.replace(/\n/gm,"<br>")}</p>`;
 			}
 			return true;
 		})){

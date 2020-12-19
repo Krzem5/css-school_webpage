@@ -42,7 +42,7 @@ _tl.release()
 
 
 def _render_page(pg):
-	return PAGE_TEMPLATE[0]+bytes(pg["dt"]["title"],"utf-8")+PAGE_TEMPLATE[1]+bytes(f"<div class=\"title\">{pg['dt']['title']}</div><div class=\"desc\">{pg['dt']['desc']}</div>"+pg["dt"]["data"],"utf-8")+PAGE_TEMPLATE[2]
+	return PAGE_TEMPLATE[0]+bytes(pg["dt"]["title"],"utf-8")+PAGE_TEMPLATE[1]+bytes(f"<f-t>{pg['dt']['title']}</f-t><f-d>{pg['dt']['desc']}</f-d>"+render(pg["dt"]["data"])[0],"utf-8")+PAGE_TEMPLATE[2]
 
 
 
@@ -50,9 +50,9 @@ def _render_user(dt):
 	o=USER_TEMPLATE[0]+bytes(f"{dt['username']}\",verified:{('true' if dt['email_verified'] else 'false')},img:\"{dt['img_url']}","utf-8")+USER_TEMPLATE[1]
 	if (dt["id"] in USER_PAGE_MAP and len(USER_PAGE_MAP[dt["id"]])>0):
 		for k in USER_PAGE_MAP[dt["id"]]:
-			o+=bytes(f"<div class=\"e\"><div class=\"e-wr\"><div class=\"t\" onclick=\"window.location.href='/page/{k}'\">{PAGE_LIST[k]['nm']}</div><div class=\"a\" onclick=\"window.location.href='/user/{dt['username']}'\">By <span>@{dt['username']}</span></div></div></div>","utf-8")
+			o+=bytes(f"<a-e><a-w><a-t onclick=\"window.location.href='/page/{k}'\">{PAGE_LIST[k]['nm']}</a-t><a-a onclick=\"window.location.href='/user/{dt['username']}'\">By <span>@{dt['username']}</span></a-a></a-w></a-e>","utf-8")
 	else:
-		o+=b"<div class=\"err\">No Articles to Show</div>"
+		o+=b"<f-e>No Articles to Show</f-e>"
 	return o+USER_TEMPLATE[2]
 
 
@@ -61,18 +61,18 @@ def _render_c_user(dt):
 	o=CURRENT_USER_TEMPLATE[0]+bytes(f"{dt['username']}\",verified:{('true' if dt['email_verified'] else 'false')},img:\"{dt['img_url']}","utf-8")+CURRENT_USER_TEMPLATE[1]
 	if (dt["id"] in USER_PAGE_MAP and len(USER_PAGE_MAP[dt["id"]])>0):
 		for k in USER_PAGE_MAP[dt["id"]]:
-			o+=bytes(f"<div class=\"e\"><div class=\"e-wr\"><div class=\"t\" onclick=\"window.location.href='/page/{k}'\">{PAGE_LIST[k]['nm']}</div><div class=\"a\" onclick=\"window.location.href='/user/{dt['username']}'\">By <span>@{dt['username']}</span></div></div></div>","utf-8")
+			o+=bytes(f"<a-e><a-w><a-t onclick=\"window.location.href='/page/{k}'\">{PAGE_LIST[k]['nm']}</a-t><a-a onclick=\"window.location.href='/user/{dt['username']}'\">By <span>@{dt['username']}</span></a-a></a-w></a-e>","utf-8")
 	else:
-		o+=b"<div class=\"err\">No Articles to Show</div>"
+		o+=b"<f-e>No Articles to Show</f-e>"
 	return o+CURRENT_USER_TEMPLATE[2]
 
 
 
-def add_page(id_,dt):
+def add_page(id_,dt,r):
 	global PAGE_LIST,USER_PAGE_MAP
 	_tl.acquire()
 	vl=(PAGE_LIST[id_]["vl"] if id_ in PAGE_LIST else {"all":{}})
-	dt_id=hashlib.md5(bytes(dt["title"]+"\x00"+dt["desc"]+"\x00"+dt["data"],"utf-8")).hexdigest()
+	dt_id=hashlib.md5(bytes(dt["title"]+"\x00"+dt["desc"]+"\x00"+r,"utf-8")).hexdigest()
 	vl["current"]=(dt_id,int(time.time()))
 	vl["all"][dt_id]=vl["current"][1]
 	PAGE_LIST[id_]={"vl":vl,"nm":dt["title"],"author":dt["author"],"dt":dt,"cache":None}
@@ -124,8 +124,8 @@ def render(l):
 						IMG_CACHE[u]=True
 				if (IMG_CACHE[u]==False):
 					return (f"Unable to Load Image '{u}'",False)
-				k=k[:si]+f"<img src=\"{u}\" alt=\"{k[si+2:si2-2]}\">"+k[i+1:]
-				i+=24
+				k=k[:si]+f"<img src=\"{u}\" alt=\"{k[si+2:si2-2]}\"><br>"+k[i+1:]
+				i+=18
 			elif (k[i:i+3]=="```"):
 				si=i+0
 				i+=3
@@ -133,8 +133,8 @@ def render(l):
 					if (i>=len(k)):
 						return (f"Unterminated Triple Quotes in Paragraph {j}, Line {ln}",False)
 					i+=1
-				k=k[:si]+f"<code class=\"c\">{k[si+3:i]}</code>"+k[i+3:]
-				i+=19
+				k=k[:si]+f"<f-c>{k[si+3:i]}</f-c>"+k[i+3:]
+				i+=7
 			elif (k[i]=="*" and k[i+1]=="*"):
 				b=0
 				si=i+0
@@ -145,8 +145,8 @@ def render(l):
 					if (k[i]=="*"):
 						b+=1
 					i+=1
-				k=k[:si]+f"<span class=\"b\">{k[si+2:i]}</span>"+k[i+2:]
-				i=si+15
+				k=k[:si]+f"<f-b>{k[si+2:i]}</f-b>"+k[i+2:]
+				i=si+4
 			elif (k[i]=="*"):
 				si=i+0
 				i+=1
@@ -154,10 +154,10 @@ def render(l):
 					if (i>=len(k)):
 						return (f"Unterminated Single Quotes in Paragraph {j}, Line {ln}",False)
 					i+=1
-				k=k[:si]+f"<span class=\"i\">{k[si+1:i]}</span>"+k[i+1:]
-				i=si+15
+				k=k[:si]+f"<f-i>{k[si+1:i]}</f-i>"+k[i+1:]
+				i=si+4
 			i+=1
-		o+=f"<p class=\"p\">{k.replace(chr(10),'<br>')}</p>"
+		o+=f"<p>{k.replace(chr(10),'<br>')}</p>"
 	return (o,True)
 
 
@@ -204,7 +204,7 @@ def admin(url):
 
 
 @server.route("GET",r"/new")
-def admin(url):
+def new(url):
 	tk,ok=api.read_token()
 	if (ok==False):
 		server.set_code(307)
