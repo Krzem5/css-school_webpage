@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		se.innerHTML+=`<div class="elem" onclick="window.location.href='${k.url}'">${k.name}</div>`;
 	}));
 	fetch("/api/v1/user_data").then((e)=>e.json()).then((e)=>{
-		if (!e.status){
+		if (!e.error&&!e.status){
 			document.querySelector(".account").classList.add("l");
 			document.querySelector(".account-i").onclick=()=>{
 				window.location.href=`/user/${e.username}`;

@@ -14,6 +14,7 @@ import requests
 
 with open("./secret.dt","r") as f:
 	APP_NAME,EMAIL,USER_NAME=f.read().replace("\r","").split("\n")[:3]
+USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4356.6 Safari/537.36"
 HTML_AUTO_CLOSE_TAGS=["area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"]
 HTML_TAGS=["!doctype","a","abbr","address","area","article","aside","audio","b","base","bdi","bdo","blockquote","body","br","button","canvas","caption","cite","code","col","colgroup","data","datalist","dd","del","details","dfn","dialog","div","dl","dt","em","embed","fieldset","figcaption","figure","footer","form","h1","head","header","hr","html","i","iframe","img","input","ins","kbd","label","legend","li","link","main","map","mark","meta","meter","nav","noscript","object","ol","optgroup","option","output","p","param","picture","pre","progress","q","rp","rt","ruby","s","samp","script","section","select","small","source","span","strong","style","sub","summary","sup","svg","table","tbody","td","template","textarea","tfoot","th","thead","time","title","tr","track","u","ul","var","video","wbr"]
 HTML_TAG_ATTRIBUTE_MAP={"accept":["input"],"accept-charset":["form"],"accesskey":None,"action":["form"],"alt":["area","img","input"],"async":["script"],"autocomplete":["form","input"],"autofocus":["button","input","select","textarea"],"autoplay":["audio","video"],"charset":["meta","script"],"checked":["input"],"cite":["blockquote","del","ins","q"],"class":None,"cols":["textarea"],"colspan":["td","th"],"content":["meta"],"contenteditable":None,"controls":["audio","video"],"coords":["area"],"data":["object"],"datetime":["del","ins","time"],"default":["track"],"defer":["script"],"dir":None,"dirname":["input","textarea"],"disabled":["button","fieldu-ch-t-set","input","optgroup","option","select","textarea"],"download":["a","area"],"draggable":None,"enctype":["form"],"for":["label","output"],"form":["button","fieldset","input","label","meter","object","output","select","textarea"],"formaction":["button","input"],"headers":["td","th"],"height":["canvas","embed","iframe","img","input","object","video"],"hidden":None,"high":["meter"],"href":["a","area","base","link"],"hreflang":["a","area","link"],"http-equiv":["meta"],"id":None,"ismap":["img"],"kind":["track"],"label":["track","option","optgroup"],"lang":None,"list":["input"],"loop":["audio","video"],"low":["meter"],"max":["input","meter","progress"],"maxlength":["input","textarea"],"media":["a","area","link","source","style"],"method":["form"],"min":["input","meter"],"multiple":["input","select"],"muted":["video","audio"],"name":["button","fieldset","form","iframe","input","map","meta","object","output","param","select","textarea"],"novalidate":["form"],"onabort":["audio","embed","img","object","video"],"onafterprint":["body"],"onbeforeprint":["body"],"onbeforeunload":["body"],"onblur":None,"oncanplay":["audio","embed","object","video"],"oncanplaythrough":["audio","video"],"onchange":None,"onclick":None,"oncontextmenu":None,"oncopy":None,"oncuechange":["track"],"oncut":None,"ondblclick":None,"ondrag":None,"ondragend":None,"ondragenter":None,"ondragleave":None,"ondragover":None,"ondragstart":None,"ondrop":None,"ondurationchange":["audio","video"],"onemptied":["audio","video"],"onended":["audio","video"],"onerror":["audio","body","embed","img","object","script","style","video"],"onfocus":None,"onhashchange":["body"],"oninput":None,"oninvalid":None,"onkeydown":None,"onkeypress":None,"onkeyup":None,"onload":["body","iframe","img","input","link","script","style"],"onloadeddata":["audio","video"],"onloadedmetadata":["audio","video"],"onloadstart":["audio","video"],"onmousedown":None,"onmousemove":None,"onmouseout":None,"onmouseover":None,"onmouseup":None,"onmousewheel":None,"onoffline":["body"],"ononline":["body"],"onpagehide":["body"],"onpageshow":["body"],"onpaste":None,"onpause":["audio","video"],"onplay":["audio","video"],"onplaying":["audio","video"],"onpopstate":["body"],"onprogress":["audio","video"],"onratechange":["audio","video"],"onreset":["form"],"onresize":["body"],"onscroll":None,"onsearch":["input"],"onseeked":["audio","video"],"onseeking":["audio","video"],"onselect":None,"onstalled":["audio","video"],"onstorage":["body"],"onsubmit":["form"],"onsuspend":["audio","video"],"ontimeupdate":["audio","video"],"ontoggle":["details"],"onunload":["body"],"onvolumechange":["audio","video"],"onwaiting":["audio","video"],"onwheel":None,"open":["details"],"optimum":["meter"],"pattern":["input"],"placeholder":["input","textarea"],"poster":["video"],"preload":["audio","video"],"readonly":["input","textarea"],"rel":["a","area","form","link"],"required":["input","select","textarea"],"reversed":["ol"],"rows":["textarea"],"rowspan":["td","th"],"sandbox":["iframe"],"scope":["th"],"selected":["option"],"shape":["area"],"size":["input","select"],"sizes":["img","link","source"],"span":["col","colgroup"],"spellcheck":None,"src":["audio","embed","iframe","img","input","script","source","track","video"],"srcdoc":["iframe"],"srclang":["track"],"srcset":["img","source"],"start":["ol"],"step":["input"],"style":None,"tabindex":None,"target":["a","area","base","form"],"title":None,"translate":None,"type":["a","button","embed","input","link","menu","object","script","source","style"],"usemap":["img","object"],"value":["button","input","li","option","meter","progress","param"],"width":["canvas","embed","iframe","img","input","object","video"],"wrap":["textarea"]}
@@ -57,7 +58,7 @@ def _minify_html(html,fp,fp_b):
 			if (not ntpath.exists(f"__url_cache/{h}")):
 				print(f"    Downloading '{str(url,'utf-8')}'...")
 				with open(f"__url_cache/{h}","wb") as f:
-					_get_url_cache._d[h]=requests.get(url,headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4356.6 Safari/537.36"}).content
+					_get_url_cache._d[h]=requests.get(url,headers={"User-Agent":USER_AGENT}).content
 					f.write(_get_url_cache._d[h])
 			else:
 				print(f"    Using Cached '{str(url,'utf-8')}'...")
@@ -111,7 +112,7 @@ def _minify_html(html,fp,fp_b):
 			if (len(ss)>0 and ss in b"+~"):
 				raise RuntimeError("CSS Selector Symbols '+' and '~' aren't Implemented Yet!")
 			if ((ss==b">" or st==b"*" or (len(st)>0 and st[:1]!=b"#") or (1 if len(st) else 0)+sc.count(b".")>1) and ps==-1):
-				ps=len(l)-1
+				ps=len(l)-(0 if (1 if len(st) else 0)+sc.count(b".")>1 else 1)
 			if (b":not" in se and CSS_WARN_IGNORE_TAGS==True):
 				print("CSS Selector :not(...) has been Ignored!")
 			l+=[(ss,st,sc,sp,se)]
@@ -213,6 +214,7 @@ def _minify_html(html,fp,fp_b):
 					else:
 						if (i>0 and tl[i-1][0]=="keyword" and tl[i-1][1] in [b"let",b"const",b"var"]):
 							vm[-1][idl[0]]=_gen_i(vm,JS_VAR_LETTERS)
+							idl[0]=vm[-1][idl[0]]
 							if (bl not in vdl):
 								vdl[bl]=None
 							else:
@@ -222,7 +224,6 @@ def _minify_html(html,fp,fp_b):
 								i-=1
 								tl[vdl[bl]]=("operator",b",")
 								vdl[bl]=(vdl[bl],i)
-							idl[0]=vm[-1][idl[0]]
 						elif (str(idl[0],"utf-8") not in JS_RESERVED_IDENTIFIERS and (i==0 or (tl[i-1][0]!="operator" or tl[i-1][1]!=b"."))):
 							mv=_map_value(idl[0],vm)
 							if (mv==None):
@@ -282,6 +283,8 @@ def _minify_html(html,fp,fp_b):
 					bl+=1
 				elif (tl[i][1]==b"}"):
 					if (dl[-1]==False):
+						if (bl in vdl):
+							del vdl[bl]
 						bl-=1
 						if (ef[-1]!=None):
 							cbl,ocbl,si,fl,nm,al=ef[-1]
@@ -307,6 +310,8 @@ def _minify_html(html,fp,fp_b):
 					dl=dl[:-1]
 					s_ee=False
 				elif (tl[i][1]==b")"):
+					if (bl in vdl):
+						del vdl[bl]
 					bl-=1
 					s_ee=False
 				elif (tl[i][1]==b";"):
@@ -315,8 +320,20 @@ def _minify_html(html,fp,fp_b):
 							vdl[bl]=i
 						elif (type(vdl[bl])!=int):
 							ti,si=vdl[bl]
-							tl=tl[:ti+1]+tl[si:i+1]+tl[ti+1:si]+tl[i+2:]
-							vdl[bl]=ti+i-si+1
+							ok=True
+							if (si-ti!=1):
+								for k in tl[si+2:i+1]:
+									if (k[0]=="identifier" and k[1].split(b".")[0] not in JS_RESERVED_IDENTIFIERS):
+										ok=False
+										break
+							if (ok==True):
+								tl=tl[:ti+1]+tl[si:i+1]+tl[ti+1:si]+tl[i+2:]
+								vdl[bl]=ti+i-si+1
+							else:
+								tl[ti]=("operator",b";")
+								tl=tl[:si]+[("keyword",b"let")]+tl[si:]
+								i+=1
+								vdl[bl]=i
 					if ((i>0 and tl[i-1][0]=="operator" and tl[i-1][1]==b"{") or (i+1<len(tl) and ((tl[i+1][0]=="operator" and tl[i+1][1] in [b";",b"}",b")"]) or (tl[i+1][0]=="keyword" and tl[i+1][1]==b"else"))) or i==len(tl)-1):
 						tl=tl[:i]+tl[i+1:]
 						i-=1
@@ -539,16 +556,19 @@ def _minify_html(html,fp,fp_b):
 		for t,e,j,sj in cl:
 			v=tl[j][1]
 			if (t==0):
+				el=len(e)
+				if (e[:1]==b"\""):
+					e=e[1:-1]
 				if (e not in tcm):
 					tcm[e]=1
 				else:
 					tcm[e]+=1
 				if (tl[j][0]=="stringS"):
-					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringS",v[sj+len(e)+1:])]+tl[j+1:]
+					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringS",v[sj+el+1:])]+tl[j+1:]
 				elif (tl[j][0]=="stringM" or tl[j][0]=="string" or tl[j][0]=="_raw"):
-					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("_raw",v[sj+len(e)+1:])]+tl[j+1:]
+					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("_raw",v[sj+el+1:])]+tl[j+1:]
 				elif (tl[j][0]=="stringE"):
-					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringE",v[sj+len(e)+1:])]+tl[j+1:]
+					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringE",v[sj+el+1:])]+tl[j+1:]
 				else:
 					raise RuntimeError
 			elif (t==1):
@@ -678,8 +698,6 @@ def _minify_html(html,fp,fp_b):
 				to,ti=_write_js(tl[i+1:],cvm,cvma,0,tcm)
 				o+=to
 				i+=ti+1
-			elif (tl[i][0]=="stringM"):
-				o+=tl[i][1]
 			elif (tl[i][0]=="stringE"):
 				o+=tl[i][1]
 				break
@@ -917,7 +935,6 @@ os.mkdir(f"build\\server")
 for fn in os.listdir("web"):
 	if (fn[-5:]==".html"):
 		_copy(f"web\\{fn}",f=lambda dt,fp:_minify_html(dt,fp,"web"))
-quit()
 for fn in os.listdir("server"):
 	if (os.path.isfile(f"server\\{fn}")==True):
 		_copy(f"server\\{fn}")
