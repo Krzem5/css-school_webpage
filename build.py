@@ -31,7 +31,7 @@ HTML_ATTRIBUTE_REGEX=re.compile(br'''([a-zA-Z0-9\-_]+)\s*(?:=\s*"((?:[^\"\\]|\\.
 HTML_QUOTED_ATTRIBUTE_REGEX=re.compile(br"[^a-z0-9\-_]")
 CSS_SELECTOR_REGEX=re.compile(br"([\>\+\~]|\s*)?(#[a-zA-Z0-9_\-]+|\*|(?:[a-zA-Z0-9\-]+)?)((?:\.[a-zA-Z0-9_\-]+)*)((?:\[[a-zA-Z0-9_]+[~|^$*]?=\])*)((?:\:{1,2}[a-zA-Z0-9_\-]+(?:\([^\)]+\))?)*)")
 CSS_UNIT_REGEX=re.compile(br":\s*0(\.\d+(?:[cm]m|e[mx]|in|p[ctx]))\s*;")
-CSS_HEX_COLOR_REGEX=re.compile(br"#([0-9a-f])\1([0-9a-f])\2([0-9a-f])\3(\s|;)")
+CSS_HEX_COLOR_REGEX=re.compile(br"#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3(\s|;)")
 CSS_URL_REGEX=re.compile(br"""url\(([\"'])([^)]*)\1\)""")
 CSS_WHITESPACE_REGEX=re.compile(br"/\*[\s\S]*?\*/")
 CSS_SELECTOR_VALUE_REGEX=re.compile(br"\s*([^{]+?)\s*{")
@@ -57,7 +57,7 @@ def _minify_html(html,fp,fp_b):
 			if (not ntpath.exists(f"__url_cache/{h}")):
 				print(f"    Downloading '{str(url,'utf-8')}'...")
 				with open(f"__url_cache/{h}","wb") as f:
-					_get_url_cache._d[h]=requests.get(url).content
+					_get_url_cache._d[h]=requests.get(url,headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4356.6 Safari/537.36"}).content
 					f.write(_get_url_cache._d[h])
 			else:
 				print(f"    Using Cached '{str(url,'utf-8')}'...")
@@ -201,6 +201,7 @@ def _minify_html(html,fp,fp_b):
 		vfm={}
 		vfma={}
 		v_nm=False
+		vdl={}
 		print("    Parsing Structure...")
 		while (i<len(tl)):
 			if (tl[i][0]=="identifier"):
@@ -214,6 +215,15 @@ def _minify_html(html,fp,fp_b):
 					else:
 						if (i>0 and tl[i-1][0]=="keyword" and tl[i-1][1] in [b"let",b"const",b"var"]):
 							vm[-1][idl[0]]=_gen_i(vm,JS_VAR_LETTERS)
+							if (bl not in vdl):
+								vdl[bl]=None
+							else:
+								if (vdl[bl]==None):
+									raise RuntimeError
+								tl=tl[:i-1]+tl[i:]
+								i-=1
+								tl[vdl[bl]]=("operator",b",")
+								vdl[bl]=(vdl[bl],i)
 							idl[0]=vm[-1][idl[0]]
 						elif (str(idl[0],"utf-8") not in JS_RESERVED_IDENTIFIERS and (i==0 or (tl[i-1][0]!="operator" or tl[i-1][1]!=b"."))):
 							mv=_map_value(idl[0],vm)
@@ -258,6 +268,7 @@ def _minify_html(html,fp,fp_b):
 						i+=1
 					assert(tl[i][0]=="operator")
 					assert(tl[i][1]==b"{")
+					bl+=1
 					dl+=[False]
 					ef+=[(bl,bl,si,i-si,nm,al)]
 					if (bl not in efbl):
@@ -273,6 +284,7 @@ def _minify_html(html,fp,fp_b):
 					bl+=1
 				elif (tl[i][1]==b"}"):
 					if (dl[-1]==False):
+						bl-=1
 						if (ef[-1]!=None):
 							cbl,ocbl,si,fl,nm,al=ef[-1]
 							efbl[ocbl].remove(len(ef)-1)
@@ -281,17 +293,32 @@ def _minify_html(html,fp,fp_b):
 								j+=1
 								cbl=ocbl
 							ftl=([("keyword",b"let"),("identifier",nm),("operator",b"=")] if nm!=None else [])+([("operator",b"_=>")] if len(al)==0 else ([("identifier",al[0][0]),("operator",b"=>")] if len(al)==1 and al[0][1]==False else [("operator",b"(")]+_args(al)+[("operator",b")"),("operator",b"=>")]))
-							tl=tl[:si]+ftl+([("operator",b"{")] if cbl==None else [])+tl[si+fl+j:i]+([("operator",b"}")] if cbl==None else [])+[("operator",b";")]+tl[i+1:]
-							i+=-fl+len(ftl)-2+(2 if cbl==None else 0)-j+1
+							if (bl in vdl and nm!=None):
+								ftl=ftl[1:]
+								tl[vdl[bl]]=("operator",b",")
+								tl=tl[:vdl[bl]+1]+ftl+([("operator",b"{")] if cbl==None else [])+tl[si+fl+j:i]+([("operator",b"}")] if cbl==None else [])+[("operator",b";")]+tl[vdl[bl]+1:si]+tl[i+1:]
+								i+=-fl+len(ftl)-2+(2 if cbl==None else 0)-j+1
+								vdl[bl]=i+1
+							else:
+								tl=tl[:si]+ftl+([("operator",b"{")] if cbl==None else [])+tl[si+fl+j:i]+([("operator",b"}")] if cbl==None else [])+[("operator",b";")]+tl[i+1:]
+								i+=-fl+len(ftl)-2+(2 if cbl==None else 0)-j+1
+								if (nm!=None):
+									vdl[bl]=i+1
 						vm=vm[:-1]
 						ef=ef[:-1]
-						bl-=1
 					dl=dl[:-1]
 					s_ee=False
 				elif (tl[i][1]==b")"):
 					bl-=1
 					s_ee=False
 				elif (tl[i][1]==b";"):
+					if (bl in vdl):
+						if (vdl[bl]==None):
+							vdl[bl]=i
+						elif (type(vdl[bl])!=int):
+							ti,si=vdl[bl]
+							tl=tl[:ti+1]+tl[si:i+1]+tl[ti+1:si]+tl[i+2:]
+							vdl[bl]=ti+i-si+1
 					if ((i>0 and tl[i-1][0]=="operator" and tl[i-1][1]==b"{") or (i+1<len(tl) and ((tl[i+1][0]=="operator" and tl[i+1][1] in [b";",b"}",b")"]) or (tl[i+1][0]=="keyword" and tl[i+1][1]==b"else"))) or i==len(tl)-1):
 						tl=tl[:i]+tl[i+1:]
 						i-=1
@@ -337,11 +364,12 @@ def _minify_html(html,fp,fp_b):
 							i+=1
 							af=True
 							if (tl[i][0]=="operator" and tl[i][1]==b"{"):
-								ef+=[(bl,bl,si,i-si,None,al)]
-								if (bl not in efbl):
-									efbl[bl]=[]
-								efbl[bl]+=[len(ef)-1]
+								ef+=[(bl+1,bl+1,si,i-si,None,al)]
+								if (bl+1 not in efbl):
+									efbl[bl+1]=[]
+								efbl[bl+1]+=[len(ef)-1]
 								dl+=[False]
+								bl+=1
 							else:
 								i-=1
 								if (bl not in ee):
@@ -370,12 +398,15 @@ def _minify_html(html,fp,fp_b):
 			i+=1
 		if (v_nm):
 			quit()
+		if (bl!=0):
+			raise RuntimeError("JS Contains Some Unclosed Brackets")
 		si=-1
 		b=0
 		sw=0
 		bf=b""
 		il=[]
 		cl=[]
+		icc=0
 		print("    Parsing HTML Strings...")
 		for i,k in enumerate(tl):
 			if (k[0]=="stringS" and JS_STRING_HTML_TAG_REGEX.match(k[1][1:])):
@@ -428,11 +459,21 @@ def _minify_html(html,fp,fp_b):
 									for e in ev.split(b" "):
 										for sk in il:
 											if (sk[0]<=i+evi and i+evi<sk[1]):
-												cl.insert(0,(e,sk[2],i+evi-sk[0]))
+												if (tl[sk[2]][0]!="string" and b" " not in ev):
+													cl.insert(0,(True,b"\""+e+b"\"",sk[2],i+evi-sk[0]-1))
+												else:
+													cl.insert(0,(True,e,sk[2],i+evi-sk[0]))
 												break
 										evi+=len(e)+1
-								elif (str(ek,"utf-8") in HTML_TAG_JS_ATTRIBUTES and JS_WARN_EXEC_TAGS==True):
-									print(f"Executable JS Tag Found inside HTML String in JS: {str(ek,'utf-8')}=\"{str(ev,'utf-8')}\"")
+								elif (str(ek,"utf-8") in HTML_TAG_JS_ATTRIBUTES):
+									if (JS_WARN_EXEC_TAGS==True):
+										print(f"Executable JS Tag Found inside HTML String in JS: {str(ek,'utf-8')}=\"{str(ev,'utf-8')}\"")
+								elif (b" " not in ev and len(ev)>0):
+									for sk in il:
+										if (sk[0]<=i-len(ev) and i-len(ev)<sk[1]):
+												cl.insert(0,(False,ev,sk[2],i-sk[0]-len(ev)-1))
+												icc+=1
+												break
 								ek=b""
 								ev=None
 							else:
@@ -447,21 +488,24 @@ def _minify_html(html,fp,fp_b):
 					i+=1
 				bf=b""
 				il=[]
-		print(f"    Formatting HTML Strings ({len(cl)} class{('es' if len(cl)!=1 else '')})...")
-		for e,j,sj in cl:
-			if (e not in tcm):
-				tcm[e]=1
-			else:
-				tcm[e]+=1
+		print(f"    Formatting HTML Strings ({len(cl)-icc} class{('es' if len(cl)-icc!=1 else '')})...")
+		for t,e,j,sj in cl:
 			v=tl[j][1]
-			if (tl[j][0]=="stringS"):
-				tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringS",v[sj+len(e)+1:])]+tl[j+1:]
-			elif (tl[j][0]=="stringM" or tl[j][0]=="string" or tl[j][0]=="_raw"):
-				tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("_raw",v[sj+len(e)+1:])]+tl[j+1:]
-			elif (tl[j][0]=="stringE"):
-				tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringE",v[sj+len(e)+1:])]+tl[j+1:]
+			if (t==True):
+				if (e not in tcm):
+					tcm[e]=1
+				else:
+					tcm[e]+=1
+				if (tl[j][0]=="stringS"):
+					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringS",v[sj+len(e)+1:])]+tl[j+1:]
+				elif (tl[j][0]=="stringM" or tl[j][0]=="string" or tl[j][0]=="_raw"):
+					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("_raw",v[sj+len(e)+1:])]+tl[j+1:]
+				elif (tl[j][0]=="stringE"):
+					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringE",v[sj+len(e)+1:])]+tl[j+1:]
+				else:
+					raise RuntimeError
 			else:
-				raise RuntimeError
+				tl[j]=(tl[j][0],v[:sj+1]+e+v[sj+len(e)+3:])
 		print(f"    Finding Global Object Substitutions ({len(vfm.keys())} object{('s' if len(vfm.keys())!=1 else '')})...")
 		cvml=[]
 		for k,v in vfm.items():
@@ -543,7 +587,7 @@ def _minify_html(html,fp,fp_b):
 							l=l[:-1]
 							t=t[:-1]
 					if (len(t)>0):
-						eo+=b",".join(s)+b"{"+b"".join([k+b"{"+b";".join([e+b":"+re.sub(CSS_SELECTOR_COMMA_REGEX,b",",v[i][e]) for e in sorted(l[i])])+b";}" for i,k in enumerate(t)])+b"}"
+						eo+=b",".join(s)+b"{"+b"".join([k+b"{"+b";".join([e+b":"+re.sub(CSS_SELECTOR_COMMA_REGEX,b",",v[i][e]) for e in sorted(l[i])])+b"}" for i,k in enumerate(t)])+b"}"
 						ec+=1
 				elif (len(s)==1 and s[0]==b"@font-face"):
 					v={}
@@ -554,7 +598,7 @@ def _minify_html(html,fp,fp_b):
 						v[e[0].lower()]=e[1]
 					pc+=len(l)
 					if (len(l)>0):
-						eo+=b"@font-face{"+b";".join([e+b":"+re.sub(CSS_SELECTOR_COMMA_REGEX,b",",v[e]) for e in sorted(l)])+b";}"
+						eo+=b"@font-face{"+b";".join([e+b":"+re.sub(CSS_SELECTOR_COMMA_REGEX,b",",v[e]) for e in sorted(l)])+b"}"
 						ec+=1
 				elif (s[0][:1]==b"@"):
 					raise RuntimeError(f"Unknown At-Rule: '{str(s[0],'utf-8')}'")
@@ -783,17 +827,17 @@ def _minify_html(html,fp,fp_b):
 		js_s=f"{sl} -> {len(js_t[0][1])} (-{round(10000-10000*len(js_t[0][1])/sl)/100}%)"
 	css_s="none"
 	if (css_t!=None):
-		sl,vm,vml,ko,sc,pc,ec,_=css_t[0]
+		sl,vm,vml,eo,sc,pc,ec,_=css_t[0]
 		print(f"  Regenerating CSS ({len(vml)} style{('s' if len(vml)!=1 else '')}, {sc} selector{('s' if sc!=1 else '')}, {pc} propert{('ies' if pc!=1 else 'y')}, {ec} @-rule{('s' if ec!=1 else '')})...")
 		css_o=b""
 		for k in vml:
-			css_o+=b",".join([_write_css_selector(sk,ntcm) for sk in vm[k][1]])+b"{"+vm[k][0]+b";}"
-		css_o+=ko
+			css_o+=b",".join([_write_css_selector(sk,ntcm) for sk in vm[k][1]])+b"{"+vm[k][0]+b"}"
+		css_o+=eo
 		css_t[0]=("__text__",css_o)
 		css_s=f"{sl} -> {len(css_o)} (-{round(10000-10000*len(css_o)/sl)/100}%)"
 	print(f"  Writing HTML ({ttc} tag{('s' if ttc!=1 else '')})...")
 	o=b"<!DOCTYPE html>"+_write_html(r,ntcm)
-	print(f"Minified HTML: (\n  JS: {js_s},\n  CSS: {css_s}\n  HTML: {l} -> {len(o)} (-{round(10000-10000*len(o)/l)/100}%)\n)")
+	print(f"Minified HTML: (\n  JS: {js_s}\n  CSS: {css_s}\n  HTML: {l} -> {len(o)} (-{round(10000-10000*len(o)/l)/100}%)\n)")
 	return o
 
 
