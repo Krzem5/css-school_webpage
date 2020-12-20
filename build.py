@@ -151,9 +151,9 @@ def _minify_html(html,fp,fp_b):
 			while (i<len(s)):
 				e=False
 				for k,v in JS_REGEX_LIST.items():
-					m=re.match(v,s[i:])
-					if (m!=None):
-						m=m.group(0)
+					mo=re.match(v,s[i:])
+					if (mo!=None):
+						m=mo.group(0)
 						if (k=="line_break"):
 							o+=[("operator",b";")]
 						elif (k=="string" and m[:1]==b"`"):
@@ -174,6 +174,8 @@ def _minify_html(html,fp,fp_b):
 						elif (k!="whitespace"):
 							if (k=="identifier" and str(m,"utf-8") in JS_KEYWORDS):
 								k="keyword"
+							elif (k=="identifier" and m.count(b".")>0 and m.split(b".")[0]==b"window" and str(m.split(b".")[1],"utf-8") in JS_RESERVED_IDENTIFIERS and str(m.split(b".")[1],"utf-8") not in JS_KEYWORDS):
+								m=m[7:]
 							if (k in ["operator","dict"]):
 								if (m[:1]==b"{"):
 									b+=1
@@ -182,12 +184,12 @@ def _minify_html(html,fp,fp_b):
 									if (b==-1):
 										return (o,i)
 							o+=[(k,m)]
-						i+=len(m)
+						i+=mo.end(0)
 						e=True
 						break
 				if (e==True):
 					continue
-				raise RuntimeError(f"ERROR: {s[i:]}")
+				raise RuntimeError(f"Unable to Match JS Regex: {str(s[i:],'utf-8')}")
 			return (o,i)
 		ofl=len(js)
 		print("    Tokenizing...")
@@ -227,7 +229,7 @@ def _minify_html(html,fp,fp_b):
 						elif (str(idl[0],"utf-8") not in JS_RESERVED_IDENTIFIERS and (i==0 or (tl[i-1][0]!="operator" or tl[i-1][1]!=b"."))):
 							mv=_map_value(idl[0],vm)
 							if (mv==None):
-								print(f"Variable '{str(idl[0],'utf-8')}' is not mapped!")
+								print(f"      Variable '{str(idl[0],'utf-8')}' is not mapped!")
 								v_nm=True
 							else:
 								idl[0]=mv
@@ -484,6 +486,8 @@ def _minify_html(html,fp,fp_b):
 									m=JS_REGEX_LIST["identifier"].match(ev)
 									if (m!=None):
 										sm=ev[:m.end(0)].split(b".")
+										if (len(sm)>1 and sm[0]==b"window" and str(sm[1],"utf-8") in JS_RESERVED_IDENTIFIERS and str(sm[1],"utf-8") not in JS_KEYWORDS):
+											sm=sm[1:]
 										if (sm[0] not in vfm):
 											vfm[sm[0]]=1
 										else:
@@ -774,6 +778,8 @@ def _minify_html(html,fp,fp_b):
 					sm=JS_REGEX_LIST["identifier"].match(v)
 					if (sm!=None):
 						sm=sm.group(0).split(b".")
+						if (len(sm)>1 and sm[0]==b"window" and str(sm[1],"utf-8") in JS_RESERVED_IDENTIFIERS and str(sm[1],"utf-8") not in JS_KEYWORDS):
+							sm=sm[1:]
 						if (sm[0] not in vfm):
 							vfm[sm[0]]=1
 						else:
