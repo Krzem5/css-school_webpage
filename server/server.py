@@ -1,10 +1,10 @@
-import utils
-import os
 import json
+import os
+import re
 import socket
 import threading
-import re
 import traceback
+import utils
 
 
 

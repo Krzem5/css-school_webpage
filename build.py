@@ -1,14 +1,14 @@
-import sys
-import os
+import hashlib
+import hashlib
 import json
-import shutil
-import re
-import time
-import hashlib
-import subprocess
-import hashlib
 import ntpath
+import os
+import re
 import requests
+import shutil
+import subprocess
+import sys
+import time
 
 
 
@@ -31,7 +31,7 @@ HTML_URL_REGEX=re.compile(br"^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!10(?:
 HTML_ATTRIBUTE_REGEX=re.compile(br'''([a-zA-Z0-9\-_]+)\s*(?:=\s*"((?:[^\"\\]|\\.)*))?"''')
 HTML_QUOTED_ATTRIBUTE_REGEX=re.compile(br"[^a-z0-9\-_]")
 CSS_SELECTOR_REGEX=re.compile(br"([\>\+\~]|\s*)?(#[a-zA-Z0-9_\-]+|\*|(?:[a-zA-Z0-9\-]+)?)((?:\.[a-zA-Z0-9_\-]+)*)((?:\[[a-zA-Z0-9_]+[~|^$*]?=\])*)((?:\:{1,2}[a-zA-Z0-9_\-]+(?:\([^\)]+\))?)*)")
-CSS_UNIT_REGEX=re.compile(br":\s*0(\.\d+(?:[cm]m|e[mx]|in|p[ctx]))\s*;")
+CSS_UNIT_REGEX=re.compile(br":\s*0(\.\d+(?:[cm]m|e[mx]|in|p[ctx]|fr))\s*;")
 CSS_HEX_COLOR_REGEX=re.compile(br"#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3(\s|;)")
 CSS_URL_REGEX=re.compile(br"""url\(([\"'])([^)]*)\1\)""")
 CSS_WHITESPACE_REGEX=re.compile(br"/\*[\s\S]*?\*/")
