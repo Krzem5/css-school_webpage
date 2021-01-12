@@ -905,12 +905,6 @@ def _minify_html(html,fp,fp_b):
 
 
 
-def _copy(fp,f=lambda e,fp:e):
-	with open(fp,"rb") as rf,open(f"build\\{fp}","wb") as wf:
-		wf.write(f(rf.read(),fp.replace("\\","/")))
-
-
-
 if (os.path.exists("build")==False):
 	os.mkdir("build")
 	cwd=os.getcwd()
@@ -937,12 +931,14 @@ for k in os.listdir("build"):
 		os.remove(f"build\\{k}")
 os.mkdir(f"build\\web")
 os.mkdir(f"build\\server")
-for fn in os.listdir("web"):
+for fn in os.listdir("src\\web"):
 	if (fn[-5:]==".html"):
-		_copy(f"web\\{fn}",f=lambda dt,fp:_minify_html(dt,fp,"web"))
-for fn in os.listdir("server"):
-	if (os.path.isfile(f"server\\{fn}")==True):
-		_copy(f"server\\{fn}")
+		with open(f"src\\web\\{fn}","rb") as rf,open(f"build\\web\\{fn}","wb") as wf:
+			wf.write(_minify_html(rf.read(),f"src/web/{fn.replace(chr(92),'/')}","src/web"))
+for fn in os.listdir("src\\server"):
+	if (os.path.isfile(f"src\\server\\{fn}")==True):
+		with open(f"src\\server\\{fn}","rb") as rf,open(f"build\\server\\{fn}","wb") as wf:
+			wf.write(rf.read())
 with open(f"build\\runtime.txt","w") as f:
 	f.write("python-3.9.1")
 with open(f"build\\requirements.txt","w") as f:
