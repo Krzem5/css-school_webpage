@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 			if (u&&!window._ic){
 				fetch("/api/v1/save",{method:"PUT",body:JSON.stringify(window._n)}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 					if (!e||e.status){
-						ee.innerText=(e&&e.status?{11:"Invalid Login Credentials",17:"Page ID Already Used",18:"Page Title Already Used"}[e.status]:"Unable to Save Connect to the Server");
+						ee.innerText=(e&&e.status?{11:"Invalid Login Credentials",17:"Page ID Already Used",18:"Page Title Already Used"}[e.status]:"Unable to Connect to the Server");
 						if (ee.t){
 							clearTimeout(ee.t);
 						}
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 						window._ic++;
 						let u=k.substring(si2,i);
 						let ti=new Image();
-						let le=window._le
+						let le=window._le;
 						ti.onload=()=>{
 							window._l(le);
 						}

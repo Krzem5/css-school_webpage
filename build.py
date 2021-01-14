@@ -417,7 +417,6 @@ def _minify_html(html,fp,fp_b):
 		if (bl!=0):
 			raise RuntimeError("JS Contains Some Unclosed Brackets")
 		si=-1
-		b=0
 		sw=0
 		bf=b""
 		il=[]
@@ -432,14 +431,9 @@ def _minify_html(html,fp,fp_b):
 					il+=[(len(bf),len(bf)+len(k[1])-(2 if k[0]=="stringE" else 3),i)]
 					bf+=k[1][1:-(1 if k[0]=="stringE" else 2)]
 					sw=0
-					b=0
 				else:
 					if (k[0]=="operator"):
-						if (k[1] in b"([{"):
-							b+=1
-						elif (k[1] in b")]}"):
-							b-=1
-						elif (k[1]==b"?"):
+						if (k[1]==b"?"):
 							if (sw!=0):
 								raise RuntimeError("Nested Ternary Operators not Implemented!")
 							sw=1
@@ -450,7 +444,10 @@ def _minify_html(html,fp,fp_b):
 					if (k[0]=="string" and ((sw==1 and tl[i+1][0]=="operator" and tl[i+1][1]==b":") or (sw==2 and tl[i+1][0] in ["stringM","stringE"]))):
 						il+=[(len(bf)+(1 if sw==2 else 0),len(bf)+len(k[1])+(1 if sw==2 else 0)-2,i)]
 						bf+=(b" " if sw==2 else b"")+k[1][1:-1]
-			if (k[0]=="stringE" and si!=-1):
+			if (k[0]=="string" and JS_STRING_HTML_TAG_REGEX.match(k[1][1:])):
+				il+=[(len(bf),len(bf)+len(k[1])-2,i)]
+				bf+=k[1][1:-1]
+			if ((k[0]=="stringE" and si!=-1) or (k[0]=="string" and si==-1)):
 				si=-1
 				i=0
 				while (i<len(bf)):
@@ -475,7 +472,7 @@ def _minify_html(html,fp,fp_b):
 									for e in ev.split(b" "):
 										for sk in il:
 											if (sk[0]<=i+evi and i+evi<sk[1]):
-												if (tl[sk[2]][0]!="string" and b" " not in ev):
+												if ((tl[sk[2]][0]!="string" or k[0]=="string") and b" " not in ev):
 													cl.insert(0,(0,b"\""+e+b"\"",sk[2],i+evi-sk[0]-1))
 												else:
 													cl.insert(0,(0,e,sk[2],i+evi-sk[0]))
