@@ -150,7 +150,7 @@ def render(l):
 			elif (k[i]=="*"):
 				si=i+0
 				i+=1
-				while (k[i]!="*"):
+				while (k[i-1]=="*" or k[i]!="*" or (i+1<len(k) and k[i+1]=="*")):
 					if (i>=len(k)):
 						return (f"Unterminated Single Quotes in Paragraph {j}, Line {ln}",False)
 					i+=1
