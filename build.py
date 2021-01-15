@@ -210,6 +210,14 @@ def _minify_html(html,fp,fp_b):
 					if (idl[0]==b"document" and str(idl[1],"utf-8") in JS_DOCUMENT_CACHE_PROPERTIES):
 						if (len(idl)>1 and b"document."+idl[1] not in vfm):
 							vfm[b"document."+idl[1]]=1
+							if (b"document" not in vfm):
+								vfm[b"document"]=1
+							else:
+								vfm[b"document"]+=1
+							if (b"bind" not in vfma):
+								vfma[b"bind"]=1
+							else:
+								vfma[b"bind"]+=1
 						else:
 							vfm[b"document."+idl[1]]+=1
 						dpc=True
@@ -526,9 +534,12 @@ def _minify_html(html,fp,fp_b):
 				il=[]
 		print(f"    Finding Global Object Substitutions ({len(vfm.keys())} object{('s' if len(vfm.keys())!=1 else '')})...")
 		cvml=[]
+		dpc=False
 		for k,v in vfm.items():
 			if (v>1):
 				cvml+=[(len(k)*v,k,v,False)]
+				if (b"." in k):
+					dpc=True
 		print(f"    Finding Attribute Substitutions ({len(vfma.keys())} attribute{('s' if len(vfma.keys())!=1 else '')})...")
 		for k,v in vfma.items():
 			if (v>1 and len(k)>2):
@@ -539,16 +550,22 @@ def _minify_html(html,fp,fp_b):
 		cvm={}
 		cvma={}
 		sl=[]
+		esl=[]
 		for k in cvml:
 			if (k[3]==False):
 				mv=_gen_i([cvm,cvma],JS_CONST_LETTERS)
 				if (len(mv)*(k[2]+1)+len(k[1])+2<=len(k[1])*k[2]):
 					cvm[k[1]]=mv
-					if (len(sl)==0):
-						sl=[("keyword",b"let")]
+					if (b"." in k[1]):
+						if (len(esl)>0):
+							esl+=[("operator",b",")]
+						esl+=[("identifier",mv),("operator",b"="),("identifier",k[1]+b".bind"),("operator",b"("),("identifier",k[1].split(b".")[0]),("operator",b")")]
 					else:
-						sl+=[("operator",b",")]
-					sl+=[("identifier",mv),("operator",b"="),("identifier",k[1])]
+						if (len(sl)==0):
+							sl=[("keyword",b"let")]
+						else:
+							sl+=[("operator",b",")]
+						sl+=[("identifier",mv),("operator",b"="),("identifier",k[1])]
 			else:
 				mv=_gen_i([cvm,cvma],JS_CONST_LETTERS)
 				if (len(mv)+len(k[1])+(len(mv)+1)*k[2]+4<=(len(k[1])+1)*k[2]):
@@ -558,6 +575,19 @@ def _minify_html(html,fp,fp_b):
 					else:
 						sl+=[("operator",b",")]
 					sl+=[("identifier",mv),("operator",b"="),("string",b"\""+k[1]+b"\"")]
+		if (len(esl)>0):
+			st=0
+			for i,e in enumerate(esl):
+				if (e[0]=="identifier"):
+					if (st==1):
+						print(e[1])
+					elif (st==2 and e[1] in cvm):
+						esl[i]=("identifier",cvm[e[1]])
+					st=(st+1)%3
+			if (len(sl)==0):
+				sl=[("keyword",b"let")]+esl
+			else:
+				sl+=[("operator",b",")]+esl
 		print(f"    Formatting HTML Strings ({len(cl)-icc} class{('es' if len(cl)-icc!=1 else '')})...")
 		for t,e,j,sj in cl:
 			v=tl[j][1]

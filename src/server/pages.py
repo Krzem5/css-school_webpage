@@ -192,12 +192,11 @@ def signup(url):
 @server.route("GET",r"/admin")
 def admin(url):
 	tk,ok=api.read_token()
-	if (ok==False or auth.is_admin(tk)[1]==False):
-		server.set_code(307)
-		server.set_header("Location","https://krzem.herokuapp.com/")
-		return b""
-	server.set_code(200)
 	server.set_header("Content-Type","text/html")
+	if (ok==False or auth.is_admin(tk)[1]==False):
+		server.set_code(404)
+		return utils.cache("web/not_found.html")
+	server.set_code(200)
 	server.set_header("Cache-Control","public,max-age=31536000,immutable")
 	return utils.cache("web/admin.html")
 
@@ -206,9 +205,9 @@ def admin(url):
 @server.route("GET",r"/new")
 def new(url):
 	tk,ok=api.read_token()
-	if (ok==False):
+	if (ok==False or auth.check_token(tk,server.address())["status"]!=auth.RETURN_CODE["ok"]):
 		server.set_code(307)
-		server.set_header("Location","https://krzem.herokuapp.com/")
+		server.set_header("Location","https://krzem.herokuapp.com/login?r=https%3A%2F%2Fkrzem.herokuapp.com%2Fnew")
 		return b""
 	server.set_code(200)
 	server.set_header("Content-Type","text/html")
@@ -222,7 +221,6 @@ def page(url):
 	url=url[6:].lower()
 	if (url.endswith(".html")):
 		url=url[:-5]
-	server.set_code(200)
 	server.set_header("Content-Type","text/html")
 	if (url in PAGE_LIST):
 		pg=PAGE_LIST[url]
@@ -230,6 +228,7 @@ def page(url):
 		analytics.view_page(url,u_id=(auth.get_id(tk) if ok else None))
 		if (pg["cache"]==None):
 			pg["cache"]=_render_page(pg)
+		server.set_code(200)
 		return pg["cache"]
 	else:
 		server.set_code(404)
@@ -242,13 +241,13 @@ def user(url):
 	url=url[6:].lower()
 	if (url.endswith(".html")):
 		url=url[:-5]
-	server.set_code(200)
 	server.set_header("Content-Type","text/html")
 	dt=auth.get_user(url)
 	if (dt!=None):
 		tk,ok=api.read_token()
 		id_=(auth.get_id(tk) if ok else None)
 		analytics.view_user(url,u_id=id_)
+		server.set_code(200)
 		return (_render_c_user if id_!=None and auth.get_id_from_username(url)==id_ else _render_user)(dt)
 	else:
 		server.set_code(404)
