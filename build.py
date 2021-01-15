@@ -22,6 +22,7 @@ CSS_CLASS_LETTERS="abcdefghijklmnopqrstuvwxyz"
 JS_OPERATORS=["()=>","_=>","=>","...",">>>=",">>=","<<=","|=","^=","&=","+=","-=","*=","/=","%=",";",",","?",":","||","&&","|","^","&","===","==","=","!==","!=","<<","<=","<",">>>",">>",">=",">","++","--","+","-","*","/","%","!","~",".","[","]","{","}","(",")"]
 JS_KEYWORDS=["break","case","catch","const","const","continue","debugger","default","delete","do","else","enum","false","finally","for","function","if","in","instanceof","let","new","null","of","return","switch","this","throw","true","try","typeof","var","var","void","while","with"]
 JS_RESERVED_IDENTIFIERS=JS_KEYWORDS+["AggregateError","alert","arguments","Array","ArrayBuffer","AsyncFunction","AsyncGenerator","AsyncGeneratorFunction","atob","Atomics","BigInt","BigInt64Array","BigUint64Array","blur","Boolean","btoa","caches","cancelAnimationFrame","cancelIdleCallback","captureEvents","chrome","clearInterval","clearTimeout","clientInformation","close","closed","confirm","console","cookieStore","createImageBitmap","crossOriginIsolated","crypto","customElements","DataView","Date","decodeURI","decodeURIComponent","defaultStatus","defaultstatus","devicePixelRatio","document","encodeURI","encodeURIComponent","Error","escape","eval","EvalError","external","fetch","find","Float32Array","Float64Array","focus","frameElement","frames","Function","Generator","GeneratorFunction","getComputedStyle","getSelection","globalThis","history","Image","indexedDB","Infinity","innerHeight","innerWidth","Int16Array","Int32Array","Int8Array","InternalError","Intl","isFinite","isNaN","isSecureContext","JSON","length","localStorage","location","locationbar","Map","matchMedia","Math","menubar","moveBy","moveTo","NaN","navigator","Number","Object","open","openDatabase","opener","origin","originIsolated","outerHeight","outerWidth","pageXOffset","pageYOffset","parent","parseFloat","parseInt","performance","personalbar","postMessage","print","Promise","prompt","Proxy","queueMicrotask","RangeError","ReferenceError","Reflect","RegExp","releaseEvents","requestAnimationFrame","requestIdleCallback","resizeBy","resizeTo","screen","screenLeft","screenTop","screenX","screenY","scroll","scrollbars","scrollBy","scrollTo","scrollX","scrollY","self","sessionStorage","Set","setInterval","setTimeout","SharedArrayBuffer","showDirectoryPicker","showOpenFilePicker","showSaveFilePicker","speechSynthesis","status","statusbar","stop","String","styleMedia","Symbol","SyntaxError","toolbar","top","trustedTypes","TypeError","Uint16Array","Uint32Array","Uint8Array","Uint8ClampedArray","undefined","unescape","uneval","URIError","visualViewport","WeakMap","WeakSet","WebAssembly","webkitCancelAnimationFrame","webkitRequestAnimationFrame","webkitRequestFileSystem","webkitResolveLocalFileSystemURL","WebSocket","window"]
+JS_DOCUMENT_CACHE_PROPERTIES=["adoptNode","captureEvents","caretRangeFromPoint","createAttribute","createAttributeNS","createCDATASection","createComment","createDocumentFragment","createElement","createElementNS","createEvent","createNodeIterator","createProcessingInstruction","createRange","createTextNode","createTouch","createTouchList","createTreeWalker","exitPictureInPicture","exitPointerLock","getElementsByClassName","getElementsByTagName","getElementsByTagNameNS","hasStorageAccess","importNode","releaseCapture","releaseEvents","requestStorageAccess","mozSetImageElement","getElementById","querySelector","querySelectorAll","createExpression","createNSResolver","evaluate","clear","close","getElementsByName","hasFocus","open","write","writeln","caretPositionFromPoint","elementFromPoint","elementsFromPoint","getAnimations","getSelection"]
 JS_VAR_LETTERS="abcdefghijklmnopqrstuvwxyz"
 JS_CONST_LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 HTML_REMOVE_WHITEPSACE_REGEX=re.compile(br"(?=(?P<tmp>[^\S ]\s*|\s{2,}))(?P=tmp)(?=(?P<txt>(?=(?P<tmp3>(?:(?=(?P<tmp2>[^<]+))(?P=tmp2)|<(?!\/?(?:textarea|pre)\b))*))(?P=tmp3))(?:<(?=(?P<tmp4>textarea|pre))(?P=tmp4)\b|$))")
@@ -206,8 +207,15 @@ def _minify_html(html,fp,fp_b):
 		while (i<len(tl)):
 			if (tl[i][0]=="identifier"):
 				idl=tl[i][1].split(b".")
+				dpc=False
 				if (len(idl[0])>0):
-					if (str(idl[0],"utf-8") in JS_RESERVED_IDENTIFIERS):
+					if (idl[0]==b"document" and str(idl[1],"utf-8") in JS_DOCUMENT_CACHE_PROPERTIES):
+						if (len(idl)>1 and b"document."+idl[1] not in vfm):
+							vfm[b"document."+idl[1]]=1
+						else:
+							vfm[b"document."+idl[1]]+=1
+						dpc=True
+					elif (str(idl[0],"utf-8") in JS_RESERVED_IDENTIFIERS):
 						if (idl[0] not in vfm):
 							vfm[idl[0]]=1
 						else:
@@ -232,7 +240,7 @@ def _minify_html(html,fp,fp_b):
 								v_nm=True
 							else:
 								idl[0]=mv
-				for k in idl[1:]:
+				for k in idl[(2 if dpc==True else 1):]:
 					if (k not in vfma):
 						vfma[k]=1
 					else:
@@ -564,11 +572,13 @@ def _minify_html(html,fp,fp_b):
 				else:
 					tcm[e]+=1
 				if (tl[j][0]=="stringS"):
-					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringS",v[sj+el+1:])]+tl[j+1:]
-				elif (tl[j][0]=="stringM" or tl[j][0]=="string" or tl[j][0]=="_raw"):
+					tl=tl[:j]+[("_rawF",v[:sj+1]),("css_class",e),("stringS",v[sj+el+1:])]+tl[j+1:]
+				elif (tl[j][0]=="string" or tl[j][0]=="_raw"):
 					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("_raw",v[sj+el+1:])]+tl[j+1:]
+				elif (tl[j][0]=="stringM" or tl[j][0]=="_rawF"):
+					tl=tl[:j]+[("_rawF",v[:sj+1]),("css_class",e),("_rawF",v[sj+el+1:])]+tl[j+1:]
 				elif (tl[j][0]=="stringE"):
-					tl=tl[:j]+[("_raw",v[:sj+1]),("css_class",e),("stringE",v[sj+el+1:])]+tl[j+1:]
+					tl=tl[:j]+[("_rawF",v[:sj+1]),("css_class",e),("stringE",v[sj+el+1:])]+tl[j+1:]
 				else:
 					raise RuntimeError
 			elif (t==1):
@@ -578,9 +588,37 @@ def _minify_html(html,fp,fp_b):
 				tl[j]=(tl[j][0],v[:sj+1]+e+v[sj+el+1:])
 			else:
 				tl[j]=(tl[j][0],v[:sj+1]+e+v[sj+len(e)+3:])
-		if (len(sl)>0):
-			tl=sl+[("operator",b";")]+tl
-		return (tl,cvm,cvma,len(sl))
+		print("    Collecting String Constants...")
+		vfms={}
+		vfms_f={}
+		l=[]
+		si=-1
+		for i,(k,v) in enumerate(tl):
+			if (k=="string"):
+				if (v[1:-1] not in vfms):
+					vfms[v[1:-1]]=(1,[(i,i+1)])
+				else:
+					vfms[v[1:-1]]=(vfms[v[1:-1]][0]+1,vfms[v[1:-1]][1]+[(i,i+1)])
+				if (len(l)>0):
+					h=tuple(l)
+					if (h not in vfms_f):
+						vfms_f[h]=(l,1,[(si,i)])
+					else:
+						vfms_f[h]=(l,vfms_f[h][1]+1,vfms_f[h][2]+[(si,i)])
+				l=[]
+			elif (k=="_raw" or (k=="css_class" and len(l)>0)):
+				if (len(l)==0):
+					si=i
+				l+=[(v,(True if k=="css_class" else False))]
+			else:
+				if (len(l)>0):
+					h=tuple(l)
+					if (h not in vfms_f):
+						vfms_f[h]=(l,1,[(si,i)])
+					else:
+						vfms_f[h]=(l,vfms_f[h][1]+1,vfms_f[h][2]+[(si,i)])
+				l=[]
+		return (tl,cvm,cvma,vfms,vfms_f,sl)
 	def _parse_css(css,tcm):
 		sl=len(css)
 		print("    Removing Whitespace & Shortening Colors...")
@@ -671,15 +709,18 @@ def _minify_html(html,fp,fp_b):
 				o+=b"."+tcm[c]
 			o+=sp+se
 		return o
-	def _write_js(tl,cvm,cvma,sl,tcm):
+	def _write_js(tl,cvm,cvma,cvms,sl,tcm):
 		o=b""
 		i=0
 		while (i<len(tl)):
 			if (i>=sl and tl[i][0]=="identifier"):
 				idl=tl[i][1].split(b".")
+				dpc=False
+				if (idl[0]==b"document" and len(idl)>1 and b"document."+idl[1] in cvm):
+					idl=[cvm[b"document."+idl[1]]]+idl[2:]
 				if (idl[0] in cvm):
 					idl[0]=cvm[idl[0]]
-				for j,e in enumerate(idl[1:]):
+				for j,e in enumerate(idl[(2 if dpc==True else 1):]):
 					if (e in cvma):
 						idl[j+1]=b"["+cvma[e]+b"]"
 					else:
@@ -695,7 +736,7 @@ def _minify_html(html,fp,fp_b):
 				o+={b"false":b"!1",b"true":b"!0"}[tl[i][1]]
 			elif (tl[i][0]=="stringS"):
 				o+=tl[i][1]
-				to,ti=_write_js(tl[i+1:],cvm,cvma,0,tcm)
+				to,ti=_write_js(tl[i+1:],cvm,cvma,cvms,0,tcm)
 				o+=to
 				i+=ti+1
 			elif (tl[i][0]=="stringE"):
@@ -881,10 +922,42 @@ def _minify_html(html,fp,fp_b):
 	js_om=({},{})
 	if (js_t!=None):
 		print(f"  Regenerating JS ({len(js_t[0][1])} token{('s' if len(js_t[0][1])!=1 else '')})...")
-		sl=js_t[0][0]
+		ssl=js_t[0][0]
 		js_om=js_t[0][2:4]
-		js_t[0]=("__text__",_write_js(*js_t[0][1:],ntcm)[0])
-		js_s=f"{sl} -> {len(js_t[0][1])} (-{round(10000-10000*len(js_t[0][1])/sl)/100}%)"
+		tl,cvm,cvma,vfms,vfms_f,sl=js_t[0][1:]
+		for k,v,pl in vfms_f.values():
+			s=b""
+			for e in k:
+				s+=(ntcm[e[0]] if e[1]==True else e[0])
+			s=s[1:-1]
+			if (s not in vfms):
+				vfms[s]=(v,pl)
+			else:
+				vfms[s]=(vfms[s][0]+v,vfms[s][1]+pl)
+		print(f"    Creaing String Constants ({len(vfms)} string{('s' if len(vfms)!=1 else '')})...")
+		vfms_l=[]
+		for k,v in vfms.items():
+			if (v[0]>1):
+				vfms_l+=[((len(k)+2)*v[0],k,v[0],v[1])]
+		print("    Sorting String Constant List...")
+		vfms_l=sorted(vfms_l,key=lambda e:-e[0])
+		cvms={}
+		for k in vfms_l:
+			mv=_gen_i([cvm,cvma,cvms],JS_CONST_LETTERS)
+			if (len(mv)+len(k[1])+len(mv)*k[2]+4<=(len(k[1])+2)*k[2]):
+				for e in k[3]:
+					cvms[e]=mv
+				if (len(sl)==0):
+					sl=[("keyword",b"let")]
+				else:
+					sl+=[("operator",b",")]
+				sl+=[("identifier",mv),("operator",b"="),("string",b"\""+k[1]+b"\"")]
+		for k,v in sorted(cvms.items(),key=lambda e:-e[0][1]):
+			tl=tl[:k[0]]+[("identifier",v)]+tl[k[1]:]
+		if (len(sl)>0):
+			tl=sl+[("operator",b";")]+tl
+		js_t[0]=("__text__",_write_js(tl,cvm,cvma,cvms,len(sl),ntcm)[0])
+		js_s=f"{ssl} -> {len(js_t[0][1])} (-{round(10000-10000*len(js_t[0][1])/ssl)/100}%)"
 	css_s="none"
 	if (css_t!=None):
 		sl,vm,vml,eo,sc,pc,ec,_=css_t[0]
@@ -897,7 +970,7 @@ def _minify_html(html,fp,fp_b):
 		css_s=f"{sl} -> {len(css_o)} (-{round(10000-10000*len(css_o)/sl)/100}%)"
 	print(f"  Writing HTML ({ttc} tag{('s' if ttc!=1 else '')})...")
 	o=b"<!DOCTYPE html>"+_write_html(r,ntcm,js_om)
-	print(f"Minified HTML: (\n  JS: {js_s}\n  CSS: {css_s}\n  HTML: {l} -> {len(o)} (-{round(10000-10000*len(o)/l)/100}%)\n)")
+	print(f"Minified HTML: {{\n  JS: {js_s}\n  CSS: {css_s}\n  HTML: {l} -> {len(o)} (-{round(10000-10000*len(o)/l)/100}%)\n}}")
 	return o
 
 
