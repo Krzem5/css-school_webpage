@@ -1,3 +1,4 @@
+import analytics
 import base64
 import hashlib
 import pages
@@ -282,7 +283,7 @@ def get_users(tk,q,ip):
 		ts=" ".join((["disabled"] if v[DB_KEY_DISABLED] else [])+(["logged-in"] if v[DB_KEY_TOKEN] else [])+(["verified-email"] if v[DB_KEY_EMAIL_VERIFIED] else [])+(["admin"] if v[DB_KEY_ADMIN] else []))
 		if ((u and q.search(v[DB_KEY_USERNAME])!=None) or (e and q.search(v[DB_KEY_EMAIL])!=None) or (t and q.search(ts)!=None) or (i and q.search(k)!=None)):
 			o+=[{"id":k,"username":v[DB_KEY_USERNAME],"email":v[DB_KEY_EMAIL],"password":v[DB_KEY_PASSWORD],"time":v[DB_KEY_TIME],"ip":v[DB_KEY_IP],"token":v[DB_KEY_TOKEN],"token_end":v[DB_KEY_TOKEN_END],"email_verified":v[DB_KEY_EMAIL_VERIFIED],"image":v[DB_KEY_IMAGE],"admin":v[DB_KEY_ADMIN],"disabled":v[DB_KEY_DISABLED]}]
-	return {"status":RETURN_CODE["ok"],"users":o}
+	return {"status":RETURN_CODE["ok"],"data":o}
 
 
 
@@ -359,8 +360,8 @@ def get_pages(tk,q,ip):
 	o=[]
 	for k,v in list(pages.PAGE_LIST.items()):
 		if ((i and q.search(k)!=None) or (t and q.search(v["nm"])!=None)):
-			o+=[{"id":k,"title":v["nm"],"author":v["author"],"desc":v["dt"]["desc"],"time":v["vl"]["current"][1]}]
-	return {"status":RETURN_CODE["ok"],"users":o}
+			o+=[{"id":k,"title":v["nm"],"author":v["author"],"name":_db[v["author"]][DB_KEY_USERNAME],"desc":v["dt"]["desc"],"time":v["vl"]["current"][1]}]
+	return {"status":RETURN_CODE["ok"],"data":o}
 
 
 
@@ -390,6 +391,36 @@ def remove_ws_url(url,ip):
 	if (t<time.time()):
 		return ({"status":RETURN_CODE["invalid_url"]},False)
 	return (None,True)
+
+
+
+def get_page_analytics(tk,q,ip):
+	id_=_check_token(tk)
+	if (id_==None):
+		return {"status":RETURN_CODE["invalid_token"]}
+	elif (_db[id_][DB_KEY_ADMIN]!=True):
+		return {"status":RETURN_CODE["not_admin"]}
+	i,t=True,True
+	if (q.count(":")>0):
+		s,q=q.split(":")[0],q[len(q.split(":")[0])+1:]
+		i,t=False,False
+		for k in s:
+			if (k=="i"):
+				i=True
+			if (k=="t"):
+				t=True
+		if (i==t and t==False):
+			i,t=True,True
+	try:
+		q=re.compile(q,re.I)
+	except re.error:
+		return {"status":RETURN_CODE["regex_error"]}
+	o=[]
+	for k,v in list(pages.PAGE_LIST.items()):
+		if ((i and q.search(k)!=None) or (t and q.search(v["nm"])!=None)):
+			dt=analytics.page_data(k)
+			o+=[{"id":k,"title":v["nm"],"total":dt[0],"users":[(k,_db[k][DB_KEY_USERNAME],v) for k,v in dt[2].items()],"other":dt[1]}]
+	return {"status":RETURN_CODE["ok"],"data":o}
 
 
 

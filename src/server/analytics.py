@@ -83,6 +83,13 @@ def page_views(id_):
 
 
 
+def page_data(id_):
+	if (id_ not in _pg_v):
+		return None
+	return _pg_v[id_]
+
+
+
 if (storage.exists("analytics.db")):
 	o=storage.read("analytics.db")
 	i=0

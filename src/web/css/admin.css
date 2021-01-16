@@ -432,7 +432,7 @@ body {
 .bg-r .bg .wr .main .pages .page-wr.s {
 	display: initial;
 }
-.bg-r .bg .wr .main .pages .page {
+.bg-r .bg .wr .main .pages .page-wr .page {
 	position: absolute;
 	top: 50%;
 	left: 50%;
@@ -445,35 +445,35 @@ body {
 	font-family: Ubuntu Mono;
 	font-size: 22px;
 }
-.bg-r .bg .wr .main .pages .page .p-elem {
+.bg-r .bg .wr .main .pages .page-wr .page .p-elem {
 	position: relative;
 	width: 100%;
 	min-height: 25px;
 	user-select: none;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .p-elem-k {
+.bg-r .bg .wr .main .pages .page-wr .page .p-elem .p-elem-k {
 	padding-right: 10px;
 	color: #3d3d3d;
 	white-space: nowrap;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v {
+.bg-r .bg .wr .main .pages .page-wr .page .p-elem .p-elem-v {
 	width: 100%;
 	cursor: pointer;
 	white-space: pre-wrap;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v.p-id {
+.bg-r .bg .wr .main .pages .page-wr .page .p-elem .p-elem-v.p-id {
 	color: #724fe6;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v.p-t {
+.bg-r .bg .wr .main .pages .page-wr .page .p-elem .p-elem-v.p-t {
 	color: #aed42a;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v.p-d {
+.bg-r .bg .wr .main .pages .page-wr .page .p-elem .p-elem-v.p-d {
 	color: #2acfb6;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v.p-tm {
+.bg-r .bg .wr .main .pages .page-wr .page .p-elem .p-elem-v.p-tm {
 	color: #cf2aae;
 }
-.bg-r .bg .wr .main .pages .page .p-elem .p-elem-v.p-a {
+.bg-r .bg .wr .main .pages .page-wr .page .p-elem .p-elem-v.p-a {
 	color: #f7742a;
 }
 
@@ -522,4 +522,142 @@ body {
 .bg-r .bg .wr .main .logs .l-msg .l-msg-m::selection {
 	background: #606060;
 	color: #2fcf8e;
+}
+
+
+
+.bg-r .bg .wr .main .p-analytics {
+	background: #2f2f2f;
+}
+.bg-r .bg .wr .main .p-analytics .pa-search {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 50px;
+	border-bottom: solid 8px #0f0f0f;
+}
+.bg-r .bg .wr .main .p-analytics .pa-search .pa-s-inp {
+	position: absolute;
+	top: 0;
+	left: 10px;
+	width: calc(100% - 20px);
+	height: 50px;
+	font-size: 28px;
+	line-height: 50px;
+	background: transparent;
+	font-family: Ubuntu Mono;
+	color: #f5f5f5;
+}
+.bg-r .bg .wr .main .p-analytics .pa-search .pa-s-inp::selection {
+	background: #606060;
+	color: #2fcf8e;
+}
+.bg-r .bg .wr .main .p-analytics .pa-list {
+	position: absolute;
+	top: 58px;
+	left: 0;
+	width: 100%;
+	bottom: 0;
+	background: #0c0c0c;
+	overflow-y: scroll;
+}
+.bg-r .bg .wr .main .p-analytics .pa-list::-webkit-scrollbar {
+	width: 15px;
+	background: #0c0c0c;
+}
+.bg-r .bg .wr .main .p-analytics .pa-list::-webkit-scrollbar-track {
+	background: #212121;
+	border-radius: 8px;
+}
+.bg-r .bg .wr .main .p-analytics .pa-list::-webkit-scrollbar-thumb {
+	background: #2d2d2d;
+	border-radius: 8px;
+}
+.bg-r .bg .wr .main .p-analytics .pa-list .pa-l-elem {
+	position: relative;
+	width: 100%;
+	height: 25px;
+	cursor: pointer;
+}
+.bg-r .bg .wr .main .p-analytics .pa-list .pa-l-elem:not(:first-child) {
+	border-top: solid 4px #0f0f0f;
+}
+.bg-r .bg .wr .main .p-analytics .pa-list .pa-l-elem:nth-child(even) {
+	background: #151515;
+}
+.bg-r .bg .wr .main .p-analytics .pa-list .pa-l-elem .pa-l-elem-pr {
+	position: absolute;
+	top: 0;
+	left: 10px;
+	width: calc(100% - 20px);
+	height: 100%;
+	line-height: 25px;
+	font-size: 23px;
+	font-family: Ubuntu Mono;
+	user-select: none;
+}
+.bg-r .bg .wr .main .p-analytics .pa-list .pa-l-elem .pa-l-elem-pr .pa-l-elem-pr-id {
+	float: left;
+	color: #724fe6;
+	padding-right: 20px;
+}
+.bg-r .bg .wr .main .p-analytics .pa-list .pa-l-elem .pa-l-elem-pr .pa-l-elem-pr-tt {
+	color: #aed42a;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: #000000a1;
+	display: none;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr.s {
+	display: initial;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr .pa {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: calc(100% - 200px);
+	transform: translate(-50%,-50%);
+	background: #0c0c0c;
+	border: solid 10px #0f0f0f;
+	border-radius: 30px;
+	padding: 10px;
+	font-family: Ubuntu Mono;
+	font-size: 22px;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr .pa .pa-elem {
+	position: relative;
+	width: 100%;
+	min-height: 25px;
+	user-select: none;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr .pa .pa-elem .pa-elem-k {
+	padding-right: 10px;
+	color: #3d3d3d;
+	white-space: nowrap;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr .pa .pa-elem .pa-elem-v {
+	width: 100%;
+	cursor: pointer;
+	white-space: pre-wrap;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr .pa .pa-elem .pa-elem-v.p-id {
+	color: #724fe6;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr .pa .pa-elem .pa-elem-v.p-t {
+	color: #aed42a;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr .pa .pa-elem .pa-elem-v.p-tv {
+	color: #2acfb6;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr .pa .pa-elem .pa-elem-v.p-tuv {
+	color: #cf2aae;
+}
+.bg-r .bg .wr .main .p-analytics .pa-wr .pa .pa-elem .pa-elem-v.p-ov {
+	color: #f7742a;
 }
