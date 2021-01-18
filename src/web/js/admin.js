@@ -218,8 +218,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 	}
 	paie.onkeyup=(oe)=>{
 		if (!oe||oe.keyCode==13){
-			e={"status": 0, "data": [{"id": "how-to-code", "title": "How to Code", "total": 11, "users": [["a2ec4bfe6a17fb115894a7c03a3c6950", "Krzem5", 8]], "other": 3}, {"id": "insert-id-here", "title": "Insert Title Here", "total": 71, "users": [["a2ec4bfe6a17fb115894a7c03a3c6950", "Krzem5", 30]], "other": 41}, {"id": "loerm-ipsum", "title": "Lorem Ipsum Dolor sit Amet", "total": 5, "users": [["a2ec4bfe6a17fb115894a7c03a3c6950", "Krzem5", 2]], "other": 3}]}
-			// fetch("/api/v1/admin/page_analytics",{method:"POST",body:JSON.stringify({query:paie.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
+			fetch("/api/v1/admin/page_analytics",{method:"POST",body:JSON.stringify({query:paie.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 				if (!e||e.status||e.code){
 					// location.hash="";
 					// location.href="/";
@@ -242,7 +241,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 						location.hash="page_analytics";
 					}
 				}
-			// });
+			});
 		}
 	}
 	window.s=-1;
