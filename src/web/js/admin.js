@@ -23,8 +23,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 	function _start_socket(){
 		fetch("/api/v1/admin/logs").catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 			if (!e||e.status||e.code){
-				// location.hash="";
-				// location.href="/";
+				location.hash="";
+				location.href="/";
 				return;
 			}
 			s=new WebSocket(`wss://krzem.herokuapp.com/api/v1/admin/logs/${e.url}`);
@@ -65,8 +65,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 		return `<span class="c">${e}</span>`;
 	}).join("");
 	document.querySelector(".icon").onclick=()=>{
-		// location.hash="";
-		// location.href="/";
+		location.hash="";
+		location.href="/";
 	}
 	window.switch=(id,nh)=>{
 		if (window.s==id){
@@ -105,8 +105,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 				aie.onkeyup();
 			}
 			else{
-				// location.hash="";
-				// location.href="/";
+				location.hash="";
+				location.href="/";
 			}
 		});
 	}
@@ -123,8 +123,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 						aie.onkeyup();
 					}
 					else{
-						// location.hash="";
-						// location.href="/";
+						location.hash="";
+						location.href="/";
 					}
 				});
 			}
@@ -163,8 +163,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 		if (!oe||oe.keyCode==13){
 			fetch("/api/v1/admin/users",{method:"POST",body:JSON.stringify({query:aie.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 				if (!e||e.status||e.code){
-					// location.hash="";
-					// location.href="/";
+					location.hash="";
+					location.href="/";
 				}
 				else{
 					ae.innerHTML="";
@@ -192,8 +192,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 		if (!oe||oe.keyCode==13){
 			fetch("/api/v1/admin/pages",{method:"POST",body:JSON.stringify({query:pie.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 				if (!e||e.status||e.code){
-					// location.hash="";
-					// location.href="/";
+					location.hash="";
+					location.href="/";
 				}
 				else{
 					pe.innerHTML="";
@@ -220,8 +220,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 		if (!oe||oe.keyCode==13){
 			fetch("/api/v1/admin/page_analytics",{method:"POST",body:JSON.stringify({query:paie.value})}).catch((e)=>0).then((e)=>(e?e.json():0)).then((e)=>{
 				if (!e||e.status||e.code){
-					// location.hash="";
-					// location.href="/";
+					location.hash="";
+					location.href="/";
 				}
 				else{
 					pae.innerHTML="";
