@@ -1,2 +1,2 @@
 # Python - School Website
-(This is an auto - generated file.)
+Please run `index.bat` and navigate into `build/web/`

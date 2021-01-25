@@ -1003,23 +1003,25 @@ def _minify_html(html,fp,fp_b):
 
 
 
+ge=(True if b"git" in subprocess.run(["where","git"],stdout=subprocess.PIPE).stdout.lower() else False)
 if (os.path.exists("build")==False):
 	os.mkdir("build")
-	cwd=os.getcwd()
-	os.chdir("build")
-	if (subprocess.run(["git","init"]).returncode!=0):
+	if (ge==True):
+		cwd=os.getcwd()
+		os.chdir("build")
+		if (subprocess.run(["git","init"]).returncode!=0):
+			os.chdir(cwd)
+			quit()
+		if (subprocess.run(["git","config","--global","user.email",f"\"{EMAIL}\""]).returncode!=0):
+			os.chdir(cwd)
+			quit()
+		if (subprocess.run(["git","config","--global","user.name",f"\"{USER_NAME}\""]).returncode!=0):
+			os.chdir(cwd)
+			quit()
+		if (subprocess.run(["heroku","git:remote","-a",APP_NAME]).returncode!=0):
+			os.chdir(cwd)
+			quit()
 		os.chdir(cwd)
-		quit()
-	if (subprocess.run(["git","config","--global","user.email",f"\"{EMAIL}\""]).returncode!=0):
-		os.chdir(cwd)
-		quit()
-	if (subprocess.run(["git","config","--global","user.name",f"\"{USER_NAME}\""]).returncode!=0):
-		os.chdir(cwd)
-		quit()
-	if (subprocess.run(["heroku","git:remote","-a",APP_NAME]).returncode!=0):
-		os.chdir(cwd)
-		quit()
-	os.chdir(cwd)
 for k in os.listdir("build"):
 	if (k==".git"):
 		continue
@@ -1037,21 +1039,22 @@ for fn in os.listdir("src\\server"):
 	if (os.path.isfile(f"src\\server\\{fn}")==True):
 		with open(f"src\\server\\{fn}","rb") as rf,open(f"build\\server\\{fn}","wb") as wf:
 			wf.write(rf.read())
-with open(f"build\\runtime.txt","w") as f:
-	f.write("python-3.9.1")
-with open(f"build\\requirements.txt","w") as f:
-	f.write("requests==2.22.0\nchardet==3.0.4\n")
-with open(f"build\\Procfile","w") as f:
-	f.write("web: python server/main.py\n")
-cwd=os.getcwd()
-os.chdir("build")
-if (subprocess.run(["git","add","."]).returncode!=0):
+if (ge==True):
+	with open(f"build\\runtime.txt","w") as f:
+		f.write("python-3.9.1")
+	with open(f"build\\requirements.txt","w") as f:
+		f.write("requests==2.22.0\nchardet==3.0.4\n")
+	with open(f"build\\Procfile","w") as f:
+		f.write("web: python server/main.py\n")
+	cwd=os.getcwd()
+	os.chdir("build")
+	if (subprocess.run(["git","add","."]).returncode!=0):
+		os.chdir(cwd)
+		quit()
+	if (subprocess.run(["git","commit","-am",f"\"Push {time.time()}\""]).returncode!=0):
+		os.chdir(cwd)
+		quit()
+	if (subprocess.run(["git","push","-f","heroku","master"]).returncode!=0):
+		os.chdir(cwd)
+		quit()
 	os.chdir(cwd)
-	quit()
-if (subprocess.run(["git","commit","-am",f"\"Push {time.time()}\""]).returncode!=0):
-	os.chdir(cwd)
-	quit()
-if (subprocess.run(["git","push","-f","heroku","master"]).returncode!=0):
-	os.chdir(cwd)
-	quit()
-os.chdir(cwd)
