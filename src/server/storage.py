@@ -1,5 +1,4 @@
 import base64
-import chardet
 import datetime
 import json
 import requests
@@ -116,14 +115,12 @@ def _is_b(dt):
 	r2=len(dt.translate(None,bytes(range(127,256))))/len(dt)
 	if (r1>0.90 and r2>0.9):
 		return True
-	enc=chardet.detect(dt)
 	enc_u=False
-	if (enc["confidence"]>0.9 and enc["encoding"]!="ascii"):
-		try:
-			dt.decode(encoding=enc["encoding"])
-			enc_u=True
-		except:
-			pass
+	try:
+		dt.decode(encoding="utf-8")
+		enc_u=True
+	except:
+		pass
 	if ((r1>0.3 and r2<0.05) or (r1>0.8 and r2>0.8)):
 		return (False if enc_u==True else True)
 	else:
