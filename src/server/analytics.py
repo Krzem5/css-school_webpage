@@ -47,7 +47,7 @@ def view_page(id_,u_id=None):
 		_pg_v[id_]=[1,0,{}]
 	else:
 		_pg_v[id_][0]+=1
-	if (u_id==None):
+	if (u_id is None):
 		_pg_v[id_][1]+=1
 	else:
 		if (u_id not in _pg_v[id_][2]):
@@ -65,7 +65,7 @@ def view_user(id_,u_id=None):
 		_u_v[id_]=[1,0,{}]
 	else:
 		_u_v[id_][0]+=1
-	if (u_id==None):
+	if (u_id is None):
 		_u_v[id_][1]+=1
 	else:
 		if (u_id not in _u_v[id_][2]):

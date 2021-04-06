@@ -119,7 +119,7 @@ def _is_b(dt):
 	try:
 		dt.decode(encoding="utf-8")
 		enc_u=True
-	except:
+	except UnicodeDecodeError:
 		pass
 	if ((r1>0.3 and r2<0.05) or (r1>0.8 and r2>0.8)):
 		return (False if enc_u==True else True)
@@ -157,7 +157,7 @@ def _write_fs():
 								dt=f"File too Large (size = {len(dt)} b)"
 							else:
 								b=_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/blobs",data=json.dumps({"content":dt,"encoding":"base64"}))
-								if (b==None):
+								if (b is None):
 									b_sha=False
 									dt="Github Server Error"
 									raise RuntimeError(f"Error While creating Blob for File '{k}'")
@@ -205,9 +205,9 @@ def read(fp):
 	fp=_as_path(fp)
 	if (fp not in _fs):
 		raise RuntimeError(f"File '{fp}' not Found")
-	if (_fs[fp][1]==None):
+	if (_fs[fp][1] is None):
 		_tl.acquire()
-		if (_fs[fp][0]==None):
+		if (_fs[fp][0] is None):
 			_fs[fp][1]=b""
 		else:
 			_fs[fp][1]=base64.b64decode(_request("get",url=_fs[fp][0])["content"])

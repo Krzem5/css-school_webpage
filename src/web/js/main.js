@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded",()=>{
-	let te=document.querySelector(".title");
 	let bge=document.querySelector(".bg");
 	let wre=document.querySelector(".wr");
 	let le=document.querySelector(".list");
@@ -18,9 +17,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 	document.querySelector(".txt").onclick=()=>{
 		window.location.href=`/login?r=${encodeURIComponent(window.location.href)}`;
 	};
-	te.innerHTML=te.innerText.split("").map((e)=>{
-		return `<span class="c">${e}</span>`;
-	}).join("");
 	fetch("/api/v1/popular?count=50").then((e)=>e.json()).then((e)=>{
 		e.forEach((k)=>{
 			le.innerHTML+=`<div class="e"><div class="e-wr"><div class="t" onclick="window.location.href='${k.url}'">${k.name}</div><div class="a" onclick="window.location.href='/user/${k.author}'">By <span>@${k.author}</span></div></div></div>`;

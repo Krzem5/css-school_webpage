@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded",()=>{
 	let bg=document.querySelector(".bg");
 	let wr=document.querySelector(".wr");
-	let te=document.querySelector(".title");
 	let se=document.querySelector(".side");
 	window.onresize=()=>{
 		bg.style.height="initial";
@@ -23,9 +22,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 	document.querySelector(".txt").onclick=()=>{
 		window.location.href=`/login?r=${encodeURIComponent(window.location.href)}`;
 	};
-	te.innerHTML=te.innerText.split("").map((e)=>{
-		return `<span class="c">${e}</span>`;
-	}).join("");
 	fetch("/api/v1/popular?count=10").then((e)=>e.json()).then((e)=>e.forEach((k)=>{
 		se.innerHTML+=`<div class="elem" onclick="window.location.href='${k.url}'">${k.name}</div>`;
 	}));

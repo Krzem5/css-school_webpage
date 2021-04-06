@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 	let bre=document.querySelector(".bg-r");
 	let be=document.querySelector(".bg");
 	let wre=document.querySelector(".wr");
-	let te=document.querySelector(".title");
 	let ce=document.querySelector(".code-e");
 	let pe=document.querySelector(".preview");
 	let ee=document.querySelector(".e-err");
@@ -21,9 +20,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 	document.querySelector(".icon").onclick=()=>{
 		window.location.href="/";
 	};
-	te.innerHTML=te.innerText.split("").map((e)=>{
-		return `<span class="c">${e}</span>`;
-	}).join("");
 	let u=true;
 	document.body.onkeydown=(e)=>{
 		if (e.key=="s"&&e.ctrlKey){
@@ -132,10 +128,10 @@ document.addEventListener("DOMContentLoaded",()=>{
 						let le=window._le;
 						ti.onload=()=>{
 							window._l(le);
-						}
+						};
 						ti.onerror=()=>{
 							window._e(u,le);
-						}
+						};
 						ti.src=u;
 						k=k.substring(0,si)+`<img src="${u}" alt="${k.substring(si+2,si2-2)}"><br>`+k.substring(i+1);
 						i+=18;

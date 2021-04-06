@@ -58,7 +58,7 @@ def cache(fp):
 
 def print(*a):
 	global _pq
-	if (_pq==None):
+	if (_pq is None):
 		_pq=[(a,inspect.getouterframes(inspect.currentframe(),2)[1])]
 		threading.Thread(target=_print_q).start()
 	else:
@@ -74,7 +74,7 @@ def ws_logs_start():
 		while (a in _l_ws):
 			ws.send(b"null",thr=t)
 			time.sleep(20)
-	if (_sc==None):
+	if (_sc is None):
 		_sc=__import__("server")
 	a=_sc.address()
 	_l_ws[a]=(threading.current_thread(),False)

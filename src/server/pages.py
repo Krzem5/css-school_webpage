@@ -226,7 +226,7 @@ def page(url):
 		pg=PAGE_LIST[url]
 		tk,ok=api.read_token()
 		analytics.view_page(url,u_id=(auth.get_id(tk) if ok else None))
-		if (pg["cache"]==None):
+		if (pg["cache"] is None):
 			pg["cache"]=_render_page(pg)
 		server.set_code(200)
 		return pg["cache"]

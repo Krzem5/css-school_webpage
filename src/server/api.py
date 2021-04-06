@@ -58,7 +58,7 @@ def _validate(eb,d_url,t,body=False):
 			o[k]=(q[k] if k in q else v["d"])
 			try:
 				o[k]=v["t"](o[k])
-			except:
+			except ValueError:
 				server.set_code(400)
 				server.set_header("Content-Type","application/json")
 				return ({"error":{"code":f"E_{eb.upper()}_FIELD_TYPE","message":f"Field '{k}' should have '{JSON_TYPE_MAP.get(v['t'],'object')}' type, but has '{JSON_TYPE_MAP.get(type(o[k]),'object')}' type","link":f"{d_url}#usage"}},False)
@@ -130,7 +130,7 @@ def save(url):
 	server.set_code(200)
 	server.set_header("Content-Type","application/json")
 	id_=auth.get_id(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":auth.RETURN_CODE["invalid_token"]}
 	for k,v in pages.PAGE_LIST.items():
 		if (k==dt["id"] and v["author"]!=id_):

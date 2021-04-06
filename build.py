@@ -1,47 +1,45 @@
 import hashlib
-import json
 import ntpath
 import os
 import re
 import requests
 import shutil
 import subprocess
-import sys
 import time
 
 
 
 with open("./secret.dt","r") as f:
 	APP_NAME,EMAIL,USER_NAME=f.read().replace("\r","").split("\n")[:3]
-USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4356.6 Safari/537.36"
-HTML_AUTO_CLOSE_TAGS=["area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"]
-HTML_TAGS=["!doctype","a","abbr","address","area","article","aside","audio","b","base","bdi","bdo","blockquote","body","br","button","canvas","caption","cite","code","col","colgroup","data","datalist","dd","del","details","dfn","dialog","div","dl","dt","em","embed","fieldset","figcaption","figure","footer","form","h1","head","header","hr","html","i","iframe","img","input","ins","kbd","label","legend","li","link","main","map","mark","meta","meter","nav","noscript","object","ol","optgroup","option","output","p","param","picture","pre","progress","q","rp","rt","ruby","s","samp","script","section","select","small","source","span","strong","style","sub","summary","sup","svg","table","tbody","td","template","textarea","tfoot","th","thead","time","title","tr","track","u","ul","var","video","wbr"]
-HTML_TAG_ATTRIBUTE_MAP={"accept":["input"],"accept-charset":["form"],"accesskey":None,"action":["form"],"alt":["area","img","input"],"async":["script"],"autocomplete":["form","input"],"autofocus":["button","input","select","textarea"],"autoplay":["audio","video"],"charset":["meta","script"],"checked":["input"],"cite":["blockquote","del","ins","q"],"class":None,"cols":["textarea"],"colspan":["td","th"],"content":["meta"],"contenteditable":None,"controls":["audio","video"],"coords":["area"],"data":["object"],"datetime":["del","ins","time"],"default":["track"],"defer":["script"],"dir":None,"dirname":["input","textarea"],"disabled":["button","fieldu-ch-t-set","input","optgroup","option","select","textarea"],"download":["a","area"],"draggable":None,"enctype":["form"],"for":["label","output"],"form":["button","fieldset","input","label","meter","object","output","select","textarea"],"formaction":["button","input"],"headers":["td","th"],"height":["canvas","embed","iframe","img","input","object","video"],"hidden":None,"high":["meter"],"href":["a","area","base","link"],"hreflang":["a","area","link"],"http-equiv":["meta"],"id":None,"ismap":["img"],"kind":["track"],"label":["track","option","optgroup"],"lang":None,"list":["input"],"loop":["audio","video"],"low":["meter"],"max":["input","meter","progress"],"maxlength":["input","textarea"],"media":["a","area","link","source","style"],"method":["form"],"min":["input","meter"],"multiple":["input","select"],"muted":["video","audio"],"name":["button","fieldset","form","iframe","input","map","meta","object","output","param","select","textarea"],"novalidate":["form"],"onabort":["audio","embed","img","object","video"],"onafterprint":["body"],"onbeforeprint":["body"],"onbeforeunload":["body"],"onblur":None,"oncanplay":["audio","embed","object","video"],"oncanplaythrough":["audio","video"],"onchange":None,"onclick":None,"oncontextmenu":None,"oncopy":None,"oncuechange":["track"],"oncut":None,"ondblclick":None,"ondrag":None,"ondragend":None,"ondragenter":None,"ondragleave":None,"ondragover":None,"ondragstart":None,"ondrop":None,"ondurationchange":["audio","video"],"onemptied":["audio","video"],"onended":["audio","video"],"onerror":["audio","body","embed","img","object","script","style","video"],"onfocus":None,"onhashchange":["body"],"oninput":None,"oninvalid":None,"onkeydown":None,"onkeypress":None,"onkeyup":None,"onload":["body","iframe","img","input","link","script","style"],"onloadeddata":["audio","video"],"onloadedmetadata":["audio","video"],"onloadstart":["audio","video"],"onmousedown":None,"onmousemove":None,"onmouseout":None,"onmouseover":None,"onmouseup":None,"onmousewheel":None,"onoffline":["body"],"ononline":["body"],"onpagehide":["body"],"onpageshow":["body"],"onpaste":None,"onpause":["audio","video"],"onplay":["audio","video"],"onplaying":["audio","video"],"onpopstate":["body"],"onprogress":["audio","video"],"onratechange":["audio","video"],"onreset":["form"],"onresize":["body"],"onscroll":None,"onsearch":["input"],"onseeked":["audio","video"],"onseeking":["audio","video"],"onselect":None,"onstalled":["audio","video"],"onstorage":["body"],"onsubmit":["form"],"onsuspend":["audio","video"],"ontimeupdate":["audio","video"],"ontoggle":["details"],"onunload":["body"],"onvolumechange":["audio","video"],"onwaiting":["audio","video"],"onwheel":None,"open":["details"],"optimum":["meter"],"pattern":["input"],"placeholder":["input","textarea"],"poster":["video"],"preload":["audio","video"],"readonly":["input","textarea"],"rel":["a","area","form","link"],"required":["input","select","textarea"],"reversed":["ol"],"rows":["textarea"],"rowspan":["td","th"],"sandbox":["iframe"],"scope":["th"],"selected":["option"],"shape":["area"],"size":["input","select"],"sizes":["img","link","source"],"span":["col","colgroup"],"spellcheck":None,"src":["audio","embed","iframe","img","input","script","source","track","video"],"srcdoc":["iframe"],"srclang":["track"],"srcset":["img","source"],"start":["ol"],"step":["input"],"style":None,"tabindex":None,"target":["a","area","base","form"],"title":None,"translate":None,"type":["a","button","embed","input","link","menu","object","script","source","style"],"usemap":["img","object"],"value":["button","input","li","option","meter","progress","param"],"width":["canvas","embed","iframe","img","input","object","video"],"wrap":["textarea"]}
-HTML_TAG_JS_ATTRIBUTES=["onabort","onafterprint","onbeforeprint","onbeforeunload","onblur","oncanplay","oncanplaythrough","onchange","onclick","oncontextmenu","oncopy","oncuechange","oncut","ondblclick","ondrag","ondragend","ondragenter","ondragleave","ondragover","ondragstart","ondrop","ondurationchange","onemptied","onended","onerror","onfocus","onhashchange","oninput","oninvalid","onkeydown","onkeypress","onkeyup","onload","onloadeddata","onloadedmetadata","onloadstart","onmousedown","onmousemove","onmouseout","onmouseover","onmouseup","onmousewheel","onoffline","ononline","onpagehide","onpageshow","onpaste","onpause","onplay","onplaying","onpopstate","onprogress","onratechange","onreset","onresize","onscroll","onsearch","onseeked","onseeking","onselect","onstalled","onstorage","onsubmit","onsuspend","ontimeupdate","ontoggle","onunload","onvolumechange","onwaiting","onwheel"]
 CSS_CLASS_LETTERS="abcdefghijklmnopqrstuvwxyz"
-JS_OPERATORS=["()=>","_=>","=>","...",">>>=",">>=","<<=","|=","^=","&=","+=","-=","*=","/=","%=",";",",","?",":","||","&&","|","^","&","===","==","=","!==","!=","<<","<=","<",">>>",">>",">=",">","++","--","+","-","*","/","%","!","~",".","[","]","{","}","(",")"]
-JS_KEYWORDS=["break","case","catch","const","const","continue","debugger","default","delete","do","else","enum","false","finally","for","function","if","in","instanceof","let","new","null","of","return","switch","this","throw","true","try","typeof","var","var","void","while","with"]
-JS_RESERVED_IDENTIFIERS=JS_KEYWORDS+["AggregateError","alert","arguments","Array","ArrayBuffer","AsyncFunction","AsyncGenerator","AsyncGeneratorFunction","atob","Atomics","BigInt","BigInt64Array","BigUint64Array","blur","Boolean","btoa","caches","cancelAnimationFrame","cancelIdleCallback","captureEvents","chrome","clearInterval","clearTimeout","clientInformation","close","closed","confirm","console","cookieStore","createImageBitmap","crossOriginIsolated","crypto","customElements","DataView","Date","decodeURI","decodeURIComponent","defaultStatus","defaultstatus","devicePixelRatio","document","encodeURI","encodeURIComponent","Error","escape","eval","EvalError","external","fetch","find","Float32Array","Float64Array","focus","frameElement","frames","Function","Generator","GeneratorFunction","getComputedStyle","getSelection","globalThis","history","Image","indexedDB","Infinity","innerHeight","innerWidth","Int16Array","Int32Array","Int8Array","InternalError","Intl","isFinite","isNaN","isSecureContext","JSON","length","localStorage","location","locationbar","Map","matchMedia","Math","menubar","moveBy","moveTo","NaN","navigator","Number","Object","open","openDatabase","opener","origin","originIsolated","outerHeight","outerWidth","pageXOffset","pageYOffset","parent","parseFloat","parseInt","performance","personalbar","postMessage","print","Promise","prompt","Proxy","queueMicrotask","RangeError","ReferenceError","Reflect","RegExp","releaseEvents","requestAnimationFrame","requestIdleCallback","resizeBy","resizeTo","screen","screenLeft","screenTop","screenX","screenY","scroll","scrollbars","scrollBy","scrollTo","scrollX","scrollY","self","sessionStorage","Set","setInterval","setTimeout","SharedArrayBuffer","showDirectoryPicker","showOpenFilePicker","showSaveFilePicker","speechSynthesis","status","statusbar","stop","String","styleMedia","Symbol","SyntaxError","toolbar","top","trustedTypes","TypeError","Uint16Array","Uint32Array","Uint8Array","Uint8ClampedArray","undefined","unescape","uneval","URIError","visualViewport","WeakMap","WeakSet","WebAssembly","webkitCancelAnimationFrame","webkitRequestAnimationFrame","webkitRequestFileSystem","webkitResolveLocalFileSystemURL","WebSocket","window"]
-JS_DOCUMENT_CACHE_PROPERTIES=["adoptNode","captureEvents","caretRangeFromPoint","createAttribute","createAttributeNS","createCDATASection","createComment","createDocumentFragment","createElement","createElementNS","createEvent","createNodeIterator","createProcessingInstruction","createRange","createTextNode","createTouch","createTouchList","createTreeWalker","exitPictureInPicture","exitPointerLock","getElementsByClassName","getElementsByTagName","getElementsByTagNameNS","hasStorageAccess","importNode","releaseCapture","releaseEvents","requestStorageAccess","mozSetImageElement","getElementById","querySelector","querySelectorAll","createExpression","createNSResolver","evaluate","clear","close","getElementsByName","hasFocus","open","write","writeln","caretPositionFromPoint","elementFromPoint","elementsFromPoint","getAnimations","getSelection"]
-JS_VAR_LETTERS="abcdefghijklmnopqrstuvwxyz"
-JS_CONST_LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-HTML_REMOVE_WHITEPSACE_REGEX=re.compile(br"(?=(?P<tmp>[^\S ]\s*|\s{2,}))(?P=tmp)(?=(?P<txt>(?=(?P<tmp3>(?:(?=(?P<tmp2>[^<]+))(?P=tmp2)|<(?!\/?(?:textarea|pre)\b))*))(?P=tmp3))(?:<(?=(?P<tmp4>textarea|pre))(?P=tmp4)\b|$))")
-HTML_TAG_REGEX=re.compile(br"<([!/]?[a-zA-Z0-9\-_]+)\s*(.*?)\s*(/?)>",re.I|re.M|re.X)
-HTML_URL_REGEX=re.compile(br"^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\xa1\xff0-9]+-?)*[a-z\xa1-\xff0-9]+)(?:\.(?:[a-z\xa1-\xff0-9]+-?)*[a-z\xa1-\xff0-9]+)*(?:\.(?:[a-z\xa1-\xff]{2,})))(?::\d{2,5})?(?:/[^\s]*)?$",re.I|re.S)
-HTML_ATTRIBUTE_REGEX=re.compile(br'''([a-zA-Z0-9\-_]+)\s*(?:=\s*"((?:[^\"\\]|\\.)*))?"''')
-HTML_QUOTED_ATTRIBUTE_REGEX=re.compile(br"[^a-z0-9\-_]")
-CSS_SELECTOR_REGEX=re.compile(br"([\>\+\~]|\s*)?(#[a-zA-Z0-9_\-]+|\*|(?:[a-zA-Z0-9\-]+)?)((?:\.[a-zA-Z0-9_\-]+)*)((?:\[[a-zA-Z0-9_]+[~|^$*]?=\])*)((?:\:{1,2}[a-zA-Z0-9_\-]+(?:\([^\)]+\))?)*)")
-CSS_UNIT_REGEX=re.compile(br":\s*0(\.\d+(?:[cm]m|e[mx]|in|p[ctx]|fr))\s*;")
 CSS_HEX_COLOR_REGEX=re.compile(br"#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3(\s|;)")
-CSS_URL_REGEX=re.compile(br"""url\(([\"'])([^)]*)\1\)""")
-CSS_WHITESPACE_REGEX=re.compile(br"/\*[\s\S]*?\*/")
-CSS_SELECTOR_VALUE_REGEX=re.compile(br"\s*([^{]+?)\s*{")
-CSS_SELECTOR_WHITESPACE_REGEX=re.compile(br"(?<=[\[\(>+=])\s+|\s+(?=[=~^$|>+\]\)])")
 CSS_KEYFRAMES_VALUE_REGEX=re.compile(br"\s*([^{]+?)\s*{\s*([^}]*?)\s*}")
 CSS_PROPERTY_KEY_VALUE_REGEX=re.compile(br"\s*(.*?)\s*:\s*(.*?)\s*(?:;|$)")
 CSS_SELECTOR_COMMA_REGEX=re.compile(br",\s+")
-JS_REGEX_LIST={"dict":re.compile(br"""{\s*(?:[$a-zA-Z0-9_]+|'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`)\s*:\s*"""),"dict_elem":re.compile(br""",\s*(?:[$a-zA-Z0-9_]+|'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`)\s*:\s*"""),"float":re.compile(br"\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?"),"int":re.compile(br"0[xX][\da-fA-F]+|0[0-7]*|\d+"),"identifier":re.compile(br"\.?[$_a-zA-Z0-9_]+(?:\.[$_a-zA-Z0-9_]+)*"),"string":re.compile(br"""'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`"""),"regex":re.compile(br"\/(?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+\/[gimy]*"),"line_break":re.compile(br"[\n\r]+|/\*(?:.|[\r\n])*?\*/"),"whitespace":re.compile(br"[\ \t]+|//.*?(?:[\r\n]|$)"),"operator":re.compile(bytes("|".join([re.sub(r"([\?\|\^\&\(\)\{\}\[\]\+\-\*\/\.])",r"\\\1",e) for e in JS_OPERATORS]),"utf-8"))}
+CSS_SELECTOR_REGEX=re.compile(br"([\>\+\~]|\s*)?(#[a-zA-Z0-9_\-]+|\*|(?:[a-zA-Z0-9\-]+)?)((?:\.[a-zA-Z0-9_\-]+)*)((?:\[[a-zA-Z0-9_]+[~|^$*]?=\])*)((?:\:{1,2}[a-zA-Z0-9_\-]+(?:\([^\)]+\))?)*)")
+CSS_SELECTOR_VALUE_REGEX=re.compile(br"\s*([^{]+?)\s*{")
+CSS_SELECTOR_WHITESPACE_REGEX=re.compile(br"(?<=[\[\(>+=])\s+|\s+(?=[=~^$|>+\]\)])")
+CSS_UNIT_REGEX=re.compile(br":\s*0(\.\d+(?:[cm]m|e[mx]|in|p[ctx]|fr))\s*;")
+CSS_URL_REGEX=re.compile(br"""url\(([\"'])([^)]*)\1\)""")
+CSS_WHITESPACE_REGEX=re.compile(br"/\*[\s\S]*?\*/")
+HTML_ATTRIBUTE_REGEX=re.compile(br'''([a-zA-Z0-9\-_]+)\s*(?:=\s*"((?:[^\"\\]|\\.)*))?"''')
+HTML_AUTO_CLOSE_TAGS=["area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"]
+HTML_QUOTED_ATTRIBUTE_REGEX=re.compile(br"[^a-z0-9\-_]")
+HTML_REMOVE_WHITEPSACE_REGEX=re.compile(br"(?=(?P<tmp>[^\S ]\s*|\s{2,}))(?P=tmp)(?=(?P<txt>(?=(?P<tmp3>(?:(?=(?P<tmp2>[^<]+))(?P=tmp2)|<(?!\/?(?:textarea|pre)\b))*))(?P=tmp3))(?:<(?=(?P<tmp4>textarea|pre))(?P=tmp4)\b))")
+HTML_TAG_ATTRIBUTE_MAP={"accept":["input"],"accept-charset":["form"],"accesskey":None,"action":["form"],"alt":["area","img","input"],"async":["script"],"autocomplete":["form","input"],"autofocus":["button","input","select","textarea"],"autoplay":["audio","video"],"charset":["meta","script"],"checked":["input"],"cite":["blockquote","del","ins","q"],"class":None,"cols":["textarea"],"colspan":["td","th"],"content":["meta"],"contenteditable":None,"controls":["audio","video"],"coords":["area"],"data":["object"],"datetime":["del","ins","time"],"default":["track"],"defer":["script"],"dir":None,"dirname":["input","textarea"],"disabled":["button","fieldu-ch-t-set","input","optgroup","option","select","textarea"],"download":["a","area"],"draggable":None,"enctype":["form"],"for":["label","output"],"form":["button","fieldset","input","label","meter","object","output","select","textarea"],"formaction":["button","input"],"headers":["td","th"],"height":["canvas","embed","iframe","img","input","object","video"],"hidden":None,"high":["meter"],"href":["a","area","base","link"],"hreflang":["a","area","link"],"http-equiv":["meta"],"id":None,"ismap":["img"],"kind":["track"],"label":["track","option","optgroup"],"lang":None,"list":["input"],"loop":["audio","video"],"low":["meter"],"max":["input","meter","progress"],"maxlength":["input","textarea"],"media":["a","area","link","source","style"],"method":["form"],"min":["input","meter"],"multiple":["input","select"],"muted":["video","audio"],"name":["button","fieldset","form","iframe","input","map","meta","object","output","param","select","textarea"],"novalidate":["form"],"onabort":["audio","embed","img","object","video"],"onafterprint":["body"],"onbeforeprint":["body"],"onbeforeunload":["body"],"onblur":None,"oncanplay":["audio","embed","object","video"],"oncanplaythrough":["audio","video"],"onchange":None,"onclick":None,"oncontextmenu":None,"oncopy":None,"oncuechange":["track"],"oncut":None,"ondblclick":None,"ondrag":None,"ondragend":None,"ondragenter":None,"ondragleave":None,"ondragover":None,"ondragstart":None,"ondrop":None,"ondurationchange":["audio","video"],"onemptied":["audio","video"],"onended":["audio","video"],"onerror":["audio","body","embed","img","object","script","style","video"],"onfocus":None,"onhashchange":["body"],"oninput":None,"oninvalid":None,"onkeydown":None,"onkeypress":None,"onkeyup":None,"onload":["body","iframe","img","input","link","script","style"],"onloadeddata":["audio","video"],"onloadedmetadata":["audio","video"],"onloadstart":["audio","video"],"onmousedown":None,"onmousemove":None,"onmouseout":None,"onmouseover":None,"onmouseup":None,"onmousewheel":None,"onoffline":["body"],"ononline":["body"],"onpagehide":["body"],"onpageshow":["body"],"onpaste":None,"onpause":["audio","video"],"onplay":["audio","video"],"onplaying":["audio","video"],"onpopstate":["body"],"onprogress":["audio","video"],"onratechange":["audio","video"],"onreset":["form"],"onresize":["body"],"onscroll":None,"onsearch":["input"],"onseeked":["audio","video"],"onseeking":["audio","video"],"onselect":None,"onstalled":["audio","video"],"onstorage":["body"],"onsubmit":["form"],"onsuspend":["audio","video"],"ontimeupdate":["audio","video"],"ontoggle":["details"],"onunload":["body"],"onvolumechange":["audio","video"],"onwaiting":["audio","video"],"onwheel":None,"open":["details"],"optimum":["meter"],"pattern":["input"],"placeholder":["input","textarea"],"poster":["video"],"preload":["audio","video"],"readonly":["input","textarea"],"rel":["a","area","form","link"],"required":["input","select","textarea"],"reversed":["ol"],"rows":["textarea"],"rowspan":["td","th"],"sandbox":["iframe"],"scope":["th"],"selected":["option"],"shape":["area"],"size":["input","select"],"sizes":["img","link","source"],"span":["col","colgroup"],"spellcheck":None,"src":["audio","embed","iframe","img","input","script","source","track","video"],"srcdoc":["iframe"],"srclang":["track"],"srcset":["img","source"],"start":["ol"],"step":["input"],"style":None,"tabindex":None,"target":["a","area","base","form"],"title":None,"translate":None,"type":["a","button","embed","input","link","menu","object","script","source","style"],"usemap":["img","object"],"value":["button","input","li","option","meter","progress","param"],"width":["canvas","embed","iframe","img","input","object","video"],"wrap":["textarea"]}
+HTML_TAG_JS_ATTRIBUTES=["onabort","onafterprint","onbeforeprint","onbeforeunload","onblur","oncanplay","oncanplaythrough","onchange","onclick","oncontextmenu","oncopy","oncuechange","oncut","ondblclick","ondrag","ondragend","ondragenter","ondragleave","ondragover","ondragstart","ondrop","ondurationchange","onemptied","onended","onerror","onfocus","onhashchange","oninput","oninvalid","onkeydown","onkeypress","onkeyup","onload","onloadeddata","onloadedmetadata","onloadstart","onmousedown","onmousemove","onmouseout","onmouseover","onmouseup","onmousewheel","onoffline","ononline","onpagehide","onpageshow","onpaste","onpause","onplay","onplaying","onpopstate","onprogress","onratechange","onreset","onresize","onscroll","onsearch","onseeked","onseeking","onselect","onstalled","onstorage","onsubmit","onsuspend","ontimeupdate","ontoggle","onunload","onvolumechange","onwaiting","onwheel"]
+HTML_TAG_REGEX=re.compile(br"<([!/]?[a-zA-Z0-9\-_]+)\s*(.*?)\s*(/?)>",re.I|re.M|re.X)
+HTML_TAGS=["!doctype","a","abbr","address","area","article","aside","audio","b","base","bdi","bdo","blockquote","body","br","button","canvas","caption","cite","code","col","colgroup","data","datalist","dd","del","details","dfn","dialog","div","dl","dt","em","embed","fieldset","figcaption","figure","footer","form","h1","head","header","hr","html","i","iframe","img","input","ins","kbd","label","legend","li","link","main","map","mark","meta","meter","nav","noscript","object","ol","optgroup","option","output","p","param","picture","pre","progress","q","rp","rt","ruby","s","samp","script","section","select","small","source","span","strong","style","sub","summary","sup","svg","table","tbody","td","template","textarea","tfoot","th","thead","time","title","tr","track","u","ul","var","video","wbr"]
+HTML_URL_REGEX=re.compile(br"^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\xa1\xff0-9]+-?)*[a-z\xa1-\xff0-9]+)(?:\.(?:[a-z\xa1-\xff0-9]+-?)*[a-z\xa1-\xff0-9]+)*(?:\.(?:[a-z\xa1-\xff]{2,})))(?::\d{2,5})?(?:/[^\s]*)?$",re.I|re.S)
+JS_CONST_LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+JS_DOCUMENT_CACHE_PROPERTIES=["adoptNode","captureEvents","caretRangeFromPoint","createAttribute","createAttributeNS","createCDATASection","createComment","createDocumentFragment","createElement","createElementNS","createEvent","createNodeIterator","createProcessingInstruction","createRange","createTextNode","createTouch","createTouchList","createTreeWalker","exitPictureInPicture","exitPointerLock","getElementsByClassName","getElementsByTagName","getElementsByTagNameNS","hasStorageAccess","importNode","releaseCapture","releaseEvents","requestStorageAccess","mozSetImageElement","getElementById","querySelector","querySelectorAll","createExpression","createNSResolver","evaluate","clear","close","getElementsByName","hasFocus","open","write","writeln","caretPositionFromPoint","elementFromPoint","elementsFromPoint","getAnimations","getSelection"]
+JS_KEYWORDS=["break","case","catch","const","const","continue","debugger","default","delete","do","else","enum","false","finally","for","function","if","in","instanceof","let","new","null","of","return","switch","this","throw","true","try","typeof","var","var","void","while","with"]
+JS_OPERATORS=["()=>","_=>","=>","...",">>>=",">>=","<<=","|=","^=","&=","+=","-=","*=","/=","%=",";",",","?",":","||","&&","|","^","&","===","==","=","!==","!=","<<","<=","<",">>>",">>",">=",">","++","--","+","-","*","/","%","!","~",".","[","]","{","}","(",")"]
+JS_REGEX_LIST={"dict":re.compile(br"""{\s*(?:[$a-zA-Z0-9_]+|'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)\s*:\s*"""),"dict_elem":re.compile(br""",\s*(?:[$a-zA-Z0-9_]+|'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)\s*:\s*"""),"float":re.compile(br"\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?"),"int":re.compile(br"0[xX][\da-fA-F]+|0[0-7]*|\d+"),"identifier":re.compile(br"\.?[$_a-zA-Z0-9]+(?:\.[$_a-zA-Z0-9]+)*"),"string":re.compile(br"""'(?:[^'\\]|\\.)*'|^"(?:[^"\\]|\\.)*"|^`(?:[^`\\]|\\.)*`"""),"regex":re.compile(br"\/(?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+\/[gimy]*"),"line_break":re.compile(br"[\n\r]+|/\*(?:.|[\r\n])*?\*/"),"whitespace":re.compile(br"[\ \t]+|//.*?(?:[\r\n]|$)"),"operator":re.compile(bytes("|".join([re.sub(r"([\?\|\^\&\(\)\{\}\[\]\+\-\*\/\.])",r"\\\1",e) for e in JS_OPERATORS]),"utf-8"))}
+JS_RESERVED_IDENTIFIERS=JS_KEYWORDS+["AggregateError","alert","arguments","Array","ArrayBuffer","AsyncFunction","AsyncGenerator","AsyncGeneratorFunction","atob","Atomics","BigInt","BigInt64Array","BigUint64Array","blur","Boolean","btoa","caches","cancelAnimationFrame","cancelIdleCallback","captureEvents","chrome","clearInterval","clearTimeout","clientInformation","close","closed","confirm","console","cookieStore","createImageBitmap","crossOriginIsolated","crypto","customElements","DataView","Date","decodeURI","decodeURIComponent","defaultStatus","defaultstatus","devicePixelRatio","document","encodeURI","encodeURIComponent","Error","escape","eval","EvalError","external","fetch","find","Float32Array","Float64Array","focus","frameElement","frames","Function","Generator","GeneratorFunction","getComputedStyle","getSelection","globalThis","history","Image","indexedDB","Infinity","innerHeight","innerWidth","Int16Array","Int32Array","Int8Array","InternalError","Intl","isFinite","isNaN","isSecureContext","JSON","length","localStorage","location","locationbar","Map","matchMedia","Math","menubar","moveBy","moveTo","NaN","navigator","Number","Object","open","openDatabase","opener","origin","originIsolated","outerHeight","outerWidth","pageXOffset","pageYOffset","parent","parseFloat","parseInt","performance","personalbar","postMessage","print","Promise","prompt","Proxy","queueMicrotask","RangeError","ReferenceError","Reflect","RegExp","releaseEvents","requestAnimationFrame","requestIdleCallback","resizeBy","resizeTo","screen","screenLeft","screenTop","screenX","screenY","scroll","scrollbars","scrollBy","scrollTo","scrollX","scrollY","self","sessionStorage","Set","setInterval","setTimeout","SharedArrayBuffer","showDirectoryPicker","showOpenFilePicker","showSaveFilePicker","speechSynthesis","status","statusbar","stop","String","styleMedia","Symbol","SyntaxError","toolbar","top","trustedTypes","TypeError","Uint16Array","Uint32Array","Uint8Array","Uint8ClampedArray","undefined","unescape","uneval","URIError","visualViewport","WeakMap","WeakSet","WebAssembly","webkitCancelAnimationFrame","webkitRequestAnimationFrame","webkitRequestFileSystem","webkitResolveLocalFileSystemURL","WebSocket","window"]
 JS_STRING_HTML_TAG_REGEX=re.compile(br"<(/?(?:"+bytes(r"|".join(sorted(HTML_TAGS,key=lambda e:-len(e))),"utf-8")+b"))")
+JS_VAR_LETTERS="abcdefghijklmnopqrstuvwxyz"
+USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4356.6 Safari/537.36"
 
 
 
@@ -83,7 +81,7 @@ def _minify_html(html,fp,fp_b):
 					v=v//len(b)
 				o=b[0]*(n-len(o))+o
 			return bytes(o,"utf-8")
-		if (r==None):
+		if (r is None):
 			r=JS_RESERVED_IDENTIFIERS[:]
 		for k in il:
 			r+=k.values()
@@ -189,7 +187,6 @@ def _minify_html(html,fp,fp_b):
 					continue
 				raise RuntimeError(f"Unable to Match JS Regex: {str(s[i:],'utf-8')}")
 			return (o,i)
-		ofl=len(js)
 		print("    Tokenizing...")
 		tl,_=_tokenize(js)
 		i=0
@@ -233,7 +230,7 @@ def _minify_html(html,fp,fp_b):
 							if (bl not in vdl):
 								vdl[bl]=None
 							else:
-								if (vdl[bl]==None):
+								if (vdl[bl] is None):
 									raise RuntimeError
 								tl=tl[:i-1]+tl[i:]
 								i-=1
@@ -241,7 +238,7 @@ def _minify_html(html,fp,fp_b):
 								vdl[bl]=(vdl[bl],i)
 						elif (str(idl[0],"utf-8") not in JS_RESERVED_IDENTIFIERS and (i==0 or (tl[i-1][0]!="operator" or tl[i-1][1]!=b"."))):
 							mv=_map_value(idl[0],vm)
-							if (mv==None):
+							if (mv is None):
 								print(f"      Variable '{str(idl[0],'utf-8')}' is not mapped!")
 								v_nm=True
 							else:
@@ -290,7 +287,6 @@ def _minify_html(html,fp,fp_b):
 					efbl[bl]+=[len(ef)-1]
 			elif (tl[i][0]=="operator"):
 				s_ee=True
-				ot=tl[i][1]
 				if (tl[i][1]==b"{"):
 					vm+=[{}]
 					dl+=[False]
@@ -312,12 +308,12 @@ def _minify_html(html,fp,fp_b):
 							if (bl in vdl and nm!=None):
 								ftl=ftl[1:]
 								tl[vdl[bl]]=("operator",b",")
-								tl=tl[:vdl[bl]+1]+ftl+([("operator",b"{")] if cbl==None else [])+tl[si+fl+j:i]+([("operator",b"}")] if cbl==None else [])+[("operator",b";")]+tl[vdl[bl]+1:si]+tl[i+1:]
-								i+=-fl+len(ftl)-2+(2 if cbl==None else 0)-j+1
+								tl=tl[:vdl[bl]+1]+ftl+([("operator",b"{")] if cbl is None else [])+tl[si+fl+j:i]+([("operator",b"}")] if cbl is None else [])+[("operator",b";")]+tl[vdl[bl]+1:si]+tl[i+1:]
+								i+=-fl+len(ftl)-2+(2 if cbl is None else 0)-j+1
 								vdl[bl]=i+1
 							else:
-								tl=tl[:si]+ftl+([("operator",b"{")] if cbl==None else [])+tl[si+fl+j:i]+([("operator",b"}")] if cbl==None else [])+[("operator",b";")]+tl[i+1:]
-								i+=-fl+len(ftl)-2+(2 if cbl==None else 0)-j+1
+								tl=tl[:si]+ftl+([("operator",b"{")] if cbl is None else [])+tl[si+fl+j:i]+([("operator",b"}")] if cbl is None else [])+[("operator",b";")]+tl[i+1:]
+								i+=-fl+len(ftl)-2+(2 if cbl is None else 0)-j+1
 								if (nm!=None):
 									vdl[bl]=i+1
 						vm=vm[:-1]
@@ -331,7 +327,7 @@ def _minify_html(html,fp,fp_b):
 					s_ee=False
 				elif (tl[i][1]==b";"):
 					if (bl in vdl):
-						if (vdl[bl]==None):
+						if (vdl[bl] is None):
 							vdl[bl]=i
 						elif (type(vdl[bl])!=int):
 							ti,si=vdl[bl]
@@ -387,7 +383,7 @@ def _minify_html(html,fp,fp_b):
 							vm[-1][tl[i][1]]=_gen_i(vm,JS_VAR_LETTERS)
 							al+=[(vm[-1][tl[i][1]],va)]
 							i+=1
-						if (al==None or tl[i][0]!="operator" or tl[i][1]!=b"=>"):
+						if (al is None or tl[i][0]!="operator" or tl[i][1]!=b"=>"):
 							i=si
 							vm=vm[:-1]
 						else:
@@ -470,10 +466,9 @@ def _minify_html(html,fp,fp_b):
 					ek=b""
 					ev=None
 					while (e!=b">" and i<len(bf)):
-						if (e in b" \t\r\n\f\v" and (ev==None or ev[0]==b"\"")):
+						if (e in b" \t\r\n\f\v" and (ev is None or ev[0]==b"\"")):
 							if (ev!=None):
 								raise RuntimeError("Not-Quoted JS String HTML not Supported!")
-							pass
 						elif (e==b"="):
 							if (ev!=None and ev[:1]!=b"\""):
 								raise RuntimeError("Multiple '=' Signs in String HTML in JS")
@@ -523,7 +518,7 @@ def _minify_html(html,fp,fp_b):
 							else:
 								ev+=b"\""
 						else:
-							if (ev==None):
+							if (ev is None):
 								ek+=e
 							else:
 								ev+=e
@@ -534,12 +529,9 @@ def _minify_html(html,fp,fp_b):
 				il=[]
 		print(f"    Finding Global Object Substitutions ({len(vfm.keys())} object{('s' if len(vfm.keys())!=1 else '')})...")
 		cvml=[]
-		dpc=False
 		for k,v in vfm.items():
 			if (v>1):
 				cvml+=[(len(k)*v,k,v,False)]
-				if (b"." in k):
-					dpc=True
 		print(f"    Finding Attribute Substitutions ({len(vfma.keys())} attribute{('s' if len(vfma.keys())!=1 else '')})...")
 		for k,v in vfma.items():
 			if (v>1 and len(k)>2):
@@ -822,11 +814,11 @@ def _minify_html(html,fp,fp_b):
 	print("  Parsing HTML...")
 	while (i<len(html)):
 		m=HTML_TAG_REGEX.search(html[i:])
-		if (m==None):
+		if (m is None):
 			break
 		j=m.start(0)
 		if (j!=0):
-			if (r==None):
+			if (r is None):
 				raise RuntimeError("Text Before <html> Tag")
 			c[-1][2].append(("__text__",html[i:i+j]))
 		t_nm=m.group(1)
@@ -850,9 +842,10 @@ def _minify_html(html,fp,fp_b):
 						else:
 							vfm[sm[0]]+=1
 						for sme in sm[1:]:
-							vfma[sme]=1
-						else:
-							vfma[sme]+=1
+							if (sme not in vfma):
+								vfma[sme]=1
+							else:
+								vfma[sme]+=1
 				pm[k]=v
 		v=None
 		if (t_nm==b"script" and b"type" in pm and pm[b"type"]==b"text/javascript" and b"src" in pm and b"async" not in pm and b"defer" not in pm):
@@ -880,7 +873,7 @@ def _minify_html(html,fp,fp_b):
 				raise RuntimeError(f"Unable to Decode <link> href: '{pm[b'href']}'")
 			t_nm=b"style"
 			pm={b"type":b"text/css"}
-		if (t_nm.lower()!=b"!doctype" and (v==None or ((v[0]=="__css__" and css_t==None) or (v[0]=="__js__" and js_t==None)))):
+		if (t_nm.lower()!=b"!doctype" and (v is None or ((v[0]=="__css__" and css_t is None) or (v[0]=="__js__" and js_t is None)))):
 			if (b"class" in pm):
 				cs=b""
 				for ce in c:
@@ -895,7 +888,7 @@ def _minify_html(html,fp,fp_b):
 						stcm[tc]=[cs]
 					elif (cs not in stcm[tc]):
 						stcm[tc]+=[cs]
-			if (r==None):
+			if (r is None):
 				ttc+=1
 				r=(t_nm,pm,[])
 				c=[r]
@@ -913,13 +906,13 @@ def _minify_html(html,fp,fp_b):
 						c+=[c[-1][2][-1]]
 		if (v!=None):
 			if (v[0]=="__js__"):
-				if (js_t==None):
+				if (js_t is None):
 					c[-1][2].append((v[1],1))
 					js_t=c[-1][2]
 				else:
 					js_t[0]=(v[1]+b"\n\n\n"+js_t[0][0],js_t[0][1]+1)
 			else:
-				if (css_t==None):
+				if (css_t is None):
 					c[-1][2].append((v[1],1))
 					css_t=c[-1][2]
 					c=c[:-1]

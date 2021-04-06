@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded",()=>{
 	let be=document.querySelector(".bg");
 	let wre=document.querySelector(".wr");
-	let te=document.querySelector(".title");
 	let se=document.querySelector(".side");
 	let ie=document.querySelector(".img");
 	let t;
@@ -33,9 +32,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 	document.querySelector(".icon").onclick=()=>{
 		window.location.href="/";
 	};
-	te.innerHTML=te.innerText.split("").map((e)=>{
-		return `<span class="c">${e}</span>`;
-	}).join("");
 	fetch("/api/v1/popular?count=10").then((e)=>e.json()).then((e)=>e.forEach((k)=>{
 		se.innerHTML+=`<div class="elem" onclick="window.location.href='${k.url}'">${k.name}</div>`;
 	}));

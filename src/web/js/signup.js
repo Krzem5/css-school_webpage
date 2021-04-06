@@ -1,14 +1,10 @@
 document.addEventListener("DOMContentLoaded",()=>{
-	let te=document.querySelector(".top");
 	let un=document.querySelector("#un-inp");
 	let em=document.querySelector("#em-inp");
 	let pw=document.querySelector("#pw-inp");
 	let pwr=document.querySelector("#pwr-inp");
 	let le=document.querySelector(".signup");
 	let ee=document.querySelector(".err");
-	te.innerHTML=te.innerText.split("").map((e)=>{
-		return `<span class="c">${e}</span>`;
-	}).join("");
 	le.onclick=()=>{
 		if (pwr.value!=pw.value){
 			ee.innerText="Password doesn't match";

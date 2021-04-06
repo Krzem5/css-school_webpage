@@ -112,7 +112,7 @@ def check_username(nm):
 
 
 def check_email(em,db=True):
-	if (EMAIL_REGEX.fullmatch(em)==None):
+	if (EMAIL_REGEX.fullmatch(em) is None):
 		return RETURN_CODE["email_invalid"]
 	if (db==True):
 		for e in _db.values():
@@ -184,14 +184,14 @@ def login(em,pw,ip):
 
 
 def check_token(tk,ip):
-	return {"status":RETURN_CODE[("invalid_token" if _check_token(tk)==None else "ok")]}
+	return {"status":RETURN_CODE[("invalid_token" if _check_token(tk) is None else "ok")]}
 
 
 
 def refresh_token(tk,ip):
 	global _db
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	_tl.acquire()
 	_db[id_][DB_KEY_TOKEN]=str(base64.urlsafe_b64encode(secrets.token_bytes(TOKEN_LEN)),"utf-8")
@@ -203,7 +203,7 @@ def refresh_token(tk,ip):
 
 def user_data(tk,ip):
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	return {"status":RETURN_CODE["ok"],"username":_db[id_][DB_KEY_USERNAME],"email":_db[id_][DB_KEY_EMAIL],"email_verified":_db[id_][DB_KEY_EMAIL_VERIFIED],"image":_db[id_][DB_KEY_IMAGE]}
 
@@ -212,7 +212,7 @@ def user_data(tk,ip):
 def logout(tk,ip):
 	global _db
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	_tl.acquire()
 	_db[id_][DB_KEY_TOKEN]=None
@@ -235,7 +235,7 @@ def get_user(u_nm):
 
 def is_admin(tk):
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return ({"status":RETURN_CODE["invalid_token"]},False)
 	elif (_db[id_][DB_KEY_ADMIN]!=True):
 		return ({"status":RETURN_CODE["not_admin"]},False)
@@ -245,7 +245,7 @@ def is_admin(tk):
 
 def admin(tk,ip):
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	elif (_db[id_][DB_KEY_ADMIN]!=True):
 		return {"status":RETURN_CODE["not_admin"]}
@@ -255,7 +255,7 @@ def admin(tk,ip):
 
 def get_users(tk,q,ip):
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	elif (_db[id_][DB_KEY_ADMIN]!=True):
 		return {"status":RETURN_CODE["not_admin"]}
@@ -290,7 +290,7 @@ def get_users(tk,q,ip):
 def admin_set_name(tk,t_id,nm,ip):
 	global _db,_db_u_nm,_db_u
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	if (_db[id_][DB_KEY_ADMIN]!=True):
 		return {"status":RETURN_CODE["not_admin"]}
@@ -312,7 +312,7 @@ def admin_set_name(tk,t_id,nm,ip):
 def admin_flip_tag(tk,t_id,tag,ip):
 	global _db,_db_u
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	if (_db[id_][DB_KEY_ADMIN]!=True):
 		return {"status":RETURN_CODE["not_admin"]}
@@ -338,7 +338,7 @@ def admin_flip_tag(tk,t_id,tag,ip):
 
 def get_pages(tk,q,ip):
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	elif (_db[id_][DB_KEY_ADMIN]!=True):
 		return {"status":RETURN_CODE["not_admin"]}
@@ -368,7 +368,7 @@ def get_pages(tk,q,ip):
 def create_ws_url(tk,ip):
 	global _ws_url
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	if (_db[id_][DB_KEY_ADMIN]!=True):
 		return {"status":RETURN_CODE["not_admin"]}
@@ -396,7 +396,7 @@ def remove_ws_url(url,ip):
 
 def get_page_analytics(tk,q,ip):
 	id_=_check_token(tk)
-	if (id_==None):
+	if (id_ is None):
 		return {"status":RETURN_CODE["invalid_token"]}
 	elif (_db[id_][DB_KEY_ADMIN]!=True):
 		return {"status":RETURN_CODE["not_admin"]}

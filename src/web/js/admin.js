@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded",()=>{
 	let LOCATION_ARR=["accounts","pages","logs","page_analytics","user_analytics"];
-	let te=document.querySelector(".title");
 	let mne=document.querySelector(".main");
 	let aie=document.querySelector(".a-s-inp");
 	let ae=document.querySelector(".a-list");
@@ -61,9 +60,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 			}
 		});
 	}
-	te.innerHTML=te.innerText.split("").map((e)=>{
-		return `<span class="c">${e}</span>`;
-	}).join("");
 	document.querySelector(".icon").onclick=()=>{
 		location.hash="";
 		location.href="/";
@@ -74,7 +70,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		}
 		location.hash=nh||LOCATION_ARR[id];
 		aie.value="";
-		pie.value=""
+		pie.value="";
 		paie.value="";
 		ae.innerHTML="";
 		pe.innerHTML="";
@@ -230,7 +226,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 						oe=oe.slice(1).join("-");
 					}
 					for (let t of e.data){
-						let tm=new Date(t.time*1e3);
 						pae.innerHTML+=`<div class="pa-l-elem" onclick="window.show_pg_a('${t.id}','${t.title}',${t.total},${JSON.stringify(t.users).replace(/\"/g,"'")},${t.other})"><div class="pa-l-elem-pr"><span class="pa-l-elem-pr-id">${t.id}</span><span class="pa-l-elem-pr-tt">${t.title}</span></div></div>`;
 						if (oe==t.id){
 							pae.childNodes[pae.childElementCount-1].onclick();
