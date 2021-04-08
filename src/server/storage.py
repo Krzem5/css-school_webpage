@@ -104,6 +104,7 @@ def _read_fs(bt,fp="",_l=False):
 			raise RuntimeError(f"Unknown File Type '{k['type']}'")
 	if (_l==False):
 		_tl.release()
+	return []
 
 
 

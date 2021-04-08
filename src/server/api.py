@@ -245,6 +245,7 @@ def create_log_ws(url):
 		return r
 	server.set_code(-1)
 	ws.handle(server.client_socket(),cf=utils.ws_logs_start,df=utils.ws_logs_end,h_dt=server.raw_request())
+	return None
 
 
 
