@@ -16,19 +16,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 				pw.value="";
 			}
 			else{
-				let rd=false;
-				if (window.location.search.split("?").length>1&&window.location.search.split("?")[1].length!=0){
-					for (let e of window.location.search.split("?")[1].split("&")){
-						if (e.split("=")[0]=="r"){
-							window.location.href=decodeURIComponent(e.split("=")[1]);
-							rd=true;
-							break;
-						}
-					};
-				}
-				if (rd==false){
-					window.location.href="/";
-				}
+				window.location.href="/";
 			}
 		});
 	};

@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 		window.location.href="/";
 	};
 	document.querySelector(".txt").onclick=()=>{
-		window.location.href=`/login?r=${encodeURIComponent(window.location.href)}`;
+		window.location.href=`/login`;
 	};
 	fetch("/api/v1/popular?count=50").then((e)=>e.json()).then((e)=>{
 		e.forEach((k)=>{

@@ -5,4 +5,6 @@ import server
 
 
 
+api.install()
+pages.install()
 server.run(int(os.environ.get("PORT",0)))

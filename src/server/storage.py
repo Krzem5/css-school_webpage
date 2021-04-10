@@ -159,8 +159,6 @@ def _write_fs():
 							else:
 								b=_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/blobs",data=json.dumps({"content":dt,"encoding":"base64"}))
 								if (b is None):
-									b_sha=False
-									dt="Github Server Error"
 									raise RuntimeError(f"Error While creating Blob for File '{k}'")
 								else:
 									dt=b["sha"]
