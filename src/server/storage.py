@@ -10,6 +10,7 @@ import utils
 
 
 global _bc,_fs,_fs_d,_fs_s,_fs_u
+ORG_NAME="tmp-5y34hjweu"
 REPO_NAME="_app_data"
 with open("server/token.dt","r") as f:
 	GITHUB_TOKEN=f.read().strip()
@@ -89,7 +90,7 @@ def _request(m="get",**kw):
 def _read_fs(bt,fp="",_l=False):
 	global _fs
 	utils.print(f"Reading Directory '{_as_path(fp)}' (sha={bt})")
-	t=_request("get",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/trees/{bt}")
+	t=_request("get",url=f"https://api.github.com/repos/{ORG_NAME}/{REPO_NAME}/git/trees/{bt}")
 	if ("message" in t and t["message"]=="Not Found"):
 		return []
 	if (_l==False):
@@ -157,7 +158,7 @@ def _write_fs():
 								b_sha=False
 								dt=f"File too Large (size = {len(dt)} b)"
 							else:
-								b=_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/blobs",data=json.dumps({"content":dt,"encoding":"base64"}))
+								b=_request("post",url=f"https://api.github.com/repos/{ORG_NAME}/{REPO_NAME}/git/blobs",data=json.dumps({"content":dt,"encoding":"base64"}))
 								if (b is None):
 									raise RuntimeError(f"Error While creating Blob for File '{k}'")
 								else:
@@ -168,8 +169,8 @@ def _write_fs():
 						utils.print(f"Deleting FileSystem File: '{k}'")
 					bl+=[{"path":k[1:],"mode":"100644","type":"blob","sha":None}]
 			_fs_u=[]
-			_bc=_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/commits",data=json.dumps({"message":datetime.datetime.now().strftime("Commit %m/%d/%Y, %H:%M:%S"),"tree":_request("post",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/trees",data=json.dumps({"base_tree":_bc["sha"],"tree":bl}))["sha"],"parents":[_bc["sha"]]}))
-			_request("patch",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/git/refs/heads/main",data=json.dumps({"sha":_bc["sha"],"force":True}))
+			_bc=_request("post",url=f"https://api.github.com/repos/{ORG_NAME}/{REPO_NAME}/git/commits",data=json.dumps({"message":datetime.datetime.now().strftime("Commit %m/%d/%Y, %H:%M:%S"),"tree":_request("post",url=f"https://api.github.com/repos/{ORG_NAME}/{REPO_NAME}/git/trees",data=json.dumps({"base_tree":_bc["sha"],"tree":bl}))["sha"],"parents":[_bc["sha"]]}))
+			_request("patch",url=f"https://api.github.com/repos/{ORG_NAME}/{REPO_NAME}/git/refs/heads/main",data=json.dumps({"sha":_bc["sha"],"force":True}))
 			_tl.release()
 		time.sleep(150)
 
@@ -248,6 +249,6 @@ def delete(fp):
 
 
 
-_bc=_request("get",url=f"https://api.github.com/repos/Krzem5/{REPO_NAME}/branches/main")["commit"]
+_bc=_request("get",url=f"https://api.github.com/repos/{ORG_NAME}/{REPO_NAME}/branches/main")["commit"]
 _read_fs(_bc["commit"]["tree"]["sha"])
 threading.Thread(target=_write_fs).start()

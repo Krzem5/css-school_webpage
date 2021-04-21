@@ -819,8 +819,9 @@ def _minify_html(html,fp,fp_b):
 		j=m.start(0)
 		if (j!=0):
 			if (r is None):
-				raise RuntimeError("Text Before <html> Tag")
-			c[-1][2].append(("__text__",html[i:i+j]))
+				print("[WARN] Ignoring Text Before <html> Tag")
+			else:
+				c[-1][2].append(("__text__",html[i:i+j]))
 		t_nm=m.group(1)
 		if (str(t_nm.lower()[(1 if t_nm[:1]==b"/" else 0):],"utf-8") not in HTML_TAGS):
 			raise RuntimeError(f"Unknown Tag '{str(t_nm,'utf-8')}'")
@@ -1011,7 +1012,7 @@ if (os.path.exists("build")==False):
 		if (subprocess.run(["git","config","--global","user.name",f"\"{USER_NAME}\""]).returncode!=0):
 			os.chdir(cwd)
 			quit()
-		if (subprocess.run(["heroku","git:remote","-a",APP_NAME]).returncode!=0):
+		if (subprocess.run(["C:/Program Files/heroku/bin/heroku.cmd","git:remote","-a",APP_NAME]).returncode!=0):
 			os.chdir(cwd)
 			quit()
 		os.chdir(cwd)
